@@ -141,16 +141,13 @@ module VolumeView =
         let capacity = 10000
 
         let polygonize (front, back) =
-            //let size = front.SliceParams.Dimensions.Columns*front.SliceParams.Dimensions.Columns
             let points = Point3DCollection capacity
-
             polygonize (front, back) isoLevel (fun p -> lock renderLock (fun _ -> points.Add p))
-
             points.Freeze()
             points
 
         let addPointsWithStatus (points: Point3DCollection) =
-            lock renderLock (fun _ -> addPoints points)
+            addPoints points
             updateOrStop (slices.Length, points.Count, clock.Elapsed.TotalSeconds)
 
         // Parallel throttling. Assume,
