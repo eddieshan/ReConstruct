@@ -1,0 +1,101 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="text-box" TargetType="{x:Type TextBoxBase}" BasedOn="{x:Null}">
+        <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+        <Setter Property="Background" Value="{StaticResource background}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="FontFamily" Value="{StaticResource base-font}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Height" Value="20" />
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="AllowDrop" Value="true"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
+        <Setter Property="SelectionBrush" Value="{StaticResource highlight-accent}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                    <Border x:Name="Bd"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}"
+                            SnapsToDevicePixels="true">
+                        <ScrollViewer x:Name="PART_ContentHost" 
+                                      RenderOptions.ClearTypeHint="Enabled"
+                                      SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+                        </Trigger>
+                        <Trigger Property="IsReadOnly" Value="true">
+                            <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="true">
+                            <Setter Property="BorderBrush" Value="{StaticResource highlight-accent}" />
+                            <Setter Property="Foreground" Value="{StaticResource light-accent}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="text-box-invalid" TargetType="TextBox" BasedOn="{StaticResource text-box}">
+        <Setter Property="BorderBrush"  Value="{StaticResource alert-accent}"/>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="true">
+                <Setter Property="BorderBrush" Value="{StaticResource alert-accent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="numeric-box" TargetType="TextBox" BasedOn="{StaticResource text-box}">
+        <Setter Property="TextAlignment"  Value="Right"/>
+    </Style>
+
+    <Style x:Key="numeric-box-invalid" TargetType="TextBox" BasedOn="{StaticResource numeric-box}">
+        <Setter Property="BorderBrush"  Value="{StaticResource alert-accent}"/>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="true">
+                <Setter Property="BorderBrush" Value="{StaticResource alert-accent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="date-box" TargetType="TextBox" BasedOn="{StaticResource text-box}">
+        <Setter Property="TextAlignment"  Value="Right"/>
+    </Style>
+
+    <Style x:Key="date-box-invalid" TargetType="TextBox" BasedOn="{StaticResource date-box}">
+        <Setter Property="BorderBrush"  Value="{StaticResource alert-accent}"/>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="true">
+                <Setter Property="BorderBrush" Value="{StaticResource alert-accent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="multiline-box" TargetType="TextBox" BasedOn="{StaticResource text-box}">
+        <Setter Property="BorderThickness" Value="1,0,0,0"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="AcceptsReturn" Value="True"/>
+        <Setter Property="Height" Value="Auto"/>
+    </Style>
+
+    <Style x:Key="multiline-box-invalid" TargetType="TextBox" BasedOn="{StaticResource multiline-box}">
+        <Setter Property="BorderBrush"  Value="{StaticResource alert-accent}"/>
+        <Style.Triggers>
+            <Trigger Property="IsFocused" Value="true">
+                <Setter Property="BorderBrush" Value="{StaticResource alert-accent}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>    
+    
+
+</ResourceDictionary>
+    

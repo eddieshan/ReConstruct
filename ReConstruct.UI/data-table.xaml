@@ -1,0 +1,91 @@
+﻿<ResourceDictionary    
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Style x:Key="data-table" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0" />
+    </Style>
+
+    <Style x:Key="data-header-row" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal" />
+    </Style>
+
+    <Style x:Key="data-row" TargetType="StackPanel">
+        <Setter Property="Margin" Value="0,0,0,7" />
+        <Setter Property="Orientation" Value="Horizontal" />
+        <!--<Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Opacity" Value="0.5" />
+                <Setter Property="Effect" Value="" />
+            </Trigger>
+        </Style.Triggers>-->        
+    </Style>
+
+    <Style x:Key="data-row-selected" TargetType="StackPanel" BasedOn="{StaticResource data-row}">
+        <Setter Property="Opacity" Value="0.5" />
+        <!--<Setter Property="Effect" Value="" />-->
+    </Style>
+
+    <Style x:Key="data-header" TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
+        <Setter Property="Background" Value="Black"/>
+        <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+        <Setter Property="FontFamily" Value="{StaticResource base-font}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Margin" Value="0,0,5,0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <Style x:Key="numeric-header" TargetType="TextBlock" BasedOn="{StaticResource data-header}">
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+
+    <Style x:Key="text-header" TargetType="TextBlock" BasedOn="{StaticResource data-header}">
+        <Setter Property="TextAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="date-header" TargetType="TextBlock" BasedOn="{StaticResource data-header}">
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+
+    <Style x:Key="icon-header" TargetType="TextBlock" BasedOn="{StaticResource data-header}">
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="data-cell" TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
+        <Setter Property="Background"  Value="Black"/>
+        <Setter Property="Foreground" Value="{StaticResource ContentText}"/>
+        <Setter Property="FontFamily"  Value="{StaticResource base-font}"/>
+        <Setter Property="FontSize"  Value="16"/>
+        <Setter Property="Margin"  Value="0,0,5,0"/>
+        <Setter Property="Padding"  Value="0"/>
+    </Style>
+
+    <Style x:Key="numeric-cell" TargetType="TextBlock" BasedOn="{StaticResource data-cell}">
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+
+    <Style x:Key="text-cell" TargetType="TextBlock" BasedOn="{StaticResource data-cell}">
+        <Setter Property="TextAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="date-cell" TargetType="TextBlock" BasedOn="{StaticResource data-cell}">
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+    
+    <Style x:Key="icon-cell" TargetType="TextBlock" BasedOn="{StaticResource data-cell}">
+        <Setter Property="FontFamily"  Value="{StaticResource icon-font}"/>
+        <Setter Property="TextAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="numeric-cell-error" TargetType="TextBlock" BasedOn="{StaticResource numeric-cell}">
+        <Setter Property="Foreground"  Value="{StaticResource alert-accent}"/>
+    </Style>
+
+    <Style x:Key="page-container" TargetType="Border">
+        <Setter Property="Margin" Value="0,3,0,0" />
+        <!--<Setter Property="Height" Value="715" />-->
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+    </Style>
+
+</ResourceDictionary>

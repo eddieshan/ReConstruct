@@ -1,0 +1,159 @@
+﻿<ResourceDictionary    
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--<FontFamily x:Key="base-font">Agency FB</FontFamily>-->
+    <!--<FontFamily x:Key="base-font">Arial Narrow</FontFamily>-->
+    <!--<FontFamily x:Key="base-font">Segoe UI</FontFamily>-->
+    <!--<FontFamily x:Key="base-font">Consolas</FontFamily>-->
+    <!--<FontFamily x:Key="base-font">Tungsten Narrow</FontFamily>-->
+    <!--<FontFamily x:Key="base-font">Bahnschrift Condensed</FontFamily>-->
+    <FontFamily x:Key="base-font">./Fonts/Oswald-VariableFont_wght.ttf#Oswald</FontFamily>
+    <!--<FontFamily x:Key="icon-font">Material-Design-Iconic-Font</FontFamily>-->
+    <FontFamily x:Key="icon-font">./Fonts/Material-Design-Iconic-Font.ttf#Material-Design-Iconic-Font</FontFamily>
+    <!--<Color x:Key="graphite">#222E31</Color>-->
+    <Color x:Key="graphite">#424E51</Color>
+    <Color x:Key="blue">#1BA1E2</Color>
+    <Color x:Key="monza">#CF000F</Color>
+    <Color x:Key="red">#e51400</Color>
+    
+    <!--<Color x:Key="Turquoise">#1BA1E2</Color>-->    
+    <!--<Color x:Key="DarkGray">#2F4F4F</Color>-->
+
+    <SolidColorBrush x:Key="background" Color="Black" />
+    <SolidColorBrush x:Key="discrete" Color="{StaticResource graphite}" />
+    <SolidColorBrush x:Key="ContentText" Color="{StaticResource graphite}" />
+    <SolidColorBrush x:Key="highlight-accent" Color="{StaticResource blue}" />
+    <SolidColorBrush x:Key="light-accent" Color="DarkGray" />
+    <SolidColorBrush x:Key="alert-accent" Color="{StaticResource red}" />
+
+    <Style x:Key="DefaultWindow" TargetType="Window" BasedOn="{StaticResource ResourceKey={x:Type Window}}">
+        <Setter Property="Background"  Value="{StaticResource background}"/>
+        <Setter Property="FontFamily"  Value="{StaticResource base-font}"/>
+        <Setter Property="FontSize"  Value="12"/>
+    </Style>
+
+    <Style TargetType="Label" BasedOn="{StaticResource ResourceKey={x:Type Label}}">
+        <Setter Property="Background" Value="{StaticResource background}"/>
+        <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+        <Setter Property="FontFamily" Value="{StaticResource base-font}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+
+    <Style x:Key="Separator" TargetType="Separator">
+        <Setter Property="Margin" Value="0,4,0,4"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Background" Value="{StaticResource discrete}"/>
+        <Setter Property="Foreground" Value="{StaticResource discrete}"/>
+    </Style>
+
+    <Style x:Key="Button" TargetType="Button">
+        <Setter Property="OverridesDefaultStyle" Value="True"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="Foreground" Value="{StaticResource discrete}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Name="border" 
+                            BorderThickness="1"
+                            Padding="2,2" 
+                            BorderBrush="{StaticResource light-accent}" 
+                            CornerRadius="0" 
+                            Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="#1BA1E2" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="MainFrame" TargetType="Frame" BasedOn="{StaticResource ResourceKey={x:Type Frame}}">
+        <Setter Property="NavigationUIVisibility" Value="Hidden"/>
+        <Setter Property="Margin" Value="6,3,0,0" />
+    </Style>
+
+    <Style x:Key="left-toolbar" TargetType="Border">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Padding" Value="2,0,2,0" />
+        <Setter Property="BorderThickness" Value="0,0,1,0" />
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
+        <Setter Property="Margin" Value="0,3,3,3" />
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+    </Style>
+
+    <Style x:Key="right-toolbar" TargetType="Border">
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Padding" Value="2,0,2,0" />
+        <Setter Property="BorderThickness" Value="1,0,0,0" />
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
+        <Setter Property="Margin" Value="3,3,0,3" />
+        <Setter Property="HorizontalAlignment" Value="Right"/>        
+    </Style>
+
+    <Style x:Key="vertical" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <Style x:Key="vertical-center" TargetType="StackPanel" BasedOn="{StaticResource vertical}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <Style x:Key="horizontal" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Horizontal"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <Style x:Key="iod-view" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <Style x:Key="message-panel" TargetType="StackPanel">
+        <Setter Property="Orientation" Value="Vertical"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,0,0"/>
+    </Style>
+
+    <Style x:Key="progress-indicator" TargetType="Label">
+        <Setter Property="Height" Value="2" />
+        <Setter Property="Margin" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="#1BA1E2" />
+        <Setter Property="IsEnabled" Value="False" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Style.Triggers>
+            <Trigger Property="IsEnabled" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard Name="ShowProgress">
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="1300" Duration="0:0:4" RepeatBehavior="Forever" FillBehavior="Stop" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <RemoveStoryboard BeginStoryboardName="ShowProgress"></RemoveStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+</ResourceDictionary>

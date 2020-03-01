@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>e15b045c-48db-456c-870d-b1cc2fbd134a</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ReConstruct.Services</RootNamespace>
+    <AssemblyName>ReConstruct.Services</AssemblyName>
+    <UseStandardResourceNames>true</UseStandardResourceNames>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <WarningsAsErrors>3239;$(WarningsAsErrors)</WarningsAsErrors>
+    <Name>ReConstruct.Services</Name>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <Tailcalls>false</Tailcalls>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <Tailcalls>true</Tailcalls>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(FSharpTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets') ">
+    <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+  </PropertyGroup>
+  <Import Project="$(FSharpTargetsPath)" />
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
+    <Content Include="packages.config" />
+    <Compile Include="dicom-utils.fs" />
+    <Compile Include="dicom-parser.fs" />
+    <Compile Include="dataset-repository.fs" />
+    <Compile Include="dicom-service.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.Core">
+      <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.ValueTuple">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
+      <Name>ReConstruct.Core</Name>
+      <Project>{b0a2b3ae-2330-4dbd-875e-e5392a029344}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.Data.Dicom\ReConstruct.Data.Dicom.fsproj">
+      <Name>ReConstruct.Data.Dicom</Name>
+      <Project>{4e7708ec-ad01-41f8-b544-845599f82458}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.Data.Imaging\ReConstruct.Data.Imaging.fsproj">
+      <Name>ReConstruct.Data.Imaging</Name>
+      <Project>{f7af48ce-33e6-43d5-aea9-7ebb16624bab}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
