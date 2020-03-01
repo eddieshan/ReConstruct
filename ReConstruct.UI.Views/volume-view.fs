@@ -57,8 +57,6 @@ module Render =
 // The scene is set up based on the total volume size and position.
 module VolumeView = 
 
-    let renderLock = Object()
-
     let getVolumeCenter firstSlice lastSlice =
         let x = firstSlice.SliceParams.UpperLeft.[0] + (firstSlice.SliceParams.PixelSpacing.X * (double firstSlice.SliceParams.Dimensions.Columns) / 2.0)
         let y = firstSlice.SliceParams.UpperLeft.[1] + (firstSlice.SliceParams.PixelSpacing.Y * (double firstSlice.SliceParams.Dimensions.Rows) / 2.0)
@@ -92,7 +90,7 @@ module VolumeView =
             let mesh = new MeshGeometry3D(Positions = points)
             let geometryModel = GeometryModel3D(mesh, DiffuseMaterial(SolidColorBrush(Colors.LightGoldenrodYellow)))
             geometryModel.Transform <- Transform3DGroup()
-            a3DGroup.Children.Add(geometryModel)
+            a3DGroup.Dispatcher.BeginInvoke(Action(fun _ -> a3DGroup.Children.Add(geometryModel))) |> ignore
 
         let referenceCenter = 7.5        
         let mutable rotX, rotY, rotZ = 0.0f, 0.0f, 0.0f
@@ -142,7 +140,7 @@ module VolumeView =
 
         let polygonize (front, back) =
             let points = Point3DCollection capacity
-            polygonize (front, back) isoLevel (fun p -> lock renderLock (fun _ -> points.Add p))
+            polygonize (front, back) isoLevel points.Add
             points.Freeze()
             points
 
