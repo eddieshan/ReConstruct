@@ -1,6 +1,7 @@
 ﻿namespace ReConstruct.UI.View
 
 open System
+open System.Buffers
 open System.Diagnostics
 open System.Windows
 open System.Windows.Controls
@@ -86,11 +87,26 @@ module VolumeView =
         let viewPort = Viewport3D(ClipToBounds = true, Camera = camera)
         seq { lightModel; m3DModel; } |> Seq.iter viewPort.Children.Add
 
+        let buildBlock (points: Point3DCollection) = 
+            let mesh = new MeshGeometry3D(Positions = points)
+            let geometryModel = GeometryModel3D(mesh, DiffuseMaterial(SolidColorBrush(Colors.LightGoldenrodYellow)))
+            geometryModel.Transform <- Transform3DGroup()
+            geometryModel.Freeze()
+            geometryModel
+
+        //let addPoints (bufferChain: Point3DCollection list) = 
+        //    a3DGroup.Dispatcher.BeginInvoke(Action(fun _ -> bufferChain |> List.iter(fun points -> points |> buildBlock |> a3DGroup.Children.Add))) |> ignore
+        //    //bufferChain |> List.iter(fun points -> points |> buildBlock |> a3DGroup.Children.Add)
+
         let addPoints (points: Point3DCollection) = 
             let mesh = new MeshGeometry3D(Positions = points)
             let geometryModel = GeometryModel3D(mesh, DiffuseMaterial(SolidColorBrush(Colors.LightGoldenrodYellow)))
             geometryModel.Transform <- Transform3DGroup()
-            a3DGroup.Dispatcher.BeginInvoke(Action(fun _ -> a3DGroup.Children.Add(geometryModel))) |> ignore
+            a3DGroup.Children.Add(geometryModel)
+
+            //geometryModel.Freeze()
+            //a3DGroup.Children.Add(geometryModel)
+            //a3DGroup.Dispatcher.InvokeAsync(Action(fun _ -> a3DGroup.Children.Add(geometryModel))) |> ignore
 
         let referenceCenter = 7.5        
         let mutable rotX, rotY, rotZ = 0.0f, 0.0f, 0.0f
@@ -132,19 +148,49 @@ module VolumeView =
   
         (viewPort :> UIElement, addPoints)
 
+    let pool = ArrayPool<Point3D>.Shared
+
     let mesh isoLevel (slices: CatSlice[]) addPoints updateOrStop = 
         
         let clock = Stopwatch()
         clock.Start()
-        let capacity = 10000
+
+        let capacity = 30
+
+        let borrowBuffer() = pool.Rent capacity
 
         let polygonize (front, back) =
-            let points = Point3DCollection capacity
-            polygonize (front, back) isoLevel points.Add
+            let mutable currentBuffer, index = borrowBuffer(), 0
+            let mutable bufferChain = List.empty
+
+            let addPoint p = 
+                if index = capacity then
+                    bufferChain <- currentBuffer :: bufferChain
+                    currentBuffer <- borrowBuffer()
+                    index <- 0
+
+                currentBuffer.[index] <- p
+                index <- index + 1
+
+            polygonize (front, back) isoLevel addPoint
+
+            let total = index + (bufferChain.Length * capacity)
+
+            let points = new Point3DCollection(total)
+
+            let dumpBuffer count (buffer: Point3D[]) = 
+                for i in count - 1..-1..0 do 
+                    points.Add buffer.[i]
+                pool.Return buffer
+
+            bufferChain |> List.iter(dumpBuffer capacity)
+            dumpBuffer index currentBuffer
+            pool.Return currentBuffer
+
             points.Freeze()
             points
 
-        let addPointsWithStatus (points: Point3DCollection) =
+        let update (points: Point3DCollection) =
             addPoints points
             updateOrStop (slices.Length, points.Count, clock.Elapsed.TotalSeconds)
 
@@ -158,7 +204,7 @@ module VolumeView =
         // That is, consuming from the thread pool a lot of threads that cannot be started.
         //let parallelThrottle = Environment.ProcessorCount - 1
         //let context = System.Threading.SynchronizationContext.Current
-        let polygonizeJob i = (async { return polygonize (slices.[i - 1], slices.[i]) }, addPointsWithStatus)
+        let polygonizeJob i = (async { return polygonize (slices.[i - 1], slices.[i]) }, update)
 
         seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> RenderAgent.enqueueJob)
 
