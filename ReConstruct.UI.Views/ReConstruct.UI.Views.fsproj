@@ -53,6 +53,7 @@
     <Compile Include="test-data.fs" />
     <Compile Include="shader.fs" />
     <Compile Include="render-updater.fs" />
+    <Compile Include="vertext-buffer.fs" />
     <Compile Include="volume-view.fs" />
     <Compile Include="volume-view-opengl.fs" />
     <Compile Include="iod-view.fs" />
