@@ -14,15 +14,18 @@ open ReConstruct.Core.Async
 open ReConstruct.Data.Dicom
 open ReConstruct.Data.Imaging.MarchingCubes
 
-module private RenderAgent =
-    let private parallelThrottle = Environment.ProcessorCount - 1
-    let private context = System.Threading.SynchronizationContext.Current
-    let private throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
-    let enqueueJob = ThrottledJob >> throttledForkJoinAgent.Post
 
 // Slice series containing Hounsfield buffers are projected into section volumes using the marching cubes algorithm.
 // The scene is set up based on the total volume size and position.
 module VolumeView = 
+
+    module private RenderAgent =
+        let private parallelThrottle = Environment.ProcessorCount - 1
+        let private context = System.Threading.SynchronizationContext.Current
+        let private throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
+    
+        let enqueueJob (job, continuation) = 
+            (job, continuation) |> ThrottledJob |> throttledForkJoinAgent.Post
 
     let getVolumeCenter firstSlice lastSlice =
         let x = firstSlice.SliceParams.UpperLeft.[0] + (firstSlice.SliceParams.PixelSpacing.X * (double firstSlice.SliceParams.Dimensions.Columns) / 2.0)
@@ -122,7 +125,6 @@ module VolumeView =
         clock.Start()
 
         let capacity = 30
-
         let borrowBuffer() = pool.Rent capacity
 
         let polygonize (front, back) =

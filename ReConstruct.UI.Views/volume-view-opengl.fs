@@ -3,27 +3,35 @@
 open System
 open System.Collections.Generic
 
+open ReConstruct.Core
+open ReConstruct.Core.Async
+
+open System.Buffers
+open System.Diagnostics
+
+open System.Windows
+open System.Windows.Forms
+open System.Windows.Forms.Integration
+open System.Windows.Media.Media3D
+
+open OpenTK
+open OpenTK.Graphics
+open OpenTK.Graphics.OpenGL
+
+open ReConstruct.Core.Types
+
+open ReConstruct.Data.Imaging.MarchingCubes
+open ReConstruct.Data.Dicom
+
+open ReConstruct.UI.View
+
 module VolumeViewOpenGL = 
-    open System.Diagnostics
-    open System.Threading.Tasks
 
-    open System.Windows
-    open System.Windows.Forms
-    open System.Windows.Forms.Integration
-    open System.Windows.Media.Media3D
-
-    open OpenTK
-    open OpenTK.Graphics
-    open OpenTK.Graphics.OpenGL
-
-    open ReConstruct.Core
-    open ReConstruct.Core.Types
-    open ReConstruct.Core.Async
-
-    open ReConstruct.Data.Imaging.MarchingCubes
-    open ReConstruct.Data.Dicom
-
-    open ReConstruct.UI.View
+    module private RenderAgent =
+        let private parallelThrottle = Environment.ProcessorCount - 1
+        let private context = System.Threading.SynchronizationContext.Current
+        let private throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
+        let enqueueJob = ThrottledJob >> throttledForkJoinAgent.Post
 
     let private TRIANGLE_POINTS = 3
     let private TRIANGLE_VALUES = 3*TRIANGLE_POINTS
@@ -195,17 +203,43 @@ module VolumeViewOpenGL =
             yield! seq { normal.X; normal.Y; normal.Z; }
         }
 
+    let pool = ArrayPool<Point3D>.Shared
+
     let mesh isoLevel (slices: CatSlice[]) partialRender = 
-        let capacity = 10000
         let clock = Stopwatch.StartNew()
 
         let bufferSubdata _ =
             GL.GetError() |> sprintf "Render completed in %fs | %A" clock.Elapsed.TotalSeconds |> Events.Status.Trigger
 
-        let polygonize (front, back) =
-            let points = capacity |> List
+        let capacity = 300
+        let borrowBuffer() = pool.Rent capacity
 
-            polygonize (front, back) isoLevel (fun p -> points.Add p)
+        let polygonize (front, back) =
+            let mutable currentBuffer, index = borrowBuffer(), 0
+            let mutable bufferChain = List.empty
+
+            let addPoint p = 
+                if index = capacity then
+                    bufferChain <- currentBuffer :: bufferChain
+                    currentBuffer <- borrowBuffer()
+                    index <- 0
+                currentBuffer.[index] <- p
+                index <- index + 1
+
+            polygonize (front, back) isoLevel addPoint
+
+            let total = index + (bufferChain.Length * capacity)
+
+            let points = new List<Point3D>(total)
+
+            let dumpBuffer count (buffer: Point3D[]) = 
+                for i in count - 1..-1..0 do 
+                    points.Add buffer.[i]
+                pool.Return buffer
+
+            bufferChain |> List.iter(dumpBuffer capacity)
+            dumpBuffer index currentBuffer
+            pool.Return currentBuffer
 
             points
 
@@ -215,29 +249,19 @@ module VolumeViewOpenGL =
             partialRender partialVertices partialNormals
             clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
 
-        //let chunks = seq { 1..slices.Length - 1 }
-        //             |> Seq.toArray
-        //             |> Array.Parallel.map (fun i -> polygonize (slices.[i - 1], slices.[i]))        
-        //let totalSize = chunks |> Seq.sumBy(fun c -> c.Count)
-        //chunks |> Array.iter addPoints
-        //bufferSubdata()
+        // Parallel throttling. Assume,
+        // - n CPU cores,
+        // - 1 CPU core for the UI thread,
+        // - n - 1 CPU cores for building the mesh.
+        // Fork batches of n - 1 parallel threads to build a section of the mesh.
+        // Each thread updates the UI when finished.
+        // Parallel threads have to be throttled to avoid thread contention.
+        // That is, consuming from the thread pool a lot of threads that cannot be started.
+        //let parallelThrottle = Environment.ProcessorCount - 1
+        //let context = System.Threading.SynchronizationContext.Current
+        let polygonizeJob i = (async { return polygonize (slices.[i - 1], slices.[i]) }, addPoints)
 
-        let current = TaskScheduler.FromCurrentSynchronizationContext()
-        let updateUI = Action<Task<List<Point3D>>>(fun p -> p.Result |> addPoints)
-        let forkAndJoinUI (task: Task<List<Point3D>>) =
-            let completion = task.ContinueWith(updateUI, current)
-            task.Start()
-            completion
-
-        let parallelThrottle = Environment.ProcessorCount
-
-        let refresh (t: Task) = t.ContinueWith(Action<Task>(bufferSubdata), current)
-
-        seq { 1..slices.Length - 1 } 
-            //|> Seq.map(fun i -> Func<List<Point3D>>(fun _ -> polygonize (slices.[i - 1], slices.[i])) |> Task<List<Point3D>>)
-            |> Seq.map(fun i -> (fun _ -> polygonize (slices.[i - 1], slices.[i])) |> func |> task)
-            |> Seq.chunkBySize parallelThrottle
-            |> Seq.iter(Seq.map forkAndJoinUI >> Task.WhenAll >> refresh >> ignore)
+        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> RenderAgent.enqueueJob)
 
     // Build Volume View from sequence of Slices. 
     let New isoLevel slices = 
@@ -248,7 +272,6 @@ module VolumeViewOpenGL =
         let centroid = getVolumeCenter firstSlice lastSlice
         slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centroid))
 
-        //let viewPort = buildScene (0, TestData.vertices, TestData.colors)
         let progressiveMesh = mesh isoLevel slices
 
         buildScene (estimatedModelSize, progressiveMesh)
