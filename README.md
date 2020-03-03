@@ -1,12 +1,16 @@
 # Introduction
 
-ReConstruct is an F# application that renders 3D reconstructions from Radiology scans.
+ReConstruct is an WPF / F# application that renders 3D reconstructions from Radiology scans.
 Radiology scans contain series of 2D images (slices) that are essentially scalar fields.
 Hence, scalar field algorithms can be applied to series of slices to extract an iso surface.
 Different iso values on the scalar field can be used to filter different types of tissue.
 
+![Arm](Screenshot_Arm.png)
+
 The final goal is to build an application to build 3D reconstructions from any source of scalar field data, not just Radiology scans.
 Scalar field analysis is widely used in many areas of Science and Engineering.
+
+![Abdomen](Screenshot_Abdomen.png)
 
 # Iso surface calculation
 
