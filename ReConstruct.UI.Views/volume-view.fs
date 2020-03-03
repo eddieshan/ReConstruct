@@ -39,6 +39,8 @@ module VolumeView =
         //let mutable cameraZ, zNear, zFar = estimatedSize*distanceFactor, 0.1, 1000.0
         let mutable cameraZ, zNear, zFar = estimatedSize*distanceFactor, 0.1, estimatedSize*farPlaneFactor
 
+        let lightColor, tissueColor = Colors.White, Color.FromRgb(255uy, 173uy, 96uy)
+
         let position = Point3D(0.0, 0.0, - cameraZ)
         let camera = PerspectiveCamera
                         (
@@ -49,7 +51,7 @@ module VolumeView =
                             LookDirection = Point3D(0.0, 0.0, 0.0) - position
                          )
 
-        let viewPortLight = DirectionalLight(Color = Colors.White, Direction = camera.LookDirection)
+        let viewPortLight = DirectionalLight(Color = lightColor, Direction = camera.LookDirection)
         let lightModel = ModelVisual3D(Content = viewPortLight)
         let a3DGroup = Model3DGroup()
         let m3DModel = ModelVisual3D(Content = a3DGroup)
@@ -58,7 +60,7 @@ module VolumeView =
 
         let buildBlock (points: Point3DCollection) = 
             let mesh = new MeshGeometry3D(Positions = points)
-            let geometryModel = GeometryModel3D(mesh, DiffuseMaterial(SolidColorBrush(Colors.LightGoldenrodYellow)))
+            let geometryModel = GeometryModel3D(mesh, DiffuseMaterial(SolidColorBrush(tissueColor)))
             geometryModel.Transform <- Transform3DGroup()
             geometryModel.Freeze()
             geometryModel
@@ -186,7 +188,7 @@ module VolumeView =
         let lastSlice = slices |> Array.last
         
         let centerPoint = getVolumeCenter firstSlice lastSlice
-        slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centerPoint))
+        slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centerPoint.X, centerPoint.Y, centerPoint.Z))
             
         // Calculate the centroid of the volumen.
         let estimatedModelSize = lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]

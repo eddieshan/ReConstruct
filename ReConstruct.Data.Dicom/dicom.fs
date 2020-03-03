@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 
 open System.Windows.Media.Imaging
-open System.Windows.Media.Media3D
 
 module BaseTypes =
 
@@ -121,10 +120,10 @@ type SliceParams =
         WindowCenter: int;
         WindowWidth: int;
     } 
-    member x.AdjustToCenter (center: Point3D) =
-        x.UpperLeft.[0] <- x.UpperLeft.[0] - center.X
-        x.UpperLeft.[1] <- x.UpperLeft.[1] - center.Y
-        x.UpperLeft.[2] <- x.UpperLeft.[2] - center.Z
+    member x.AdjustToCenter (cx, cy, cz) =
+        x.UpperLeft.[0] <- x.UpperLeft.[0] - cx
+        x.UpperLeft.[1] <- x.UpperLeft.[1] - cy
+        x.UpperLeft.[2] <- x.UpperLeft.[2] - cz
 
 // CAT slice.
 type CatSlice =
