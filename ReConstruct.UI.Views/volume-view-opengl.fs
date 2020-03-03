@@ -12,7 +12,6 @@ open System.Diagnostics
 open System.Windows
 open System.Windows.Forms
 open System.Windows.Forms.Integration
-open System.Windows.Media.Media3D
 
 open OpenTK
 open OpenTK.Graphics
@@ -20,7 +19,7 @@ open OpenTK.Graphics.OpenGL
 
 open ReConstruct.Core.Types
 
-open ReConstruct.Data.Imaging.MarchingCubes
+open ReConstruct.Data.Imaging.MarchingCubes2
 open ReConstruct.Data.Dicom
 
 open ReConstruct.UI.View
@@ -39,7 +38,8 @@ module VolumeViewOpenGL =
     let private maxTriangles = 3000000
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
     let private vertexBuffer = bufferSize |> VertexBuffer.New 
-    let private normalsBuffer = bufferSize |> VertexBuffer.New 
+    let vertexBufferStep = 6 * sizeof<float32>
+    let normalsOffset = 3 * sizeof<float32>
 
     let glContainer (estimatedSize, progressiveMesh) (width, height) =
 
@@ -67,17 +67,13 @@ module VolumeViewOpenGL =
         GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
         GL.BufferData(BufferTarget.ArrayBuffer, arraySize vertexBuffer.Vertices, vertexBuffer.Vertices, BufferUsageHint.StaticDraw)
 
-        let normalsBufferObject = GL.GenBuffer()
-        GL.BindBuffer(BufferTarget.ArrayBuffer, normalsBufferObject)
-        GL.BufferData(BufferTarget.ArrayBuffer, arraySize normalsBuffer.Vertices, normalsBuffer.Vertices, BufferUsageHint.StaticDraw)
+        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
 
         GL.EnableVertexAttribArray(0)
-        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * vertexBuffer.ElementSize(), 0)
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexBufferStep, 0)
 
         GL.EnableVertexAttribArray(1)
-        GL.BindBuffer(BufferTarget.ArrayBuffer, normalsBufferObject)
-        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 3 * normalsBuffer.ElementSize(), 0)
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
         //let mutable cameraZ, zNear, zFar = estimatedSize*0.90f, 0.125f, estimatedSize*3.0f
         let mutable cameraZ, zNear, zFar = estimatedSize*1.75f, 0.1f, 1000.0f
@@ -121,7 +117,7 @@ module VolumeViewOpenGL =
             let mvp = modelViewProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, vertexBuffer.Vertices.Length / 3)
+            GL.DrawArrays(PrimitiveType.Triangles, 0, vertexBuffer.Vertices.Length / 6)
             container.SwapBuffers()
 
         let update transform t =
@@ -131,24 +127,22 @@ module VolumeViewOpenGL =
 
         let cleanUp() =
             GL.DeleteBuffers(1, ref vertexBufferObject)
-            GL.DeleteBuffers(1, ref normalsBufferObject)
             GL.DeleteProgram(shader.Handle)
             GL.DeleteVertexArrays(1, ref vertexArrayObject)
 
         let bufferLock = Object()
         let mutable currentOfset = 0
 
-        let partialRender (partialVertexBuffer: float32[]) (partialNormalsBuffer: float32[]) =
+        let partialRender (buffer: float32[]) =
 
-            let partialVertexSize, partialNormalsSize = arraySize partialVertexBuffer, arraySize partialNormalsBuffer
+            let bufferSize = arraySize buffer
 
-            lock bufferLock (fun _ -> currentOfset <- currentOfset + partialVertexSize)
+            lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, partialVertexSize, partialVertexBuffer)
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, normalsBufferObject)
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, partialNormalsSize, partialNormalsBuffer)
+            let e0 = GL.GetError()
 
             render()
 
@@ -184,26 +178,9 @@ module VolumeViewOpenGL =
         let x = firstSlice.SliceParams.UpperLeft.[0] + (firstSlice.SliceParams.PixelSpacing.X * (double firstSlice.SliceParams.Dimensions.Columns) / 2.0)
         let y = firstSlice.SliceParams.UpperLeft.[1] + (firstSlice.SliceParams.PixelSpacing.Y * (double firstSlice.SliceParams.Dimensions.Rows) / 2.0)
         let z = firstSlice.SliceParams.UpperLeft.[2] + ((lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) / 2.0)
-        new Point3D(x, y, z)
+        new Vector3d(x, y, z)
 
-    // Calculate normals. 
-    // *** TODO ***
-    // For the moment each vertex is assigned the triangle normal.
-    // Temporary, till an efficient algorithm to calculate real vertex normals is figured out.
-    // Triangle normals results in poor lighting render.
-    let getNormal (points: IList<Point3D>) index =
-        let vertex i = Vector3(float32 points.[i].X, float32 points.[i].Y, float32 points.[i].Z)
-        let vertices = seq { index..index + 2 } |> Seq.map vertex |> Seq.toArray
-        //let normal = Vector3.Cross(vertices.[1] - vertices.[0], vertices.[2] - vertices.[0])
-        let normal = Vector3.Cross(vertices.[2] - vertices.[0], vertices.[1] - vertices.[0])
-        normal.Normalize()
-        seq {
-            yield! seq { normal.X; normal.Y; normal.Z; }
-            yield! seq { normal.X; normal.Y; normal.Z; }
-            yield! seq { normal.X; normal.Y; normal.Z; }
-        }
-
-    let pool = ArrayPool<Point3D>.Shared
+    let pool = ArrayPool<float32>.Shared
 
     let mesh isoLevel (slices: CatSlice[]) partialRender = 
         let clock = Stopwatch.StartNew()
@@ -211,42 +188,45 @@ module VolumeViewOpenGL =
         let bufferSubdata _ =
             GL.GetError() |> sprintf "Render completed in %fs | %A" clock.Elapsed.TotalSeconds |> Events.Status.Trigger
 
-        let capacity = 300
+        let capacity = 900
         let borrowBuffer() = pool.Rent capacity
 
+        /// TODO: bufferChain implementation based on single linked list is atrocious, must be replaced.
         let polygonize (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
             let mutable bufferChain = List.empty
 
-            let addPoint p = 
+            let addCoordinate v =
+                currentBuffer.[index] <- v
+                index <- index + 1
+
+            let addPoint (x, y, z) = 
                 if index = capacity then
-                    bufferChain <- currentBuffer :: bufferChain
+                    bufferChain <- currentBuffer |> List.singleton |> List.append bufferChain
                     currentBuffer <- borrowBuffer()
                     index <- 0
-                currentBuffer.[index] <- p
-                index <- index + 1
+                addCoordinate x
+                addCoordinate y
+                addCoordinate z
 
             polygonize (front, back) isoLevel addPoint
 
             let total = index + (bufferChain.Length * capacity)
 
-            let points = new List<Point3D>(total)
+            let points = new List<float32>(total)
 
-            let dumpBuffer count (buffer: Point3D[]) = 
-                for i in count - 1..-1..0 do 
-                    points.Add buffer.[i]
+            let dumpBuffer count (buffer: float32[]) = 
+                for i in 0..1..count-1 do
+                    buffer.[i] |> points.Add
                 pool.Return buffer
 
             bufferChain |> List.iter(dumpBuffer capacity)
             dumpBuffer index currentBuffer
-            pool.Return currentBuffer
 
-            points
+            points.ToArray()
 
-        let addPoints (points: IList<Point3D>) =
-            let partialVertices = points |> Seq.collect(fun p -> seq { p.X; p.Y; p.Z; } |> Seq.map float32) |> Seq.toArray
-            let partialNormals = seq { 0..3..points.Count - 3 } |> Seq.collect(fun i -> getNormal points i) |> Seq.toArray
-            partialRender partialVertices partialNormals
+        let addPoints points =
+            partialRender points
             clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
 
         // Parallel throttling. Assume,
@@ -270,7 +250,7 @@ module VolumeViewOpenGL =
 
         // Volume center is the centroid of the paralelogram defined between the first and last slice.
         let centroid = getVolumeCenter firstSlice lastSlice
-        slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centroid))
+        slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centroid.X, centroid.Y, centroid.Z))
 
         let progressiveMesh = mesh isoLevel slices
 
