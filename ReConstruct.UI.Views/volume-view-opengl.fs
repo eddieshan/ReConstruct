@@ -1,7 +1,6 @@
 ﻿namespace ReConstruct.UI.View
 
 open System
-open System.Collections.Generic
 
 open ReConstruct.Core
 open ReConstruct.Core.Async
@@ -29,8 +28,10 @@ module VolumeViewOpenGL =
     module private RenderAgent =
         let private parallelThrottle = Environment.ProcessorCount - 1
         let private context = System.Threading.SynchronizationContext.Current
-        let private throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
-        let enqueueJob = ThrottledJob >> throttledForkJoinAgent.Post
+
+        let renderQueue() = 
+            let throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
+            ThrottledJob >> throttledForkJoinAgent.Post
 
     let private TRIANGLE_POINTS = 3
     let private TRIANGLE_VALUES = 3*TRIANGLE_POINTS
@@ -39,6 +40,8 @@ module VolumeViewOpenGL =
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
     let vertexBufferStep = 6 * sizeof<float32>
     let normalsOffset = 3 * sizeof<float32>
+
+    let private pool = ArrayPool<float32>.Shared
 
     let glContainer (estimatedSize, progressiveMesh) (width, height) =
 
@@ -137,17 +140,16 @@ module VolumeViewOpenGL =
         let bufferLock = Object()
         let mutable currentOfset = 0
 
-        let partialRender (buffer: float32[]) =
-
-            let bufferSize = arraySize buffer
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
-
-            lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
-
+        let partialRender (index: int, capacity: int, bufferChain: float32[] list) =
+            bufferChain |> List.iteri(fun i buffer ->
+                let size = if i = 0 then index else capacity
+                let bufferSize = size * sizeof<float32>
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
+                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
+                lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
+                pool.Return buffer
+            )
             //let e0 = GL.GetError()
-
             render()
 
         let mutable firstRender = true
@@ -184,10 +186,10 @@ module VolumeViewOpenGL =
         let z = firstSlice.SliceParams.UpperLeft.[2] + (Math.Abs(lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) / 2.0)
         new Vector3d(x, y, z)
 
-    let pool = ArrayPool<float32>.Shared
-
     let mesh isoLevel (slices: CatSlice[]) partialRender = 
         let clock = Stopwatch.StartNew()
+
+        let queueJob = RenderAgent.renderQueue()
 
         let bufferSubdata _ =
             GL.GetError() |> sprintf "Render completed in %fs | %A" clock.Elapsed.TotalSeconds |> Events.Status.Trigger
@@ -195,7 +197,6 @@ module VolumeViewOpenGL =
         let capacity = 900
         let borrowBuffer() = pool.Rent capacity
 
-        /// TODO: bufferChain implementation based on single linked list is atrocious, must be replaced.
         let polygonize (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
             let mutable bufferChain = List.empty
@@ -206,7 +207,7 @@ module VolumeViewOpenGL =
 
             let addPoint (p: Vector3d) = 
                 if index = capacity then
-                    bufferChain <- currentBuffer |> List.singleton |> List.append bufferChain
+                    bufferChain <- currentBuffer :: bufferChain
                     currentBuffer <- borrowBuffer()
                     index <- 0
                 addCoordinate p.X
@@ -214,38 +215,19 @@ module VolumeViewOpenGL =
                 addCoordinate p.Z
 
             MarchingCubesBasic.polygonize (front, back) isoLevel addPoint
+            
+            bufferChain <- currentBuffer :: bufferChain
 
-            let total = index + (bufferChain.Length * capacity)
+            (index, capacity, bufferChain)
 
-            let points = new List<float32>(total)
-
-            let dumpBuffer count (buffer: float32[]) = 
-                for i in 0..1..count-1 do
-                    buffer.[i] |> points.Add
-                pool.Return buffer
-
-            bufferChain |> List.iter(dumpBuffer capacity)
-            dumpBuffer index currentBuffer
-
-            points.ToArray()
-
+        let renderLock = new Object()
         let addPoints points =
-            partialRender points
+            lock renderLock (fun _ -> partialRender points)
             clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
 
-        // Parallel throttling. Assume,
-        // - n CPU cores,
-        // - 1 CPU core for the UI thread,
-        // - n - 1 CPU cores for building the mesh.
-        // Fork batches of n - 1 parallel threads to build a section of the mesh.
-        // Each thread updates the UI when finished.
-        // Parallel threads have to be throttled to avoid thread contention.
-        // That is, consuming from the thread pool a lot of threads that cannot be started.
-        //let parallelThrottle = Environment.ProcessorCount - 1
-        //let context = System.Threading.SynchronizationContext.Current
         let polygonizeJob i = (async { return polygonize (slices.[i - 1], slices.[i]) }, addPoints)
 
-        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> RenderAgent.enqueueJob)
+        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> queueJob)
 
     // Build Volume View from sequence of Slices. 
     let New isoLevel slices = 
