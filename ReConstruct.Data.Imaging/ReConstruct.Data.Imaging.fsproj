@@ -47,7 +47,7 @@
     <Compile Include="edge-table.fs" />
     <Compile Include="cat-slice.fs" />
     <Compile Include="marching-cubes.fs" />
-    <Compile Include="marching-cubes-2.fs" />
+    <Compile Include="marching-cubes-basic.fs" />
     <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>

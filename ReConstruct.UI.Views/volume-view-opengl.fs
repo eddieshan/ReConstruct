@@ -19,7 +19,7 @@ open OpenTK.Graphics.OpenGL
 
 open ReConstruct.Core.Types
 
-open ReConstruct.Data.Imaging.MarchingCubes2
+open ReConstruct.Data.Imaging
 open ReConstruct.Data.Dicom
 
 open ReConstruct.UI.View
@@ -37,7 +37,6 @@ module VolumeViewOpenGL =
 
     let private maxTriangles = 3000000
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
-    let private vertexBuffer = bufferSize |> VertexBuffer.New 
     let vertexBufferStep = 6 * sizeof<float32>
     let normalsOffset = 3 * sizeof<float32>
 
@@ -64,6 +63,9 @@ module VolumeViewOpenGL =
         let transformMatrixId = GL.GetUniformLocation(shader.Handle, "MVP")
 
         let vertexBufferObject = GL.GenBuffer()
+
+        let vertexBuffer = bufferSize |> VertexBuffer.New
+
         GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
         GL.BufferData(BufferTarget.ArrayBuffer, arraySize vertexBuffer.Vertices, vertexBuffer.Vertices, BufferUsageHint.StaticDraw)
 
@@ -117,7 +119,7 @@ module VolumeViewOpenGL =
             let mvp = modelViewProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, vertexBuffer.Vertices.Length / 6)
+            GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
             container.SwapBuffers()
 
         let update transform t =
@@ -137,12 +139,12 @@ module VolumeViewOpenGL =
 
             let bufferSize = arraySize buffer
 
-            lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
-
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
             GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
 
-            let e0 = GL.GetError()
+            lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
+
+            //let e0 = GL.GetError()
 
             render()
 
@@ -197,19 +199,19 @@ module VolumeViewOpenGL =
             let mutable bufferChain = List.empty
 
             let addCoordinate v =
-                currentBuffer.[index] <- v
+                currentBuffer.[index] <- (float32 v)
                 index <- index + 1
 
-            let addPoint (x, y, z) = 
+            let addPoint (p: Vector3d) = 
                 if index = capacity then
                     bufferChain <- currentBuffer |> List.singleton |> List.append bufferChain
                     currentBuffer <- borrowBuffer()
                     index <- 0
-                addCoordinate x
-                addCoordinate y
-                addCoordinate z
+                addCoordinate p.X
+                addCoordinate p.Y
+                addCoordinate p.Z
 
-            polygonize (front, back) isoLevel addPoint
+            MarchingCubesBasic.polygonize (front, back) isoLevel addPoint
 
             let total = index + (bufferChain.Length * capacity)
 
