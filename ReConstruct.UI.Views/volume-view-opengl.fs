@@ -81,11 +81,11 @@ module VolumeViewOpenGL =
         //let mutable cameraZ, zNear, zFar = estimatedSize*1.75f, 0.1f, 1000.0f
         let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
 
+        let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
+
         let perspectiveProjection() =
             let fovy = 70.0f
-            let projectionMatrix = Matrix4.CreatePerspectiveFieldOfView(fovy |> MathHelper.DegreesToRadians, container.AspectRatio, zNear, zFar)
-            let viewMatrix = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
-            viewMatrix * projectionMatrix
+            Matrix4.CreatePerspectiveFieldOfView(fovy |> MathHelper.DegreesToRadians, container.AspectRatio, zNear, zFar)
 
         let mutable rotX, rotY, rotZ = 0.0f, 0.0f, 0.0f
 
@@ -97,12 +97,9 @@ module VolumeViewOpenGL =
             | Y -> rotY <- rotY + delta
             | Z -> rotZ <- rotZ + delta
             
-        let modelViewProjection() =            
-            Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ) * perspectiveProjection()
+        let modelProjection() = 
+            Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
-        //let lightPos = Vector3(0.0f, 1.0f, 0.0f)
-        //let lightPos = cameraPosition()
-        //let objectColor = Vector3(1.0f, 0.5f, 0.31f)
         let objectColor = Vector3(Color4.WhiteSmoke.R, Color4.WhiteSmoke.G, Color4.WhiteSmoke.B)
         let lightColor = Vector3(1.0f, 1.0f, 1.0f)
 
@@ -118,7 +115,7 @@ module VolumeViewOpenGL =
             shader.SetVector3("lightPos", camera)
             shader.SetVector3("viewPos", camera)
 
-            let mvp = modelViewProjection()
+            let mvp = modelProjection() * viewProjection() * perspectiveProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
@@ -181,7 +178,7 @@ module VolumeViewOpenGL =
     let getVolumeCenter firstSlice lastSlice =
         let x = firstSlice.SliceParams.UpperLeft.[0] + (firstSlice.SliceParams.PixelSpacing.X * (double firstSlice.SliceParams.Dimensions.Columns) / 2.0)
         let y = firstSlice.SliceParams.UpperLeft.[1] + (firstSlice.SliceParams.PixelSpacing.Y * (double firstSlice.SliceParams.Dimensions.Rows) / 2.0)
-        let z = firstSlice.SliceParams.UpperLeft.[2] + ((lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) / 2.0)
+        let z = firstSlice.SliceParams.UpperLeft.[2] + (Math.Abs(lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) / 2.0)
         new Vector3d(x, y, z)
 
     let pool = ArrayPool<float32>.Shared
