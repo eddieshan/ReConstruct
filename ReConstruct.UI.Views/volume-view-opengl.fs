@@ -77,11 +77,14 @@ module VolumeViewOpenGL =
         GL.EnableVertexAttribArray(1)
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
-        let mutable cameraZ, zNear, zFar = estimatedSize*0.90f, 0.125f, estimatedSize*3.0f
-        //let mutable cameraZ, zNear, zFar = estimatedSize*1.75f, 0.1f, 1000.0f
+        let mutable cameraZ, zNear, zFar = estimatedSize*1.20f, -estimatedSize*10.0f, estimatedSize*10.0f
+
         let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
 
         let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
+        
+        let orthographicProjection =
+            Matrix4.CreateOrthographic((float32 width)/2.0f, (float32 height)/2.0f, zNear, zFar)
 
         let perspectiveProjection() =
             let fovy = 70.0f
@@ -115,7 +118,7 @@ module VolumeViewOpenGL =
             shader.SetVector3("lightPos", camera)
             shader.SetVector3("viewPos", camera)
 
-            let mvp = modelProjection() * viewProjection() * perspectiveProjection()
+            let mvp = modelProjection() * viewProjection() * orthographicProjection
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
@@ -247,11 +250,14 @@ module VolumeViewOpenGL =
     // Build Volume View from sequence of Slices. 
     let New isoLevel slices = 
         let firstSlice, lastSlice = slices |> Array.head, slices |> Array.last
-        let estimatedModelSize = (lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) |> float32
 
         // Volume center is the centroid of the paralelogram defined between the first and last slice.
         let centroid = getVolumeCenter firstSlice lastSlice
         slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter(centroid.X, centroid.Y, centroid.Z))
+
+        let estimatedModelSize = Math.Abs(lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) |> float32
+
+        let maxZ = (slices |> Array.maxBy(fun slice -> slice.SliceParams.UpperLeft.[2])).SliceParams.UpperLeft
 
         let progressiveMesh = mesh isoLevel slices
 
