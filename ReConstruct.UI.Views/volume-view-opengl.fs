@@ -77,8 +77,8 @@ module VolumeViewOpenGL =
         GL.EnableVertexAttribArray(1)
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
-        //let mutable cameraZ, zNear, zFar = estimatedSize*0.90f, 0.125f, estimatedSize*3.0f
-        let mutable cameraZ, zNear, zFar = estimatedSize*1.75f, 0.1f, 1000.0f
+        let mutable cameraZ, zNear, zFar = estimatedSize*0.90f, 0.125f, estimatedSize*3.0f
+        //let mutable cameraZ, zNear, zFar = estimatedSize*1.75f, 0.1f, 1000.0f
         let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
 
         let perspectiveProjection() =
@@ -101,7 +101,7 @@ module VolumeViewOpenGL =
             Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ) * perspectiveProjection()
 
         //let lightPos = Vector3(0.0f, 1.0f, 0.0f)
-        let lightPos = cameraPosition()
+        //let lightPos = cameraPosition()
         //let objectColor = Vector3(1.0f, 0.5f, 0.31f)
         let objectColor = Vector3(Color4.WhiteSmoke.R, Color4.WhiteSmoke.G, Color4.WhiteSmoke.B)
         let lightColor = Vector3(1.0f, 1.0f, 1.0f)
@@ -110,11 +110,13 @@ module VolumeViewOpenGL =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
             shader.Use()
 
+            let camera = cameraPosition()
+
             shader.SetMatrix4("model", Matrix4.Identity)
             shader.SetVector3("objectColor", objectColor)
             shader.SetVector3("lightColor", lightColor)
-            shader.SetVector3("lightPos", lightPos)
-            shader.SetVector3("viewPos", cameraPosition())
+            shader.SetVector3("lightPos", camera)
+            shader.SetVector3("viewPos", camera)
 
             let mvp = modelViewProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
