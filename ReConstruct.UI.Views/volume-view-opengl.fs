@@ -80,18 +80,17 @@ module VolumeViewOpenGL =
         GL.EnableVertexAttribArray(1)
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
+        //let mutable cameraZ, zNear, zFar = estimatedSize*0.8f, 0.125f, estimatedSize*4.0f
+        //let perspectiveProjection() =
+        //    let fovy = 45.0f
+        //    Matrix4.CreatePerspectiveFieldOfView(fovy |> MathHelper.DegreesToRadians, container.AspectRatio, zNear, zFar)
+
         let mutable cameraZ, zNear, zFar = estimatedSize*1.20f, -estimatedSize*10.0f, estimatedSize*10.0f
-
-        let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
-
-        let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
-        
         let orthographicProjection =
             Matrix4.CreateOrthographic((float32 width)/2.0f, (float32 height)/2.0f, zNear, zFar)
 
-        let perspectiveProjection() =
-            let fovy = 70.0f
-            Matrix4.CreatePerspectiveFieldOfView(fovy |> MathHelper.DegreesToRadians, container.AspectRatio, zNear, zFar)
+        let cameraPosition() = Vector3(0.0f, 0.0f, -cameraZ)
+        let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
 
         let mutable rotX, rotY, rotZ = 0.0f, 0.0f, 0.0f
 
@@ -122,6 +121,7 @@ module VolumeViewOpenGL =
             shader.SetVector3("viewPos", camera)
 
             let mvp = modelProjection() * viewProjection() * orthographicProjection
+            //let mvp = modelProjection() * viewProjection() * perspectiveProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
@@ -201,18 +201,14 @@ module VolumeViewOpenGL =
             let mutable currentBuffer, index = borrowBuffer(), 0
             let mutable bufferChain = List.empty
 
-            let addCoordinate v =
-                currentBuffer.[index] <- (float32 v)
-                index <- index + 1
-
-            let addPoint (p: Vector3d) = 
+            let addPoint (p: System.Numerics.Vector3) = 
                 if index = capacity then
                     bufferChain <- currentBuffer :: bufferChain
                     currentBuffer <- borrowBuffer()
                     index <- 0
-                addCoordinate p.X
-                addCoordinate p.Y
-                addCoordinate p.Z
+
+                p.CopyTo(currentBuffer, index)
+                index <- index + 3
 
             MarchingCubesBasic.polygonize (front, back) isoLevel addPoint
             

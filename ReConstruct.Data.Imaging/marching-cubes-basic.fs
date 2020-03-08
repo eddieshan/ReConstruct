@@ -1,29 +1,26 @@
 ﻿namespace ReConstruct.Data.Imaging
 
 open System
+open System.Numerics
 
-open OpenTK
+//open OpenTK
 
 open ReConstruct.Data.Dicom
 
 open ReConstruct.Data.Imaging.MarchingCubesLookups
 
+/// Marching cubes basic implementation. 
 module MarchingCubesBasic =
 
     let private EdgeTraversal = [| (0, 1); (1, 2); (2, 3); (3, 0); (4, 5); (5, 6); (6, 7); (7, 4); (0, 4); (1, 5); (2, 6); (3, 7); |]
 
-    // Marching cubes algorithm. 
-    // Very imperative implementation for performance.
-    // Though a plain funcion would have been the logical implementation,
-    // after testing a record type implementation proved to be about 2x faster,
-    // probably due to better memory locality and fewer number of copies involved.
     type private Voxel =
         {
             Front: CatSlice
             Back: CatSlice
-            IsoLevel: double
-            AddPoint: Vector3d -> unit
-            Vertices: Vector3d[]
+            IsoLevel: float32
+            AddPoint: Vector3 -> unit
+            Vertices: Vector3[]
             Levels: int[]
         }
 
@@ -44,10 +41,10 @@ module MarchingCubesBasic =
             x.Levels.[7] <- x.Front.HounsfieldBuffer.[row, column]
 
         member private x.InterpolatedVertex (index1: int, index2: int) =
-            let tolerance = 0.00001
+            let tolerance = 0.00001f
 
-            let val1 = double x.Levels.[index1]
-            let val2 = double x.Levels.[index2]
+            let val1 = float32 x.Levels.[index1]
+            let val2 = float32 x.Levels.[index2]
 
             let point1 = x.Vertices.[index1]
             let point2 = x.Vertices.[index2]
@@ -63,7 +60,7 @@ module MarchingCubesBasic =
                 let x = point1.X + mu * (point2.X - point1.X)
                 let y = point1.Y + mu * (point2.Y - point1.Y)
                 let z = point1.Z + mu * (point2.Z - point1.Z)
-                Vector3d(x, y, z)
+                Vector3(x, y, z)
 
         member private x.Polygonize(row, column) =
 
@@ -77,7 +74,7 @@ module MarchingCubesBasic =
                     cubeIndex <- cubeIndex ||| (1 <<< i)
 
             if EdgeTable.[cubeIndex] <> 0 then
-                let vertlist = Array.zeroCreate<Vector3d> 12
+                let vertlist = Array.zeroCreate<Vector3> 12
             
                 for i in 0..EdgeTraversal.Length-1 do
                     if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
@@ -88,7 +85,7 @@ module MarchingCubesBasic =
                     let v0 = vertlist.[TriTable.[cubeIndex, index]]
                     let v1 = vertlist.[TriTable.[cubeIndex, index + 1]]
                     let v2 = vertlist.[TriTable.[cubeIndex, index + 2]]
-                    let normal = Vector3d.Cross(v2 - v0, v1 - v0).Normalized()
+                    let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
                     x.AddPoint v0
                     x.AddPoint normal
@@ -101,13 +98,13 @@ module MarchingCubesBasic =
 
         member x.PolygonizeSection() =
 
-            let zFront, zBack = x.Front.SliceParams.UpperLeft.[2], x.Back.SliceParams.UpperLeft.[2]
+            let zFront, zBack = float32 x.Front.SliceParams.UpperLeft.[2], float32 x.Back.SliceParams.UpperLeft.[2]
 
-            let yTopFront = x.Front.SliceParams.UpperLeft.[1]
-            let yBottomFront = yTopFront + x.Front.SliceParams.PixelSpacing.Y
+            let yTopFront = float32 x.Front.SliceParams.UpperLeft.[1]
+            let yBottomFront = yTopFront + float32 x.Front.SliceParams.PixelSpacing.Y
 
-            let yTopBack = x.Back.SliceParams.UpperLeft.[1]
-            let yBottomBack = yTopBack + x.Back.SliceParams.PixelSpacing.Y
+            let yTopBack = float32 x.Back.SliceParams.UpperLeft.[1]
+            let yBottomBack = yTopBack + float32 x.Back.SliceParams.PixelSpacing.Y
 
             x.Vertices.[0].Z <- zBack
             x.Vertices.[1].Z <- zBack
@@ -128,11 +125,11 @@ module MarchingCubesBasic =
             x.Vertices.[7].Y <- yTopFront
 
             for row in 0..x.Front.SliceParams.Dimensions.Rows - 2 do
-                let xLeftFront = x.Front.SliceParams.UpperLeft.[0]
-                let xRightFront = xLeftFront + x.Front.SliceParams.PixelSpacing.X
+                let xLeftFront = float32 x.Front.SliceParams.UpperLeft.[0]
+                let xRightFront = xLeftFront + float32 x.Front.SliceParams.PixelSpacing.X
 
-                let xLeftBack = x.Back.SliceParams.UpperLeft.[0]
-                let xRightBack = xLeftBack + x.Back.SliceParams.PixelSpacing.X
+                let xLeftBack = float32 x.Back.SliceParams.UpperLeft.[0]
+                let xRightBack = xLeftBack + float32 x.Back.SliceParams.PixelSpacing.X
 
                 x.Vertices.[0].X <- xLeftBack
                 x.Vertices.[1].X <- xRightBack
@@ -147,23 +144,23 @@ module MarchingCubesBasic =
 
                     x.Polygonize (row, column)
 
-                    x.Vertices.[0].X <- x.Vertices.[0].X + x.Back.SliceParams.PixelSpacing.X
-                    x.Vertices.[1].X <- x.Vertices.[1].X + x.Back.SliceParams.PixelSpacing.X
-                    x.Vertices.[2].X <- x.Vertices.[2].X + x.Front.SliceParams.PixelSpacing.X
-                    x.Vertices.[3].X <- x.Vertices.[3].X + x.Front.SliceParams.PixelSpacing.X
-                    x.Vertices.[4].X <- x.Vertices.[4].X + x.Back.SliceParams.PixelSpacing.X
-                    x.Vertices.[5].X <- x.Vertices.[5].X + x.Back.SliceParams.PixelSpacing.X
-                    x.Vertices.[6].X <- x.Vertices.[6].X + x.Front.SliceParams.PixelSpacing.X
-                    x.Vertices.[7].X <- x.Vertices.[7].X + x.Front.SliceParams.PixelSpacing.X
+                    x.Vertices.[0].X <- x.Vertices.[0].X + float32 x.Back.SliceParams.PixelSpacing.X
+                    x.Vertices.[1].X <- x.Vertices.[1].X + float32 x.Back.SliceParams.PixelSpacing.X
+                    x.Vertices.[2].X <- x.Vertices.[2].X + float32 x.Front.SliceParams.PixelSpacing.X
+                    x.Vertices.[3].X <- x.Vertices.[3].X + float32 x.Front.SliceParams.PixelSpacing.X
+                    x.Vertices.[4].X <- x.Vertices.[4].X + float32 x.Back.SliceParams.PixelSpacing.X
+                    x.Vertices.[5].X <- x.Vertices.[5].X + float32 x.Back.SliceParams.PixelSpacing.X
+                    x.Vertices.[6].X <- x.Vertices.[6].X + float32 x.Front.SliceParams.PixelSpacing.X
+                    x.Vertices.[7].X <- x.Vertices.[7].X + float32 x.Front.SliceParams.PixelSpacing.X
 
-                x.Vertices.[0].Y <- x.Vertices.[0].Y + x.Back.SliceParams.PixelSpacing.Y
-                x.Vertices.[1].Y <- x.Vertices.[1].Y + x.Back.SliceParams.PixelSpacing.Y
-                x.Vertices.[2].Y <- x.Vertices.[2].Y + x.Front.SliceParams.PixelSpacing.Y
-                x.Vertices.[3].Y <- x.Vertices.[3].Y + x.Front.SliceParams.PixelSpacing.Y
-                x.Vertices.[4].Y <- x.Vertices.[4].Y + x.Back.SliceParams.PixelSpacing.Y
-                x.Vertices.[5].Y <- x.Vertices.[5].Y + x.Back.SliceParams.PixelSpacing.Y
-                x.Vertices.[6].Y <- x.Vertices.[6].Y + x.Front.SliceParams.PixelSpacing.Y
-                x.Vertices.[7].Y <- x.Vertices.[7].Y + x.Front.SliceParams.PixelSpacing.Y
+                x.Vertices.[0].Y <- x.Vertices.[0].Y + float32 x.Back.SliceParams.PixelSpacing.Y
+                x.Vertices.[1].Y <- x.Vertices.[1].Y + float32 x.Back.SliceParams.PixelSpacing.Y
+                x.Vertices.[2].Y <- x.Vertices.[2].Y + float32 x.Front.SliceParams.PixelSpacing.Y
+                x.Vertices.[3].Y <- x.Vertices.[3].Y + float32 x.Front.SliceParams.PixelSpacing.Y
+                x.Vertices.[4].Y <- x.Vertices.[4].Y + float32 x.Back.SliceParams.PixelSpacing.Y
+                x.Vertices.[5].Y <- x.Vertices.[5].Y + float32 x.Back.SliceParams.PixelSpacing.Y
+                x.Vertices.[6].Y <- x.Vertices.[6].Y + float32 x.Front.SliceParams.PixelSpacing.Y
+                x.Vertices.[7].Y <- x.Vertices.[7].Y + float32 x.Front.SliceParams.PixelSpacing.Y
 
     let polygonize (front, back) isoLevel addPoint = 
         let voxel = 
@@ -171,7 +168,7 @@ module MarchingCubesBasic =
                 Front = front
                 Back = back
                 IsoLevel = isoLevel
-                Vertices = Array.zeroCreate<Vector3d> 8
+                Vertices = Array.zeroCreate<Vector3> 8
                 Levels = Array.zeroCreate<int> 8
                 AddPoint = addPoint
              }

@@ -48,16 +48,12 @@
     <Compile Include="cat-slice.fs" />
     <Compile Include="marching-cubes.fs" />
     <Compile Include="marching-cubes-basic.fs" />
-    <Content Include="OpenTK.dll.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
