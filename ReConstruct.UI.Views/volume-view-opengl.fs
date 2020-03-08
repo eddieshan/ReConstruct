@@ -25,6 +25,8 @@ open ReConstruct.UI.View
 
 module VolumeViewOpenGL = 
 
+    type UnitDelegate = delegate of unit -> unit
+
     module private RenderAgent =
         let private parallelThrottle = Environment.ProcessorCount - 1
         let private context = System.Threading.SynchronizationContext.Current
@@ -41,9 +43,7 @@ module VolumeViewOpenGL =
     let vertexBufferStep = 6 * sizeof<float32>
     let normalsOffset = 3 * sizeof<float32>
 
-    let private pool = ArrayPool<float32>.Shared
-
-    let glContainer (estimatedSize, progressiveMesh) (width, height) =
+    let glContainer (dispatcher: Threading.Dispatcher) (estimatedSize, progressiveMesh) (width, height) =
 
         let container = new GLControl(GraphicsMode.Default)
         container.Width <- width
@@ -139,24 +139,25 @@ module VolumeViewOpenGL =
             GL.DeleteProgram(shader.Handle)
             GL.DeleteVertexArrays(1, ref vertexArrayObject)
 
-        let bufferLock = Object()
-        let mutable currentOfset = 0
+        let mutable currentOfset, subBufferSize = 0, 0
+        let maxSubBufferSize = 120000
 
-        let partialRender (index: int, capacity: int, bufferChain: float32[] list) =
-            bufferChain |> List.iteri(fun i buffer ->
-                let size = if i = 0 then index else capacity
-                let bufferSize = size * sizeof<float32>
-                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-                GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
-                lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
-                pool.Return buffer
-            )
-            
+        let partialRender (size: int, buffer: float32[]) isLast =
+
+            subBufferSize <- subBufferSize + size
+
+            let bufferSize = size * sizeof<float32>
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
+            GL.BufferSubData(BufferTarget.ArrayBuffer, IntPtr currentOfset, bufferSize, buffer)
+            currentOfset <- currentOfset + bufferSize
+    
             let error = GL.GetError()
             if error <> ErrorCode.NoError then
                 error |> sprintf "Error sub buffering data | %O" |> Exception |> raise
 
-            render()
+            if subBufferSize > maxSubBufferSize || isLast then    
+                subBufferSize <- 0
+                render()
 
         let mutable firstRender = true
 
@@ -180,7 +181,7 @@ module VolumeViewOpenGL =
         let parent = host.Parent :?> FrameworkElement
         host.Width <- parent.ActualWidth
         host.Height <- parent.ActualHeight
-        host.Child <- (host.Width |> int, host.Height |> int) |> glContainer model
+        host.Child <- (host.Width |> int, host.Height |> int) |> glContainer host.Dispatcher model
 
     let buildScene model =
         let winformsHost = new WindowsFormsHost(HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch)
@@ -195,14 +196,14 @@ module VolumeViewOpenGL =
 
     let mesh isoLevel (slices: CatSlice[]) partialRender = 
         let clock = Stopwatch.StartNew()
-
+        let bufferPool = ArrayPool<float32>.Shared
         let queueJob = RenderAgent.renderQueue()
 
         let bufferSubdata _ =
             GL.GetError() |> sprintf "Render completed in %fs | %A" clock.Elapsed.TotalSeconds |> Events.Status.Trigger
 
         let capacity = 900
-        let borrowBuffer() = pool.Rent capacity
+        let borrowBuffer() = bufferPool.Rent capacity
 
         let polygonize (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
@@ -223,9 +224,13 @@ module VolumeViewOpenGL =
 
             (index, capacity, bufferChain)
 
-        let renderLock = new Object()
-        let addPoints points =
-            lock renderLock (fun _ -> partialRender points)
+        let addPoints (index, capacity, bufferChain) =
+            let lastBufferIndex = List.length bufferChain - 1
+            let dumpBuffer i (buffer: float32[]) =
+                let size = if i = 0 then index else capacity
+                partialRender (size, buffer) (i = lastBufferIndex)
+                bufferPool.Return buffer
+            bufferChain |> List.iteri dumpBuffer
             clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
 
         let polygonizeJob i = (async { return polygonize (slices.[i - 1], slices.[i]) }, addPoints)
