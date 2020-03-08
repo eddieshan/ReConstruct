@@ -8,7 +8,7 @@ type FileAction =
 type DicomAction =
     | DatasetEntry of int
     | LoadIod of int*int
-    | LoadVolume of int*float
+    | LoadVolume of int*float32
     | LoadSlices of int
     | LoadTags of int
 

@@ -18,6 +18,7 @@ module DatasetMainView =
     module Camera =
         let OnRotation = new Event<Axis*float32>()
         let OnCameraMoved = new Event<float32>()
+        let OnScale = new Event<float32>()
 
     let New() =
 
@@ -54,8 +55,9 @@ module DatasetMainView =
         let cameraTools() =
             let rotate v = fun _ -> v |> Camera.OnRotation.Trigger
             let moveCameraZ v = fun _ -> v |> Camera.OnCameraMoved.Trigger
+            let scale v = fun _ -> v |> Camera.OnScale.Trigger
 
-            let delta, zoomFactor = 0.1f, 0.05f
+            let delta, zoomFactor, scaleFactor = 0.1f, 0.05f, 0.05f
 
             let addAxisControls(labelA, labelB, axis) = 
                 seq {
@@ -68,15 +70,17 @@ module DatasetMainView =
                 yield! addAxisControls (Icons.CHEVRON_UP, Icons.CHEVRON_DOWN, Axis.X)
                 yield! addAxisControls (Icons.CHEVRON_LEFT, Icons.CHEVRON_RIGHT,Axis.Y)
                 yield! addAxisControls (Icons.ROTATE_LEFT, Icons.ROTATE_RIGHT, Axis.Z)
-                yield Icons.ZOOM_IN |> iconButton |> withClick (moveCameraZ zoomFactor) :> UIElement
-                yield Icons.ZOOM_OUT |> iconButton |> withClick (moveCameraZ -zoomFactor) :> UIElement
+                yield Icons.CAMERA_IN |> iconButton |> withClick (moveCameraZ zoomFactor) :> UIElement
+                yield Icons.CAMERA_OUT |> iconButton |> withClick (moveCameraZ -zoomFactor) :> UIElement
+                yield Icons.ZOOM_IN |> iconButton |> withClick (scale scaleFactor) :> UIElement
+                yield Icons.ZOOM_OUT |> iconButton |> withClick (scale -scaleFactor) :> UIElement
             }
         
         let rightToolbar() = 
                 
             let loadSlices dataset = dataset.Id |> LoadSlices |> Dicom |> Mvc.partial |> loadPartial
-            let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
-            //let loadVolume dataset = (dataset.Id, Hounsfield.SKIN_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            //let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            let loadVolume dataset = (dataset.Id, Hounsfield.SKIN_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
             let loadTags dataset = dataset.Id |> LoadTags |> Dicom |> Mvc.partial |> loadPartial
 
             let buttons = [ (Icons.NEW |> iconButton, fun _ -> Open |> File |> Mvc.send)

@@ -46,8 +46,18 @@ module Icons =
     let CHEVRON_LEFT = "\uf2fa"
     
     [<Literal>]
-    let ZOOM_IN = "\uf16b"
+    let CAMERA_IN = "\uf16b"
     [<Literal>]
-    let ZOOM_OUT = "\uf16c"     
+    let CAMERA_OUT = "\uf16c"
+
+    [<Literal>]
+    let PLUS = "\uf278"
+    [<Literal>]
+    let MINUS = "\uf273"
+
+    [<Literal>]
+    let ZOOM_IN = "\uf1ee"
+    [<Literal>]
+    let ZOOM_OUT = "\uf1ef"  
 
 

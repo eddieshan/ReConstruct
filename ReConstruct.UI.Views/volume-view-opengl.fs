@@ -36,7 +36,7 @@ module VolumeViewOpenGL =
     let private TRIANGLE_POINTS = 3
     let private TRIANGLE_VALUES = 3*TRIANGLE_POINTS
 
-    let private maxTriangles = 3000000
+    let private maxTriangles = 6000000
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
     let vertexBufferStep = 6 * sizeof<float32>
     let normalsOffset = 3 * sizeof<float32>
@@ -85,25 +85,27 @@ module VolumeViewOpenGL =
         //    let fovy = 45.0f
         //    Matrix4.CreatePerspectiveFieldOfView(fovy |> MathHelper.DegreesToRadians, container.AspectRatio, zNear, zFar)
 
-        let mutable cameraZ, zNear, zFar = estimatedSize*1.20f, -estimatedSize*10.0f, estimatedSize*10.0f
+        let mutable cameraZ, zNear, zFar = estimatedSize, -estimatedSize*2.0f, estimatedSize*2.0f
         let orthographicProjection =
             Matrix4.CreateOrthographic((float32 width)/2.0f, (float32 height)/2.0f, zNear, zFar)
 
-        let cameraPosition() = Vector3(0.0f, 0.0f, -cameraZ)
+        let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
         let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
 
-        let mutable rotX, rotY, rotZ = 0.0f, 0.0f, 0.0f
+        let mutable rotX, rotY, rotZ, scale = 0.0f, 0.0f, 0.0f, 1.0f
 
-        let moveCamera zoomFactor = cameraZ <- cameraZ + zoomFactor*estimatedSize
+        let resize scaleFactor = scale <- scale + scaleFactor
 
         let rotate (axis, delta) =
             match axis with
             | X -> rotX <- rotX + delta
             | Y -> rotY <- rotY + delta
             | Z -> rotZ <- rotZ + delta
+
+        let moveCamera zoomFactor = cameraZ <- cameraZ + zoomFactor*estimatedSize
             
         let modelProjection() = 
-            Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
+            Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
         let objectColor = Vector3(Color4.WhiteSmoke.R, Color4.WhiteSmoke.G, Color4.WhiteSmoke.B)
         let lightColor = Vector3(1.0f, 1.0f, 1.0f)
@@ -149,7 +151,11 @@ module VolumeViewOpenGL =
                 lock bufferLock (fun _ -> currentOfset <- currentOfset + bufferSize)
                 pool.Return buffer
             )
-            //let e0 = GL.GetError()
+            
+            let error = GL.GetError()
+            if error <> ErrorCode.NoError then
+                error |> sprintf "Error sub buffering data | %O" |> Exception |> raise
+
             render()
 
         let mutable firstRender = true
@@ -165,6 +171,7 @@ module VolumeViewOpenGL =
         container.Paint |> Event.add(fun _ -> progressiveRender())
         DatasetMainView.Camera.OnCameraMoved.Publish |> Event.add (update moveCamera)
         DatasetMainView.Camera.OnRotation.Publish |> Event.add (update rotate)
+        DatasetMainView.Camera.OnScale.Publish |> Event.add (update resize)
         container.HandleDestroyed |> Event.add (fun _ -> cleanUp())
         
         container
