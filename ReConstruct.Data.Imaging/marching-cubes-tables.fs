@@ -1,9 +1,8 @@
 ﻿namespace ReConstruct.Data.Imaging
 
-open System
-open System.Collections.Generic
+module internal MarchingCubesTables =
 
-module internal MarchingCubesLookups =
+    let EdgeTraversal = [| (0, 1); (1, 2); (2, 3); (3, 0); (4, 5); (5, 6); (6, 7); (7, 4); (0, 4); (1, 5); (2, 6); (3, 7); |]
 
     // Support lookup table for the marching cubes algorithm.
     let TriTable = array2D [

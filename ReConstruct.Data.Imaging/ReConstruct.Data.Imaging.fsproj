@@ -44,9 +44,9 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
-    <Compile Include="edge-table.fs" />
+    <Compile Include="marching-cubes-tables.fs" />
     <Compile Include="cat-slice.fs" />
-    <Compile Include="marching-cubes.fs" />
+    <Compile Include="marching-cubes-test.fs" />
     <Compile Include="marching-cubes-basic.fs" />
   </ItemGroup>
   <ItemGroup>

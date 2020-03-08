@@ -5,17 +5,10 @@ open System.Windows.Media.Media3D
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Data.Imaging.MarchingCubesLookups
+open ReConstruct.Data.Imaging.MarchingCubesTables
 
-module MarchingCubes =
+module MarchingCubesTest =
 
-    let private EdgeTraversal = [| (0, 1); (1, 2); (2, 3); (3, 0); (4, 5); (5, 6); (6, 7); (7, 4); (0, 4); (1, 5); (2, 6); (3, 7); |]
-
-    // Marching cubes algorithm. 
-    // Very imperative implementation for performance.
-    // Though a plain funcion would have been the logical implementation,
-    // after testing a record type implementation proved to be about 2x faster,
-    // probably due to better memory locality and fewer number of copies involved.
     type private Voxel =
         {
             Front: CatSlice
