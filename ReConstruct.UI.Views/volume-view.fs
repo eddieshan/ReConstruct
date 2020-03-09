@@ -12,7 +12,7 @@ open ReConstruct.Core
 open ReConstruct.Core.Async
 
 open ReConstruct.Data.Dicom
-open ReConstruct.Data.Imaging.MarchingCubes
+open ReConstruct.Data.Imaging
 
 
 // Slice series containing Hounsfield buffers are projected into section volumes using the marching cubes algorithm.
@@ -142,7 +142,7 @@ module VolumeView =
                 currentBuffer.[index] <- p
                 index <- index + 1
 
-            polygonize (front, back) isoLevel addPoint
+            MarchingCubesTest.polygonize (front, back) isoLevel addPoint
 
             let total = index + (bufferChain.Length * capacity)
 

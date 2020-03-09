@@ -44,10 +44,13 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
-    <Compile Include="marching-cubes-tables.fs" />
     <Compile Include="cat-slice.fs" />
-    <Compile Include="marching-cubes-test.fs" />
+    <Compile Include="cubes-iterator.fs" />
+    <Compile Include="marching-cubes-tables.fs" />
     <Compile Include="marching-cubes-basic.fs" />
+    <Compile Include="marching-cubes-test.fs" />
+    <Compile Include="marching-tetrahedra-tables.fs" />
+    <Compile Include="marching-tetrahedra.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

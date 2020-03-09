@@ -219,6 +219,7 @@ module VolumeViewOpenGL =
                 index <- index + 3
 
             MarchingCubesBasic.polygonize (front, back) isoLevel addPoint
+            //MarchingTetrahedra.polygonize (front, back) isoLevel addPoint
             
             bufferChain <- currentBuffer :: bufferChain
 

@@ -4,7 +4,6 @@ module internal MarchingCubesTables =
 
     let EdgeTraversal = [| (0, 1); (1, 2); (2, 3); (3, 0); (4, 5); (5, 6); (6, 7); (7, 4); (0, 4); (1, 5); (2, 6); (3, 7); |]
 
-    // Support lookup table for the marching cubes algorithm.
     let TriTable = array2D [
                     [-1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1];
                     [0; 8; 3; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1; -1];
@@ -298,4 +297,3 @@ module internal MarchingCubesTables =
                     0xf00; 0xe09; 0xd03; 0xc0a; 0xb06; 0xa0f; 0x905; 0x80c;
                     0x70c; 0x605; 0x50f; 0x406; 0x30a; 0x203; 0x109; 0x0   
     |]
-
