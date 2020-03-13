@@ -50,23 +50,13 @@
     <Compile Include="pager-bar-view.fs" />
     <Compile Include="dataset-main-view.fs" />
     <Compile Include="slices-view.fs" />
-    <Compile Include="test-data.fs" />
-    <Compile Include="shader.fs" />
     <Compile Include="render-updater.fs" />
-    <Compile Include="vertext-buffer.fs" />
     <Compile Include="volume-view.fs" />
     <Compile Include="volume-view-opengl.fs" />
     <Compile Include="iod-view.fs" />
     <Compile Include="tags-view.fs" />
     <Compile Include="container-view.fs" />
     <Compile Include="datasets-view.fs" />
-    <Content Include="OpenTK.dll.config" />
-    <Content Include="Shaders\shader.vert">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Shaders\lighting.frag">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
@@ -79,6 +69,16 @@
       <Project>{4e7708ec-ad01-41f8-b544-845599f82458}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.Render.OpenGL\ReConstruct.Render.OpenGL.fsproj">
+      <Name>ReConstruct.Render.OpenGL</Name>
+      <Project>{33d48291-c6ee-4749-a09a-3a15627d7e34}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.Render\ReConstruct.Render.fsproj">
+      <Name>ReConstruct.Render</Name>
+      <Project>{79a5daf8-e0fa-436b-b221-d4f84c0a3c03}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Core\ReConstruct.UI.Core.fsproj">
       <Name>ReConstruct.UI.Core</Name>
       <Project>{6544c821-3f1f-47ef-895b-6e6ed3b7682a}</Project>
@@ -88,12 +88,6 @@
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
-    <Reference Include="OpenTK">
-      <HintPath>..\packages\OpenTK.3.1.0\lib\net20\OpenTK.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenTK.GLControl">
-      <HintPath>..\packages\OpenTK.GLControl.3.1.0\lib\net20\OpenTK.GLControl.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />

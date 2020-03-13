@@ -14,6 +14,7 @@ open ReConstruct.Core.Async
 open ReConstruct.Data.Dicom
 open ReConstruct.Data.Imaging
 
+open ReConstruct.Render
 
 // Slice series containing Hounsfield buffers are projected into section volumes using the marching cubes algorithm.
 // The scene is set up based on the total volume size and position.
@@ -111,11 +112,11 @@ module VolumeView =
 
         let update transform t =
             transform t
-            sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.Status.Trigger
+            sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.RenderStatus.Trigger
             render()
 
-        DatasetMainView.Camera.OnCameraMoved.Publish |> Event.add (float >> update moveCamera)
-        DatasetMainView.Camera.OnRotation.Publish |> Event.add (update rotate)
+        Events.OnCameraMoved.Publish |> Event.add (float >> update moveCamera)
+        Events.OnRotation.Publish |> Event.add (update rotate)
   
         (viewPort :> UIElement, addPoints)
 
