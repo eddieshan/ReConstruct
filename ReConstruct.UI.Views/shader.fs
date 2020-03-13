@@ -14,7 +14,7 @@ type Shader =
         GetUniformLocation: string -> int
         GetAttribLocation: string -> int
         SetInt: string*int -> unit
-        SetFloat: string*float -> unit
+        SetFloat32: string*float32 -> unit
         SetMatrix4: string*Matrix4 -> unit
         SetVector3: string *Vector3 -> unit
     }
@@ -93,7 +93,7 @@ module Shader =
             GetAttribLocation =  fun attribName -> GL.GetAttribLocation(Handle, attribName)
             GetUniformLocation = fun key -> uniformLocations.[key]
             SetInt = apply (fun (location, data) -> GL.Uniform1(location, data))                        
-            SetFloat = apply (fun (location, data) -> GL.Uniform1(location, data))
+            SetFloat32 = apply (fun (location, data) -> GL.Uniform1(location, data))
             SetMatrix4 = apply (fun (location, data) -> GL.UniformMatrix4(location, false, ref data))
             SetVector3 = apply (fun (location, data) -> GL.Uniform3(location, data))                                
         }

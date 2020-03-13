@@ -61,9 +61,6 @@
     <Compile Include="container-view.fs" />
     <Compile Include="datasets-view.fs" />
     <Content Include="OpenTK.dll.config" />
-    <Content Include="Shaders\shader.frag">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Shaders\shader.vert">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
