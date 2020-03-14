@@ -12,6 +12,12 @@ open OpenTK.Graphics.OpenGL
 open ReConstruct.Core.Types
 open ReConstruct.Render
 
+module private Lighting =
+    let Color = Vector3(1.0f, 1.0f, 1.0f)
+    let Ambient = Vector3(0.05f, 0.05f, 0.05f)
+    let Diffuse = Vector3(0.5f, 0.5f, 0.5f)
+    let Specular = Vector3(0.4f, 0.4f, 0.4f)
+
 module RenderView = 
 
     let private TRIANGLE_POINTS = 3
@@ -73,11 +79,9 @@ module RenderView =
 
         let half = cameraZ/3.0f
 
-        let pointLightPositions = [|
-                Vector3(0.0f, 0.0f, half);
-                Vector3(0.0f, half, 0.0f);
-                Vector3(0.0f, -half, 0.0f);
-                Vector3(half, 0.0f, 0.0f);
+        let dirLightPositions = [|
+                Vector3(0.0f, 1.0f, 0.0f);
+                Vector3(0.0f, -1.0f, 0.0f);
             |]
 
         let mutable rotX, rotY, rotZ, scale = 0.0f, 0.0f, 0.0f, 1.0f
@@ -96,23 +100,15 @@ module RenderView =
             Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
         let setupLighting() =
+
             shader.SetFloat32("material.shininess", 32.0f)
 
-            shader.SetVector3("dirLight.direction", Vector3(0.0f, -1.0f, 0.0f))
-            shader.SetVector3("dirLight.color", Vector3(1.0f, 1.0f, 1.0f))
-            shader.SetVector3("dirLight.ambient", Vector3(0.2f, 0.2f, 0.2f))
-            shader.SetVector3("dirLight.diffuse", Vector3(0.5f, 0.5f, 0.5f))
-            shader.SetVector3("dirLight.specular", Vector3(0.7f, 0.7f, 0.7f))
-
-            for i in 0..pointLightPositions.Length-1 do
-                shader.SetVector3(sprintf "pointLights[%i].position" i, pointLightPositions.[i])
-                shader.SetVector3(sprintf "pointLights[%i].color" i, Vector3(1.0f, 1.0f, 1.0f))
-                shader.SetVector3(sprintf "pointLights[%i].ambient" i, Vector3(0.2f, 0.3f, 0.2f))
-                shader.SetVector3(sprintf "pointLights[%i].diffuse" i, Vector3(0.8f, 0.8f, 0.8f))
-                shader.SetVector3(sprintf "pointLights[%i].specular" i, Vector3(1.0f, 1.0f, 1.0f))
-                shader.SetFloat32(sprintf "pointLights[%i].constant" i, 1.0f)
-                shader.SetFloat32(sprintf "pointLights[%i].linear" i, 0.09f)
-                shader.SetFloat32(sprintf "pointLights[%i].quadratic" i, 0.032f)
+            for i in 0..dirLightPositions.Length-1 do
+                shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])
+                shader.SetVector3(sprintf "dirLights[%i].color" i, Lighting.Color)
+                shader.SetVector3(sprintf "dirLights[%i].ambient" i, Lighting.Ambient)
+                shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Lighting.Diffuse)
+                shader.SetVector3(sprintf "dirLights[%i].specular" i, Lighting.Specular)
 
         let render() =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)

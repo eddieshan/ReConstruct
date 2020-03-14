@@ -13,8 +13,6 @@ struct DirLight {
     vec3 specular;
 };
 
-uniform DirLight dirLight;
-
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -28,8 +26,9 @@ struct PointLight {
     vec3 specular;
 };
 
-#define NR_POINT_LIGHTS 4
-uniform PointLight pointLights[NR_POINT_LIGHTS];
+#define NR_DIR_LIGHTS 2
+
+uniform DirLight dirLights[NR_DIR_LIGHTS];
 uniform Material material;
 uniform vec3 viewPos;
 
@@ -45,10 +44,9 @@ void main()
     vec3 norm = normalize(Normal);
     vec3 viewDir = normalize(viewPos - FragPos);
 
-    vec3 result = CalcDirLight(dirLight, norm, viewDir);
-
-    for(int i = 0; i < NR_POINT_LIGHTS; i++)
-        result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+    vec3 result = vec3(0.0);
+    for (int i = 0; i < NR_DIR_LIGHTS; i++)
+        result += CalcDirLight(dirLights[i], norm, viewDir);
 
     FragColor = vec4(result, 1.0);
 }
