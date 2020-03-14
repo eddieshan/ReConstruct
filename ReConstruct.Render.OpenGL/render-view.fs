@@ -12,28 +12,6 @@ open OpenTK.Graphics.OpenGL
 open ReConstruct.Core
 open ReConstruct.Render
 
-module private Lighting =
-    let Color = Vector3(1.0f, 1.0f, 1.0f)
-    let Ambient = Vector3(0.05f, 0.05f, 0.05f)
-    let Diffuse = Vector3(0.5f, 0.5f, 0.5f)
-    let Specular = Vector3(0.4f, 0.4f, 0.4f)
-
-    let dirLightPositions = [|
-            Vector3(0.0f, 1.0f, 0.0f);
-            Vector3(0.0f, -1.0f, 0.0f);
-        |]
-
-    let configure shader =
-
-        shader.SetFloat32("material.shininess", 32.0f)
-
-        for i in 0..dirLightPositions.Length-1 do
-            shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])
-            shader.SetVector3(sprintf "dirLights[%i].color" i, Color)
-            shader.SetVector3(sprintf "dirLights[%i].ambient" i, Ambient)
-            shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Diffuse)
-            shader.SetVector3(sprintf "dirLights[%i].specular" i, Specular)
-
 module RenderView = 
 
     let private TRIANGLE_POINTS = 3
@@ -41,8 +19,8 @@ module RenderView =
 
     let private maxTriangles = 3000000
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
-    let vertexBufferStep = 6 * sizeof<float32>
-    let normalsOffset = 3 * sizeof<float32>
+    let private vertexBufferStep = 6 * sizeof<float32>
+    let private normalsOffset = 3 * sizeof<float32>
 
     let glContainer (estimatedSize, progressiveMesh) (width, height) =
 
@@ -96,20 +74,9 @@ module RenderView =
         let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
         let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
 
-        let mutable rotX, rotY, rotZ, scale = 0.0f, 0.0f, 0.0f, 1.0f
-
-        let resize scaleFactor = scale <- scale + scaleFactor
-
-        let rotate (axis, delta) =
-            match axis with
-            | X -> rotX <- rotX + delta
-            | Y -> rotY <- rotY + delta
-            | Z -> rotZ <- rotZ + delta
+        let modelTransform = ModelTransform.create()
 
         let moveCamera zoomFactor = cameraZ <- cameraZ + zoomFactor*estimatedSize
-            
-        let modelProjection() = 
-            Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
         let mutable currentOfset, subBufferSize, currentBufferSize = 0, 0, 0
         let maxSubBufferSize = 120000
@@ -118,7 +85,7 @@ module RenderView =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
 
             let camera = cameraPosition()
-            let modelProjection = modelProjection()
+            let modelProjection = modelTransform.Transform()
 
             shader.SetMatrix4("model", Matrix4.Identity)
             shader.SetVector3("viewPos", camera)
@@ -164,6 +131,7 @@ module RenderView =
 
         let update transform t =
             transform t
+            let (rotX, rotY, rotZ) = modelTransform.Rotation()
             sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.RenderStatus.Trigger
             render()
 
@@ -174,8 +142,8 @@ module RenderView =
         
         container.Paint |> Event.add(fun _ -> progressiveRender())
         Events.OnCameraMoved.Publish |> Event.add (update moveCamera)
-        Events.OnRotation.Publish |> Event.add (update rotate)
-        Events.OnScale.Publish |> Event.add (update resize)
+        Events.OnRotation.Publish |> Event.add (update modelTransform.Rotate)
+        Events.OnScale.Publish |> Event.add (update modelTransform.Scale)
         container.HandleDestroyed |> Event.add (fun _ -> cleanUp())
         
         container

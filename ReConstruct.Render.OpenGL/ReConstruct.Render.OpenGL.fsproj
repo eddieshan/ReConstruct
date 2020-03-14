@@ -48,6 +48,7 @@
     <Content Include="packages.config" />
     <Content Include="OpenTK.dll.config" />
     <Compile Include="shader.fs" />
+    <Compile Include="render-artifacts.fs" />
     <Compile Include="render-view.fs" />
     <Content Include="Shaders\shader.vert">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
