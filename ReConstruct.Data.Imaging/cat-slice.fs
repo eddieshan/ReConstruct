@@ -14,10 +14,10 @@ open ReConstruct.Data.Dicom.DicomTree
 module Hounsfield =
     
     [<Literal>]
-    let BONES_ISOVALUE = 500.0
+    let BONES_ISOVALUE = 500.0f
 
     [<Literal>]
-    let SKIN_ISOVALUE = 30.0
+    let SKIN_ISOVALUE = 30.0f
 
     // Image parameters used to calculate a Hounsfield gradient.
     type HounsfieldCoordinates =
