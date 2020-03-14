@@ -53,6 +53,7 @@
     <Compile Include="types.fs" />
     <Compile Include="io.fs" />
     <Compile Include="utils.fs" />
+    <Compile Include="memory.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

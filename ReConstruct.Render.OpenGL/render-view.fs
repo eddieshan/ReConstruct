@@ -9,7 +9,7 @@ open OpenTK
 open OpenTK.Graphics
 open OpenTK.Graphics.OpenGL
 
-open ReConstruct.Core.Types
+open ReConstruct.Core
 open ReConstruct.Render
 
 module private Lighting =
@@ -33,7 +33,6 @@ module private Lighting =
             shader.SetVector3(sprintf "dirLights[%i].ambient" i, Ambient)
             shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Diffuse)
             shader.SetVector3(sprintf "dirLights[%i].specular" i, Specular)
-
 
 module RenderView = 
 
@@ -71,15 +70,16 @@ module RenderView =
 
         let vertexBufferObject = GL.GenBuffer()
 
-        let vertexBuffer = bufferSize |> VertexBuffer.New
-
-        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-        GL.BufferData(BufferTarget.ArrayBuffer, arraySize vertexBuffer.Vertices, vertexBuffer.Vertices, BufferUsageHint.StaticDraw)
+        let totalSize = bufferSize * sizeof<float32>
 
         GL.EnableVertexAttribArray(0)
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexBufferStep, 0)
-
         GL.EnableVertexAttribArray(1)
+
+        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
+        
+        Unsafe.UseAndDispose totalSize (fun buffer -> GL.BufferData(BufferTarget.ArrayBuffer, totalSize, buffer, BufferUsageHint.StaticDraw))
+
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexBufferStep, 0)        
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
         Lighting.configure shader
@@ -111,6 +111,9 @@ module RenderView =
         let modelProjection() = 
             Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
+        let mutable currentOfset, subBufferSize, currentBufferSize = 0, 0, 0
+        let maxSubBufferSize = 120000
+
         let render() =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
 
@@ -124,21 +127,8 @@ module RenderView =
             //let mvp = modelProjection * viewProjection() * perspectiveProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
+            GL.DrawArrays(PrimitiveType.Triangles, 0, currentBufferSize / 6)
             container.SwapBuffers()
-
-        let update transform t =
-            transform t
-            sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.RenderStatus.Trigger
-            render()
-
-        let cleanUp() =
-            GL.DeleteBuffers(1, ref vertexBufferObject)
-            GL.DeleteProgram(shader.Handle)
-            GL.DeleteVertexArrays(1, ref vertexArrayObject)
-
-        let mutable currentOfset, subBufferSize = 0, 0
-        let maxSubBufferSize = 120000
 
         let handle error =
             if error <> ErrorCode.NoError then
@@ -146,6 +136,7 @@ module RenderView =
 
         let partialRender (size: int, buffer: float32[]) isLast =
 
+            currentBufferSize <- currentBufferSize + size
             subBufferSize <- subBufferSize + size
 
             let bufferSize = size * sizeof<float32>
@@ -170,6 +161,16 @@ module RenderView =
                 firstRender <- false
             else
                 render()
+
+        let update transform t =
+            transform t
+            sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.RenderStatus.Trigger
+            render()
+
+        let cleanUp() =
+            GL.DeleteBuffers(1, ref vertexBufferObject)
+            GL.DeleteProgram(shader.Handle)
+            GL.DeleteVertexArrays(1, ref vertexArrayObject)
         
         container.Paint |> Event.add(fun _ -> progressiveRender())
         Events.OnCameraMoved.Publish |> Event.add (update moveCamera)
