@@ -18,6 +18,23 @@ module private Lighting =
     let Diffuse = Vector3(0.5f, 0.5f, 0.5f)
     let Specular = Vector3(0.4f, 0.4f, 0.4f)
 
+    let dirLightPositions = [|
+            Vector3(0.0f, 1.0f, 0.0f);
+            Vector3(0.0f, -1.0f, 0.0f);
+        |]
+
+    let configure shader =
+
+        shader.SetFloat32("material.shininess", 32.0f)
+
+        for i in 0..dirLightPositions.Length-1 do
+            shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])
+            shader.SetVector3(sprintf "dirLights[%i].color" i, Color)
+            shader.SetVector3(sprintf "dirLights[%i].ambient" i, Ambient)
+            shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Diffuse)
+            shader.SetVector3(sprintf "dirLights[%i].specular" i, Specular)
+
+
 module RenderView = 
 
     let private TRIANGLE_POINTS = 3
@@ -48,6 +65,8 @@ module RenderView =
         GL.BindVertexArray(vertexArrayObject)
 
         let shader = Shader.New ("Shaders/shader.vert", "Shaders/lighting.frag")
+        shader.Use()
+
         let transformMatrixId = GL.GetUniformLocation(shader.Handle, "MVP")
 
         let vertexBufferObject = GL.GenBuffer()
@@ -57,13 +76,13 @@ module RenderView =
         GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
         GL.BufferData(BufferTarget.ArrayBuffer, arraySize vertexBuffer.Vertices, vertexBuffer.Vertices, BufferUsageHint.StaticDraw)
 
-        GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject)
-
         GL.EnableVertexAttribArray(0)
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexBufferStep, 0)
 
         GL.EnableVertexAttribArray(1)
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
+
+        Lighting.configure shader
 
         //let mutable cameraZ, zNear, zFar = estimatedSize*0.8f, 0.125f, estimatedSize*4.0f
         //let perspectiveProjection() =
@@ -76,13 +95,6 @@ module RenderView =
 
         let cameraPosition() = Vector3(0.0f, 0.0f, cameraZ)
         let viewProjection() = Matrix4.LookAt(cameraPosition(), Vector3.Zero, Vector3.UnitY)
-
-        let half = cameraZ/3.0f
-
-        let dirLightPositions = [|
-                Vector3(0.0f, 1.0f, 0.0f);
-                Vector3(0.0f, -1.0f, 0.0f);
-            |]
 
         let mutable rotX, rotY, rotZ, scale = 0.0f, 0.0f, 0.0f, 1.0f
 
@@ -99,20 +111,8 @@ module RenderView =
         let modelProjection() = 
             Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
-        let setupLighting() =
-
-            shader.SetFloat32("material.shininess", 32.0f)
-
-            for i in 0..dirLightPositions.Length-1 do
-                shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])
-                shader.SetVector3(sprintf "dirLights[%i].color" i, Lighting.Color)
-                shader.SetVector3(sprintf "dirLights[%i].ambient" i, Lighting.Ambient)
-                shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Lighting.Diffuse)
-                shader.SetVector3(sprintf "dirLights[%i].specular" i, Lighting.Specular)
-
         let render() =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
-            shader.Use()
 
             let camera = cameraPosition()
             let modelProjection = modelProjection()
@@ -123,8 +123,6 @@ module RenderView =
             let mvp = modelProjection * viewProjection() * orthographicProjection
             //let mvp = modelProjection * viewProjection() * perspectiveProjection()
             GL.UniformMatrix4(transformMatrixId, false, ref mvp)
-
-            setupLighting()
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, bufferSize / 6)
             container.SwapBuffers()
