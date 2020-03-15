@@ -98,9 +98,7 @@
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Windows.Forms" />
     <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
     <ProjectReference Include="..\ReConstruct.Data.Imaging\ReConstruct.Data.Imaging.fsproj">
       <Name>ReConstruct.Data.Imaging</Name>
       <Project>{f7af48ce-33e6-43d5-aea9-7ebb16624bab}</Project>

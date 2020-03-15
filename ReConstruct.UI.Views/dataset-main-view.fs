@@ -4,7 +4,6 @@ open System
 open System.Windows
 open System.Windows.Controls
 
-open ReConstruct.Core.String
 open ReConstruct.Data.Dicom
 
 open ReConstruct.UI.Core
@@ -12,13 +11,9 @@ open ReConstruct.UI.Core.UI
 open ReConstruct.UI.Core.Actions
 
 open ReConstruct.Data.Imaging
+open ReConstruct.Render
 
 module DatasetMainView =
-
-    module Camera =
-        let OnRotation = new Event<Axis*float32>()
-        let OnCameraMoved = new Event<float32>()
-        let OnScale = new Event<float32>()
 
     let New() =
 
@@ -43,6 +38,7 @@ module DatasetMainView =
             caption |> dockTo header Dock.Left
 
             Events.Status.Publish |> Event.add(fun s -> status.Text <- s)
+            Events.RenderStatus.Publish |> Event.add(fun s -> status.Text <- s)
 
             let loadContent entry = 
                 let iodsInfo = match entry.HasPixelData with
@@ -53,9 +49,9 @@ module DatasetMainView =
             (header, loadContent)
 
         let cameraTools() =
-            let rotate v = fun _ -> v |> Camera.OnRotation.Trigger
-            let moveCameraZ v = fun _ -> v |> Camera.OnCameraMoved.Trigger
-            let scale v = fun _ -> v |> Camera.OnScale.Trigger
+            let rotate v = fun _ -> v |> Events.OnRotation.Trigger
+            let moveCameraZ v = fun _ -> v |> Events.OnCameraMoved.Trigger
+            let scale v = fun _ -> v |> Events.OnScale.Trigger
 
             let delta, zoomFactor, scaleFactor = 0.1f, 0.05f, 0.05f
 
@@ -63,7 +59,6 @@ module DatasetMainView =
                 seq {
                     yield labelA |> iconButton |> withClick (rotate (axis, delta)) :> UIElement
                     yield labelB |> iconButton |> withClick (rotate (axis, -delta)) :> UIElement
-                    //yield label |> sprintf "-%s" |> iconButton |> withClick (increase (axis, -delta)) :> UIElement
                 } 
             
             seq {
@@ -79,8 +74,8 @@ module DatasetMainView =
         let rightToolbar() = 
                 
             let loadSlices dataset = dataset.Id |> LoadSlices |> Dicom |> Mvc.partial |> loadPartial
-            //let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
-            let loadVolume dataset = (dataset.Id, Hounsfield.SKIN_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            //let loadVolume dataset = (dataset.Id, Hounsfield.SKIN_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
             let loadTags dataset = dataset.Id |> LoadTags |> Dicom |> Mvc.partial |> loadPartial
 
             let buttons = [ (Icons.NEW |> iconButton, fun _ -> Open |> File |> Mvc.send)
@@ -91,12 +86,10 @@ module DatasetMainView =
 
             let menuButtons = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable >> asUIElement)
             let toolbar = cameraTools() |> Seq.append menuButtons |> Toolbar.Right
-            //let toolbar = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable) |> Toolbar.Right
 
             let loadContent dataset =
                 buttons |> Seq.iter(fun (b, f) -> b |> enable |> withClick(fun _ -> dataset |> f) |> ignore)
                 imagingButtons |> Seq.iter(fun (b, f) -> b |> enableIf dataset.HasPixelData |> withClick(fun _ -> dataset |> f) |> ignore)
-                //dataset |> loadTags
                 dataset |> loadSlices
 
             (toolbar, loadContent)
