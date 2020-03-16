@@ -3,10 +3,21 @@
 open System
 open System.Windows
 open System.Windows.Controls
+open System.Windows.Media
+open System.Windows.Media.Imaging
 
 open ReConstruct.Data.Dicom
 
 open ReConstruct.UI.Core.UI
+
+module Imaging = 
+    let bitmapFrom(columns, rows, buffer: byte[]) =
+        let bitmap = new WriteableBitmap(columns, rows, 96.0, 96.0, PixelFormats.Pbgra32, null)
+        let rectangle = new Int32Rect(0, 0, columns, rows)
+        let stride = (columns * bitmap.Format.BitsPerPixel) / 8
+        bitmap.WritePixels(rectangle, buffer, stride, 0)
+        bitmap.Freeze()
+        bitmap :> BitmapSource
 
 module SlicesView = 
 
@@ -16,7 +27,7 @@ module SlicesView =
             Title: TextBlock
         } with
         member x.Set iod =
-            iod.CatSlice |> Option.iter(fun v -> x.Image.Source <- v.GetBitmap())
+            iod.CatSlice |> Option.iter(fun v -> x.Image.Source <- v.GetRawImage() |> Imaging.bitmapFrom)
             x.Title.Text <- iod.SortOrder |> sprintf "Slice %O"
 
     // Uses a sliding window pattern to page through all the slices in the study series.

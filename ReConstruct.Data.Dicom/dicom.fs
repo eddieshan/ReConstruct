@@ -3,8 +3,6 @@
 open System
 open System.Collections.Generic
 
-open System.Windows.Media.Imaging
-
 module BaseTypes =
 
     type VREncoding =
@@ -130,7 +128,7 @@ type CatSlice =
     {
         SliceParams: SliceParams;
         HounsfieldBuffer: int[,];
-        GetBitmap: unit -> BitmapSource;
+        GetRawImage: unit -> int*int*byte[];
     }
 
 // A Dicom instance.
