@@ -11,6 +11,10 @@ open ReConstruct.Data.Imaging.MarchingTetrahedraTables
 
 module MarchingTetrahedra =
 
+    let private bufferPool = ArrayPool<float32>.Shared
+    let private capacity = 9000
+    let private borrowBuffer() = bufferPool.Rent capacity
+
     let lerpVertex(fValue1, fValue2, fValueDesired) =
         let tolerance = 0.00001f
         let fDelta = fValue2 - fValue1
@@ -69,11 +73,7 @@ module MarchingTetrahedra =
                 marchTetrahedron(tetraVertices, tetraValues, cube)
 
     let polygonize isoLevel (slices: CatSlice[]) partialRender = 
-        let bufferPool = ArrayPool<float32>.Shared
         let queueJob = RenderAgent.renderQueue()
-
-        let capacity = 9000
-        let borrowBuffer() = bufferPool.Rent capacity
 
         let polygonizeSection (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0

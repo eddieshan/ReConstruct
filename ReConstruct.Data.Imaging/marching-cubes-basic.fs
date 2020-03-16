@@ -21,6 +21,10 @@ module private RenderAgent =
 
 module MarchingCubesBasic =
 
+    let private bufferPool = ArrayPool<float32>.Shared
+    let private capacity = 9000
+    let private borrowBuffer() = bufferPool.Rent capacity
+
     let private lerpVertex (index1: int, index2: int) (x: Cube) =
         let tolerance = 0.00001f
 
@@ -76,11 +80,7 @@ module MarchingCubesBasic =
                 index <- index + 3
 
     let polygonize isoLevel (slices: CatSlice[]) partialRender = 
-        let bufferPool = ArrayPool<float32>.Shared
         let queueJob = RenderAgent.renderQueue()
-
-        let capacity = 9000
-        let borrowBuffer() = bufferPool.Rent capacity
 
         let polygonizeSection (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
