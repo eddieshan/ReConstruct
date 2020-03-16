@@ -10,7 +10,6 @@ open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 open ReConstruct.UI.Core.Actions
 
-open ReConstruct.Data.Imaging
 open ReConstruct.Render
 
 module DatasetMainView =

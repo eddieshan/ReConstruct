@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.Data.Imaging
+﻿namespace ReConstruct.Geometry
 
 open System
 open System.Buffers
@@ -6,7 +6,7 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Data.Imaging.MarchingCubesTables
+open ReConstruct.Geometry.MarchingCubesTables
 
 module MarchingCubesZ =
 

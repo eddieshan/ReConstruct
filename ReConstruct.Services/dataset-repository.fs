@@ -12,8 +12,6 @@ open ReConstruct.Core.Patterns
 open ReConstruct.Data.Dicom
 open ReConstruct.Data.Dicom.DicomTree
 
-open ReConstruct.Data.Imaging
-
 module internal DatasetRepository =
 
     let private bufferizeFile filePathName = (filePathName, File.ReadAllBytes(filePathName))

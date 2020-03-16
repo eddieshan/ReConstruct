@@ -8,12 +8,12 @@
     <ProjectGuid>f7af48ce-33e6-43d5-aea9-7ebb16624bab</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>ReConstruct.Data.Imaging</RootNamespace>
-    <AssemblyName>ReConstruct.Data.Imaging</AssemblyName>
+    <AssemblyName>ReConstruct.Geometry</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <WarningsAsErrors>3239;$(WarningsAsErrors)</WarningsAsErrors>
-    <Name>ReConstruct.Data.Imaging</Name>
+    <Name>ReConstruct.Geometry</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

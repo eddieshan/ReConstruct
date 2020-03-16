@@ -72,11 +72,6 @@
       <Project>{4e7708ec-ad01-41f8-b544-845599f82458}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\ReConstruct.Data.Imaging\ReConstruct.Data.Imaging.fsproj">
-      <Name>ReConstruct.Data.Imaging</Name>
-      <Project>{f7af48ce-33e6-43d5-aea9-7ebb16624bab}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

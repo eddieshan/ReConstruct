@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.Data.Imaging
+﻿namespace ReConstruct.Geometry
 
 open System
 open System.Numerics
@@ -8,8 +8,8 @@ open ReConstruct.Core
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Data.Imaging.CubesIterator
-open ReConstruct.Data.Imaging.MarchingCubesTables
+open ReConstruct.Geometry.CubesIterator
+open ReConstruct.Geometry.MarchingCubesTables
 
 module private RenderAgent =
     let private parallelThrottle = Environment.ProcessorCount - 1

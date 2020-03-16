@@ -3,7 +3,7 @@
 open System
 open System.Diagnostics
 
-open ReConstruct.Data.Imaging
+open ReConstruct.Geometry
 open ReConstruct.Data.Dicom
 
 open ReConstruct.Render.OpenGL

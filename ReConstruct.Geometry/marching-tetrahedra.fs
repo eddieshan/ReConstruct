@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.Data.Imaging
+﻿namespace ReConstruct.Geometry
 
 open System
 open System.Buffers
@@ -6,8 +6,8 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Data.Imaging.CubesIterator
-open ReConstruct.Data.Imaging.MarchingTetrahedraTables
+open ReConstruct.Geometry.CubesIterator
+open ReConstruct.Geometry.MarchingTetrahedraTables
 
 module MarchingTetrahedra =
 

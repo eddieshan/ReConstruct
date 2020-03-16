@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.Data.Imaging
+﻿namespace ReConstruct.Geometry
 
 open System
 open System.Numerics
