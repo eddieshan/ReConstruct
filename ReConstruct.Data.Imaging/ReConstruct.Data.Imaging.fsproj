@@ -51,6 +51,7 @@
     <Compile Include="marching-cubes-test.fs" />
     <Compile Include="marching-tetrahedra-tables.fs" />
     <Compile Include="marching-tetrahedra.fs" />
+    <Compile Include="marching-cubes-z.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

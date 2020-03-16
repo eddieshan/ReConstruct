@@ -1,9 +1,6 @@
 ﻿namespace ReConstruct.UI.View
 
 open System
-
-open ReConstruct.Core
-open ReConstruct.Core.Async
 open System.Diagnostics
 
 open ReConstruct.Data.Imaging
@@ -28,6 +25,10 @@ module VolumeViewOpenGL =
         slices |> Array.iter(fun slice -> slice.SliceParams.AdjustToCenter centroid)
         let estimatedModelSize = Math.Abs(lastSlice.SliceParams.UpperLeft.[2] - firstSlice.SliceParams.UpperLeft.[2]) |> float32
 
-        let progressiveMesh = MarchingCubesBasic.polygonize isoLevel slices
+        //let progressiveMesh = MarchingCubesBasic.polygonize isoLevel slices
+        let calculateMesh partialRender =
+            let clock = Stopwatch.StartNew()
+            MarchingCubesZ.polygonize isoLevel slices partialRender
+            clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
 
-        RenderView.buildScene (estimatedModelSize, progressiveMesh)
+        RenderView.buildScene (estimatedModelSize, calculateMesh)
