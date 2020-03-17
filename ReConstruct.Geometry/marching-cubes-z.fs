@@ -22,26 +22,16 @@ module MarchingCubesZ =
         else 
             v3(p1)
 
-    let MarchingCubes(ncellsX: int, ncellsY: int, ncellsZ: int, 
-                      gradFactorX: float32, gradFactorY: float32, gradFactorZ: float32,
-                      minValue: float32, points: int[], addVertex,
-                      upperLeft: float32[], stepX, stepY, stepZ) =
+    let MarchingCubes(cubesX: int, cubesY: int, cubesZ: int, 
+                      sizeFactor: Vector3, isoValue: float32, points: int[], addVertex,
+                      upperLeft: Vector3, step: Vector3) =
 
-        let factor = Vector3(1.0f/(2.0f*gradFactorX), 1.0f/(2.0f*gradFactorY), 1.0f/(2.0f*gradFactorZ))
+        let factor = Vector3(1.0f/(2.0f*sizeFactor.X), 1.0f/(2.0f*sizeFactor.Y), 1.0f/(2.0f*sizeFactor.Z))
 
-        let lerpNormal(p1: Vector4, p2: Vector4, value: float32) =
-            let mutable normal =         
-                if Math.Abs(p1.W - p2.W) > 0.00001f then
-                    v3(p1) + (v3(p2) - v3(p1))/(p2.W - p1.W)*(value - p1.W)
-                else 
-                    v3(p1)
-            normal.X <- normal.X * factor.X 
-            normal.Y <- normal.Y * factor.Y 
-            normal.Z <- normal.Z * factor.Z
-            normal
+        let lerpNormal(p1: Vector4, p2: Vector4, value: float32) = lerp(p1, p2, value)*factor
 
-        let jumpDown = ncellsZ + 1
-        let jumpRight = (ncellsY + 1) * jumpDown
+        let jumpDown = cubesZ + 1
+        let jumpRight = (cubesY + 1) * jumpDown
         let jumpRight2 = 2*jumpRight
         let jumpDown2 = 2*jumpDown
         let jumpRightAndBack = jumpRight + 1
@@ -49,7 +39,7 @@ module MarchingCubesZ =
         let jumpDownAndBack = jumpDown + 1
         let jumpRightAndDownAndBack =  jumpRightAndDown + 1
 
-        let lastX, lastY, lastZ = ncellsX - 1, ncellsY - 1, ncellsZ - 1
+        let lastX, lastY, lastZ = cubesX - 1, cubesY - 1, cubesZ - 1
 
         let cube = Array.zeroCreate<Vector4> 8
         let vertices = Array.zeroCreate<Vector3> 12
@@ -65,10 +55,10 @@ module MarchingCubesZ =
         let adjacents = [|
             [| 0; 1; -jumpRight;                0; 4; -jumpDown;                 0; 3; -1;                       |]
             [| 1; 0; jumpRight2;                0; 5; jumpRight - jumpDown;      0; 2; jumpRight - 1;            |]
-            [| 1; 3; jumpRight2 + 1;            0; 6; jumpRight - ncellsZ;       1; 2; jumpRight + 2;            |]
-            [| 0; 2; -jumpRight + 1;            0; 7; -ncellsZ;                  1; 0; 2;                        |]
-            [| 0; 5; -jumpRight + jumpDown;     1; 0; jumpDown2;                 0; 7; ncellsZ;                  |]
-            [| 1; 4; jumpRight2 + jumpDown;     1; 1; jumpRight + jumpDown2;     0; 6; jumpRight + ncellsZ;      |]
+            [| 1; 3; jumpRight2 + 1;            0; 6; jumpRight - cubesZ;       1; 2; jumpRight + 2;            |]
+            [| 0; 2; -jumpRight + 1;            0; 7; -cubesZ;                  1; 0; 2;                        |]
+            [| 0; 5; -jumpRight + jumpDown;     1; 0; jumpDown2;                 0; 7; cubesZ;                  |]
+            [| 1; 4; jumpRight2 + jumpDown;     1; 1; jumpRight + jumpDown2;     0; 6; jumpRight + cubesZ;      |]
             [| 1; 7; jumpRight2 + jumpDown + 1; 1; 2; jumpRight + jumpDown2 + 1; 1; 5; jumpRight + jumpDown + 2; |]
             [| 0; 6; -jumpRight + jumpDown + 1; 1; 3; jumpDown2 + 1;             1; 4; jumpDown + 2;             |]
         |]
@@ -97,7 +87,7 @@ module MarchingCubesZ =
             if test then normalAt edgeIndex
             else Vector4(1.0f, 1.0f, 1.0f, 1.0f)
 
-        let mutable left, right = upperLeft.[0], upperLeft.[0] + stepX
+        let mutable left, right = upperLeft.X, upperLeft.X + step.X
         let mutable offsetX, offsetY = 0, 0
         let mutable cubeIndex, edgeIndex, normalIndex = 0, 0, 0
 
@@ -141,25 +131,25 @@ module MarchingCubesZ =
 
         for i in 0..lastX do
             offsetX <- offsetX + jumpRight
-            left <- left + stepX
-            right <- right + stepX
+            left <- left + step.X
+            right <- right + step.X
 
-            let mutable top, bottom = upperLeft.[1], upperLeft.[1] + stepY
+            let mutable top, bottom = upperLeft.Y, upperLeft.Y + step.Y
             
             offsetY <- 0
             for j in 0..lastY do
                 offsetY <- offsetY + jumpDown
-                top <- top + stepY
-                bottom <- top + stepY
+                top <- top + step.Y
+                bottom <- top + step.Y
 
-                let mutable front, back = upperLeft.[2], upperLeft.[2] + stepZ
+                let mutable front, back = upperLeft.Z, upperLeft.Z + step.Z
 
                 let offsetXY = offsetX + offsetY
 
                 for k in 0..lastZ do
                     index <- offsetXY + k
-                    front <- front + stepZ
-                    back <- back + stepZ
+                    front <- front + step.Z
+                    back <- back + step.Z
 
                     cube.[0] <- Vector4(left, top, front, valueAt(index))
                     cube.[1] <- Vector4(right, top, front, valueAt(index + jumpRight))
@@ -173,7 +163,7 @@ module MarchingCubesZ =
                     cubeIndex <- 0
 
                     for n in 0..7 do
-                        if cube.[n].W <= minValue then
+                        if cube.[n].W <= isoValue then
                             cubeIndex <- cubeIndex ||| (1 <<< n)
 
                     let traverseNormal n =
@@ -186,8 +176,8 @@ module MarchingCubesZ =
                         let p1 = p0 + 1
                         traverseNormal p0
                         traverseNormal p1
-                        vertices.[n] <- lerp(cube.[normalsLookup.[p0].[0]], cube.[normalsLookup.[p1].[0]], minValue)
-                        normals.[n] <- lerpNormal(normalVertices.[normalsLookup.[p0].[0]], normalVertices.[normalsLookup.[p1].[0]], minValue)
+                        vertices.[n] <- lerp(cube.[normalsLookup.[p0].[0]], cube.[normalsLookup.[p1].[0]], isoValue)
+                        normals.[n] <- lerpNormal(normalVertices.[normalsLookup.[p0].[0]], normalVertices.[normalsLookup.[p1].[0]], isoValue)
                 
                     if EdgeTable.[cubeIndex] <> 0 then
                         normalIndex <- 0
@@ -207,9 +197,9 @@ module MarchingCubesZ =
 
     let polygonize isoLevel (slices: CatSlice[]) partialRender = 
 
-        let start = slices.[0]
-        let stepX, stepY = float32 start.SliceParams.PixelSpacing.X, float32 start.SliceParams.PixelSpacing.Y
-        let columns, rows = start.SliceParams.Dimensions.Columns, start.SliceParams.Dimensions.Rows
+        let start = slices.[0].SliceParams
+        
+        let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows
         let points = Array.zeroCreate<int> (rows*columns*slices.Length)
         let mutable index = 0
 
@@ -217,17 +207,17 @@ module MarchingCubesZ =
                            |> Seq.map(fun (f, b) -> Math.Abs(f.SliceParams.UpperLeft.[2] - b.SliceParams.UpperLeft.[2])) 
                            |> Seq.distinct
                            |> Seq.exactlyOne
-                           |> float32
-    
+        
+        let step = Vector3(float32 start.PixelSpacing.X, float32 start.PixelSpacing.Y, float32 stepZ)
         for i in 0..columns - 1 do
             for j in 0..rows - 1 do
                 for k in 0..slices.Length - 1 do
                     points.[index] <- slices.[k].HounsfieldBuffer.[j, i]
                     index <- index + 1
         
-        let sizeX = (float32 columns)*stepX
-        let sizeY = (float32 rows)*stepY
         let sizeZ = Math.Abs(slices.[slices.Length - 1].SliceParams.UpperLeft.[2] - slices.[0].SliceParams.UpperLeft.[2]) |> float32
+        let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
+        let upperLeft = Vector3(float32 start.UpperLeft.[0], float32 start.UpperLeft.[1], float32 start.UpperLeft.[2])
 
         let mutable currentBuffer, index = borrowBuffer(), 0
 
@@ -240,9 +230,8 @@ module MarchingCubesZ =
             index <- index + 3
 
         MarchingCubes(columns - 1, rows - 1, slices.Length - 1, 
-                     sizeX, sizeY, sizeZ, 
-                     isoLevel, points, addPoint,
-                     start.SliceParams.UpperLeft |> Array.map float32,
-                     stepX, stepY, stepZ)
+                     sizeFactor, isoLevel, points, addPoint,
+                     upperLeft,
+                     step)
 
         partialRender (index, currentBuffer) true
