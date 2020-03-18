@@ -23,9 +23,13 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Core", "ReConst
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Data.Dicom", "ReConstruct.Data.Dicom\ReConstruct.Data.Dicom.fsproj", "{4E7708EC-AD01-41F8-B544-845599F82458}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Data.Imaging", "ReConstruct.Data.Imaging\ReConstruct.Data.Imaging.fsproj", "{F7AF48CE-33E6-43D5-AEA9-7EBB16624BAB}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Geometry", "ReConstruct.Geometry\ReConstruct.Geometry.fsproj", "{F7AF48CE-33E6-43D5-AEA9-7EBB16624BAB}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Services", "ReConstruct.Services\ReConstruct.Services.fsproj", "{E15B045C-48DB-456C-870D-B1CC2FBD134A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Render.OpenGL", "ReConstruct.Render.OpenGL\ReConstruct.Render.OpenGL.fsproj", "{33D48291-C6EE-4749-A09A-3A15627D7E34}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Render", "ReConstruct.Render\ReConstruct.Render.fsproj", "{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +69,14 @@ Global
 		{E15B045C-48DB-456C-870D-B1CC2FBD134A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E15B045C-48DB-456C-870D-B1CC2FBD134A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E15B045C-48DB-456C-870D-B1CC2FBD134A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33D48291-C6EE-4749-A09A-3A15627D7E34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33D48291-C6EE-4749-A09A-3A15627D7E34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33D48291-C6EE-4749-A09A-3A15627D7E34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33D48291-C6EE-4749-A09A-3A15627D7E34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
