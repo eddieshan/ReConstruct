@@ -10,6 +10,46 @@ open ReConstruct.Geometry.MarchingCubesTables
 
 module MarchingCubesZ =
 
+    // Tabulated lookup to jump from vertices in current cube to vertices in adjacent cubes.
+    let private verticesAdjacenciesLookup = [|
+        [| 0; 1; -1; 0; 0;   0; 4;  0; -1; 0;    0; 3; 0; 0; -1; |]
+        [| 1; 0;  2; 0; 0;   0; 5;  1; -1; 0;    0; 2; 1; 0; -1; |]
+        [| 1; 3;  2; 0; 1;   0; 6;  1; -1; 1;    1; 2; 1; 0;  2; |]
+        [| 0; 2; -1; 0; 1;   0; 7;  0; -1; 1;    1; 0; 0; 0;  2; |]
+        [| 0; 5; -1; 1; 0;   1; 0;  0;  2; 0;    0; 7; 0; 1; -1; |]
+        [| 1; 4;  2; 1; 0;   1; 1;  1;  2; 0;    0; 6; 1; 1; -1; |]
+        [| 1; 7;  2; 1; 1;   1; 2;  1;  2; 1;    1; 5; 1; 1;  2; |]
+        [| 0; 6; -1; 1; 1;   1; 3;  0;  2; 1;    1; 4; 0; 1;  2; |]
+    |]
+
+    // Tabulated lookup to interpolate normals at shared vertices between triangles generated at adjacent cubes.
+    let normalInterpolationLookup = [|
+        [| 0; 1; 0; 0; 0; |]
+        [| 1; 2; 1; 0; 0; |]
+        [| 1; 2; 1; 0; 0; |]
+        [| 2; 4; 1; 0; 0; |]
+        [| 2; 4; 1; 0; 0; |]
+        [| 3; 8; 0; 0; 1; |]
+        [| 3; 8; 0; 0; 1; |]
+        [| 0; 1; 0; 0; 0; |]
+        [| 4; 16; 0; 1; 0; |]
+        [| 5; 32; 1; 1; 0; |]
+        [| 5; 32; 1; 1; 0; |]
+        [| 6; 64; 1; 1; 1; |]
+        [| 6; 64; 1; 1; 1; |]
+        [| 7; 128; 0; 1; 1; |]
+        [| 7; 128; 0; 1; 1; |]
+        [| 4; 16; 0; 1; 0; |]
+        [| 0; 1; 0; 0; 0; |]
+        [| 4; 16; 0; 1; 0; |]
+        [| 1; 2; 1; 0; 0; |]
+        [| 5; 32; 1; 1; 0; |]
+        [| 2; 4; 1; 0; 0; |]
+        [| 6; 64; 1; 1; 1; |]
+        [| 3; 8; 0; 0; 1; |]
+        [| 7; 128; 0; 1; 1; |]
+    |]
+
     let private bufferPool = ArrayPool<float32>.Shared
     let private capacity = 9000
     let private borrowBuffer() = bufferPool.Rent capacity
@@ -32,8 +72,6 @@ module MarchingCubesZ =
 
         let jumpDown = cubesZ + 1
         let jumpRight = (cubesY + 1) * jumpDown
-        let jumpRight2 = 2*jumpRight
-        let jumpDown2 = 2*jumpDown
         let jumpRightAndBack = jumpRight + 1
         let jumpRightAndDown = jumpRight + jumpDown
         let jumpDownAndBack = jumpDown + 1
@@ -52,16 +90,11 @@ module MarchingCubesZ =
             else
                 0.0f
 
-        let adjacents = [|
-            [| 0; 1; -jumpRight;                0; 4; -jumpDown;                 0; 3; -1;                       |]
-            [| 1; 0; jumpRight2;                0; 5; jumpRight - jumpDown;      0; 2; jumpRight - 1;            |]
-            [| 1; 3; jumpRight2 + 1;            0; 6; jumpRight - cubesZ;       1; 2; jumpRight + 2;            |]
-            [| 0; 2; -jumpRight + 1;            0; 7; -cubesZ;                  1; 0; 2;                        |]
-            [| 0; 5; -jumpRight + jumpDown;     1; 0; jumpDown2;                 0; 7; cubesZ;                  |]
-            [| 1; 4; jumpRight2 + jumpDown;     1; 1; jumpRight + jumpDown2;     0; 6; jumpRight + cubesZ;      |]
-            [| 1; 7; jumpRight2 + jumpDown + 1; 1; 2; jumpRight + jumpDown2 + 1; 1; 5; jumpRight + jumpDown + 2; |]
-            [| 0; 6; -jumpRight + jumpDown + 1; 1; 3; jumpDown2 + 1;             1; 4; jumpDown + 2;             |]
-        |]
+        let adjacents = verticesAdjacenciesLookup |> Array.mapi(fun i m -> 
+                                                let v0 = m.[2]*jumpRight + m.[3]*jumpDown + m.[4]
+                                                let v1 = m.[7]*jumpRight + m.[8]*jumpDown + m.[9]
+                                                let v2 = m.[12]*jumpRight + m.[13]*jumpDown + m.[14]
+                                                [| m.[0]; m.[1]; v0; m.[5]; m.[6]; v1; m.[10]; m.[11]; v2 |])
 
         let mutable index = 0
 
@@ -91,43 +124,7 @@ module MarchingCubesZ =
         let mutable offsetX, offsetY = 0, 0
         let mutable cubeIndex, edgeIndex, normalIndex = 0, 0, 0
 
-        let normalsLookup = [|
-            [| 0; 1; 0; 0; 0; |]
-            [| 1; 2; lastX; 0; 0; |]
-
-            [| 1; 2; lastX; 0; 0; |]
-            [| 2; 4; lastX; 0; 0; |]
-
-            [| 2; 4; lastX; 0; 0; |]
-            [| 3; 8; 0; 0; lastZ; |]
-
-            [| 3; 8; 0; 0; lastZ; |]
-            [| 0; 1; 0; 0; 0; |]
-
-            [| 4; 16; 0; lastY; 0; |]
-            [| 5; 32; lastX; lastY; 0; |]
-
-            [| 5; 32; lastX; lastY; 0; |]
-            [| 6; 64; lastX; lastY; lastZ; |]
-
-            [| 6; 64; lastX; lastY; lastZ; |]
-            [| 7; 128; 0; lastY; lastZ; |]
-
-            [| 7; 128; 0; lastY; lastZ; |]
-            [| 4; 16; 0; lastY; 0; |]
-
-            [| 0; 1; 0; 0; 0; |]
-            [| 4; 16; 0; lastY; 0; |]
-
-            [| 1; 2; lastX; 0; 0; |]
-            [| 5; 32; lastX; lastY; 0; |]
-
-            [| 2; 4; lastX; 0; 0; |]
-            [| 6; 64; lastX; lastY; lastZ; |]
-
-            [| 3; 8; 0; 0; lastZ; |]
-            [| 7; 128; 0; lastY; lastZ; |]
-        |]
+        let normalsLookup = normalInterpolationLookup |> Array.map(fun l -> [| l.[0]; l.[1]; l.[2]*lastX; l.[3]*lastY; l.[4]*lastZ;|])
 
         for i in 0..lastX do
             offsetX <- offsetX + jumpRight
