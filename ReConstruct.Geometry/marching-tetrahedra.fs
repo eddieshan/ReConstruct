@@ -27,7 +27,7 @@ module MarchingTetrahedra =
         let trianglesVertices = Array.zeroCreate<Vector3> 6
 
         for i in 0..3 do
-            if values.[i] <= v.IsoLevel then
+            if values.[i] <= v.IsoValue then
                 tetraIndex <- tetraIndex ||| (1 <<< i)
 
         let edgeFlags = EdgeTable.[tetraIndex]
@@ -37,7 +37,7 @@ module MarchingTetrahedra =
                 if (edgeFlags &&& (1 <<< i) <> 0) then
                     let v0 = EdgeTraversal.[i].[0]
                     let v1 = EdgeTraversal.[i].[1]
-                    let offset = lerpVertex(values.[v0], values.[v1], v.IsoLevel)
+                    let offset = lerpVertex(values.[v0], values.[v1], v.IsoValue)
                     let inverseOffset = 1.0f - offset
 
                     trianglesVertices.[i].X <- inverseOffset*vertices.[v0].X + offset*vertices.[v1].X
@@ -58,7 +58,7 @@ module MarchingTetrahedra =
                     v.AddPoint v2
                     v.AddPoint normal
 
-    let marchCube (cube: Cube, row, column) =
+    let marchCube (cube: Cube) =
             let tetraVertices = Array.zeroCreate<Vector3> 4
             let tetraValues = Array.zeroCreate<float32> 4
     
