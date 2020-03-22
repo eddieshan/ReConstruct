@@ -46,6 +46,7 @@
     <Content Include="packages.config" />
     <Compile Include="dicom-controller.fs" />
     <Compile Include="file-controller.fs" />
+    <Compile Include="tools-controller.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

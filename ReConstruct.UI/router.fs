@@ -7,3 +7,4 @@ module Router =
     let handle = function
                  | File(a) -> a |> FileController.handle
                  | Dicom(a) -> a |> DicomController.handle
+                 | Tool(a) -> a |> ToolsController.handle

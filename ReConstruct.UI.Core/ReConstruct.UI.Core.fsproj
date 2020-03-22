@@ -55,6 +55,7 @@
     <Compile Include="tree-pager.fs" />
     <Compile Include="year-pager.fs" />
     <Compile Include="data-table.fs" />
+    <Compile Include="window.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

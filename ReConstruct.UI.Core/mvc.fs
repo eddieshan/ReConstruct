@@ -11,8 +11,8 @@ type Mvc private(loadView, route) =
     [<DefaultValue>]
     static val mutable private instance: Mvc
 
-    member private this.route:AppAction -> (UIElement * ((unit -> unit) option)) = route
-    member private this.loadView:(UIElement * ((unit -> unit) option)) -> unit = loadView
+    member private this.route:AppAction -> ((UIElement option) * ((unit -> unit) option)) = route
+    member private this.loadView:((UIElement option) * ((unit -> unit) option)) -> unit = loadView
 
     static member configure (loadView, route) = Mvc.instance <- new Mvc(loadView, route)
 
@@ -23,4 +23,5 @@ type Mvc private(loadView, route) =
     static member partial action = action |> Mvc.instance.route
 
 module Mvc =
-    let basicView v = (v, None)
+    let basicView v = (Some v, None)
+    let floatingView() = (None, None)

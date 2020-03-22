@@ -3,6 +3,7 @@
 open System
 open System.Windows
 open System.Windows.Controls
+open System.Windows.Controls.Primitives
 
 module UI =
 
@@ -50,6 +51,8 @@ module UI =
     let withIcon icon (button: Button) = button.Content <- icon
 
     let listBox styleKey = ListBox(Style = style styleKey)
+
+    let uniformGrid() = UniformGrid()
 
     let loadContent (panel: Panel) content =
         panel.Children.Clear()

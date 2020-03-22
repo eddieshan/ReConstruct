@@ -12,6 +12,11 @@ type DicomAction =
     | LoadSlices of int
     | LoadTags of int
 
+type ToolAction = 
+    | OpenTransformPanel
+    //| OpenGeometryPanel
+
 type AppAction =
     | File of FileAction
     | Dicom of DicomAction
+    | Tool of ToolAction

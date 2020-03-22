@@ -21,9 +21,10 @@ do
 
     let navigationContainer = new Grid()
     
-    let navigateToView (view: UIElement, onLoad) = 
-        navigationContainer.Children.Clear()
-        view >- navigationContainer
+    let navigateToView (view: UIElement option, onLoad) = 
+        view |> Option.iter(fun v ->
+                                navigationContainer.Children.Clear()
+                                v >- navigationContainer)
         onLoad |> Option.iter(fun f -> f())
 
     let window = navigationContainer |> ContainerView.New |> UI.window

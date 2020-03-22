@@ -20,8 +20,8 @@ module DicomController =
                     |> doBusyAsync loadContent
                     view |> Mvc.basicView
 
-                 | LoadVolume (id, isoValue) -> id |> DicomService.getVolume |> VolumeView.New isoValue |> Mvc.basicView
-                 //| LoadVolume (id, isoValue) -> id |> DicomService.getVolume |> VolumeViewOpenGL.New isoValue
+                 //| LoadVolume (id, isoValue) -> id |> DicomService.getVolume |> VolumeView.New isoValue |> Mvc.basicView
+                 | LoadVolume (id, isoValue) -> id |> DicomService.getVolume |> VolumeViewOpenGL.New isoValue
                  | LoadSlices id -> id |> DicomService.getIods |> SlicesView.New |> Mvc.basicView
                  | LoadIod (id, index) -> (id, index) |>  DicomService.getIod |> IodView.New |> Mvc.basicView
                  | LoadTags id -> id |> DicomService.getTags |> TagsView.New |> Mvc.basicView

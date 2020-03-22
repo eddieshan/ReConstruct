@@ -23,9 +23,10 @@ module DatasetMainView =
         let contentView = DockPanel(LastChildFill = true)
 
         let loadPartial (view, onLoad) =
-            Events.Status.Trigger(String.Empty)
-            contentView.Children.Clear()
-            view |> dockTo contentView Dock.Top
+            view |> Option.iter(fun v ->
+                                    Events.Status.Trigger(String.Empty)
+                                    contentView.Children.Clear()
+                                    v |> dockTo contentView Dock.Top)
             onLoad |> Option.iter(fun f -> f())
 
         let header() =
@@ -46,29 +47,6 @@ module DatasetMainView =
                 caption.Text <- sprintf "%s - %s" entry.SopClass iodsInfo
 
             (header, loadContent)
-
-        let cameraTools() =
-            let rotate v = fun _ -> v |> Events.OnRotation.Trigger
-            let moveCameraZ v = fun _ -> v |> Events.OnCameraMoved.Trigger
-            let scale v = fun _ -> v |> Events.OnScale.Trigger
-
-            let delta, zoomFactor, scaleFactor = 0.1f, 0.05f, 0.05f
-
-            let addAxisControls(labelA, labelB, axis) = 
-                seq {
-                    yield labelA |> iconButton |> withClick (rotate (axis, delta)) :> UIElement
-                    yield labelB |> iconButton |> withClick (rotate (axis, -delta)) :> UIElement
-                } 
-            
-            seq {
-                yield! addAxisControls (Icons.CHEVRON_UP, Icons.CHEVRON_DOWN, Axis.X)
-                yield! addAxisControls (Icons.CHEVRON_LEFT, Icons.CHEVRON_RIGHT,Axis.Y)
-                yield! addAxisControls (Icons.ROTATE_LEFT, Icons.ROTATE_RIGHT, Axis.Z)
-                yield Icons.CAMERA_IN |> iconButton |> withClick (moveCameraZ zoomFactor) :> UIElement
-                yield Icons.CAMERA_OUT |> iconButton |> withClick (moveCameraZ -zoomFactor) :> UIElement
-                yield Icons.ZOOM_IN |> iconButton |> withClick (scale scaleFactor) :> UIElement
-                yield Icons.ZOOM_OUT |> iconButton |> withClick (scale -scaleFactor) :> UIElement
-            }
         
         let rightToolbar() = 
                 
@@ -81,10 +59,11 @@ module DatasetMainView =
                             (Icons.TAG |> iconButton, loadTags) ]
 
             let imagingButtons = [ (Icons.IMAGE_SERIES |> iconButton, loadSlices) 
-                                   (Icons.VIEW_3D |> iconButton, loadVolume) ] 
+                                   (Icons.VIEW_3D |> iconButton, loadVolume)
+                                   (Icons.SHIFTED_CIRCLE |> iconButton, fun _ -> OpenTransformPanel |> Tool |> Mvc.send) ] 
 
             let menuButtons = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable >> asUIElement)
-            let toolbar = cameraTools() |> Seq.append menuButtons |> Toolbar.Right
+            let toolbar = menuButtons |> Toolbar.Right
 
             let loadContent dataset =
                 buttons |> Seq.iter(fun (b, f) -> b |> enable |> withClick(fun _ -> dataset |> f) |> ignore)

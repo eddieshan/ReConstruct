@@ -157,4 +157,4 @@ module RenderView =
     let buildScene model =
         let winformsHost = new WindowsFormsHost(HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch)
         winformsHost.Loaded |> Event.add (onLoadHostWindow winformsHost model)
-        (winformsHost :> UIElement, None)
+        (winformsHost :> UIElement |> Some, None)
