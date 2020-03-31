@@ -29,6 +29,6 @@ module VolumeViewOpenGL =
         let calculateMesh partialRender =
             let clock = Stopwatch.StartNew()
             MarchingCubesZ.polygonize isoLevel slices partialRender
-            clock.Elapsed.TotalSeconds |> sprintf "%fs" |> Events.Status.Trigger
+            sprintf "%.2fs | %i triangles" clock.Elapsed.TotalSeconds (RenderView.totalTriangles()) |> Events.Status.Trigger
 
         RenderView.buildScene (estimatedModelSize, calculateMesh)

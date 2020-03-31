@@ -22,6 +22,10 @@ module RenderView =
     let private vertexBufferStep = 6 * sizeof<float32>
     let private normalsOffset = 3 * sizeof<float32>
 
+    let mutable private currentBufferSize = 0
+
+    let totalTriangles() = currentBufferSize / 3
+
     let glContainer (estimatedSize, progressiveMesh) (width, height) =
 
         let container = new GLControl(GraphicsMode.Default)
@@ -78,14 +82,16 @@ module RenderView =
 
         let moveCamera zoomFactor = cameraZ <- cameraZ + zoomFactor*estimatedSize
 
-        let mutable currentOfset, subBufferSize, currentBufferSize = 0, 0, 0
+        let mutable currentOfset, subBufferSize = 0, 0
+        currentBufferSize <- 0
+
         let maxSubBufferSize = 120000
 
         let render() =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
 
             let camera = cameraPosition()
-            let modelProjection = modelTransform.Transform()
+            let modelProjection = modelTransform |> Projection.transformMatrix
 
             shader.SetMatrix4("model", Matrix4.Identity)
             shader.SetVector3("viewPos", camera)
@@ -131,8 +137,7 @@ module RenderView =
 
         let update transform t =
             transform t
-            let (rotX, rotY, rotZ) = modelTransform.Rotation()
-            sprintf "%f distance | X %fdeg | Y %fdeg | Z %fdeg" cameraZ rotX rotY rotZ |> Events.RenderStatus.Trigger
+            modelTransform |> Events.VolumeTransformed.Trigger
             render()
 
         let cleanUp() =
@@ -143,7 +148,7 @@ module RenderView =
         container.Paint |> Event.add(fun _ -> progressiveRender())
         Events.OnCameraMoved.Publish |> Event.add (update moveCamera)
         Events.OnRotation.Publish |> Event.add (update modelTransform.Rotate)
-        Events.OnScale.Publish |> Event.add (update modelTransform.Scale)
+        Events.OnScale.Publish |> Event.add (update modelTransform.Rescale)
         container.HandleDestroyed |> Event.add (fun _ -> cleanUp())
         
         container

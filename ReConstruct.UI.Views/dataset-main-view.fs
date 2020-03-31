@@ -80,7 +80,7 @@ module DatasetMainView =
             entry |> loadToolbar
             false |> Events.Progress.Trigger
             
-            Math.Round(time.TotalSeconds, 2) |> sprintf "%fs" |> Events.Status.Trigger
+            Math.Round(time.TotalSeconds, 2) |> sprintf "%.2fs" |> Events.Status.Trigger
 
         toolbar |> dockTo container Dock.Right
         header |> dockTo container Dock.Top

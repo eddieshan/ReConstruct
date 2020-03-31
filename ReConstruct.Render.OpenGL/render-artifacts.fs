@@ -4,6 +4,11 @@ open OpenTK
 
 open ReConstruct.Render
 
+module internal Projection =
+    let transformMatrix modelTransform =
+        let mutable (rotX, rotY, rotZ), scale = modelTransform.Rotation(), modelTransform.Scale()
+        Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)        
+
 module internal Lighting =
     let Color = Vector3(1.0f, 1.0f, 1.0f)
     let Ambient = Vector3(0.05f, 0.05f, 0.05f)
@@ -25,30 +30,3 @@ module internal Lighting =
             shader.SetVector3(sprintf "dirLights[%i].ambient" i, Ambient)
             shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Diffuse)
             shader.SetVector3(sprintf "dirLights[%i].specular" i, Specular)
-
-type internal ModelTransform =
-    {
-        Rotate: Axis*float32 -> unit
-        Scale: float32 -> unit
-        Transform: unit -> Matrix4
-        Rotation: unit -> float32*float32*float32
-    }
-
-module internal ModelTransform =
-    let create () =
-        let mutable rotX, rotY, rotZ, scaleFactor = 0.0f, 0.0f, 0.0f, 1.0f
-
-        let rotate (axis, delta) =
-            match axis with
-            | X -> rotX <- rotX + delta
-            | Y -> rotY <- rotY + delta
-            | Z -> rotZ <- rotZ + delta
-
-        let transform() =
-            Matrix4.CreateScale(scaleFactor) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)        
-        {
-            Rotate = rotate
-            Scale = fun delta -> scaleFactor <- scaleFactor + delta
-            Transform = transform
-            Rotation = fun() -> (rotX, rotY, rotZ)
-        }
