@@ -63,7 +63,7 @@ module MarchingCubesZ =
             v3(p1)
 
     let MarchingCubes(cubesX: int, cubesY: int, cubesZ: int, 
-                      sizeFactor: Vector3, isoValue: float32, points: int[], addVertex,
+                      sizeFactor: Vector3, isoValue: float32, valueAt, addVertex,
                       upperLeft: Vector3, step: Vector3) =
 
         let factor = Vector3(1.0f/(2.0f*sizeFactor.X), 1.0f/(2.0f*sizeFactor.Y), 1.0f/(2.0f*sizeFactor.Z))
@@ -83,12 +83,6 @@ module MarchingCubesZ =
         let vertices = Array.zeroCreate<Vector3> 12
         let normalVertices = Array.zeroCreate<Vector4> 8
         let normals = Array.zeroCreate<Vector3> 12
-
-        let valueAt n = 
-            if n < points.Length then
-                float32 points.[n]
-            else
-                0.0f
 
         let adjacents = verticesAdjacenciesLookup |> Array.mapi(fun i m -> 
                                                 let v0 = m.[2]*jumpRight + m.[3]*jumpDown + m.[4]
@@ -195,10 +189,7 @@ module MarchingCubesZ =
     let polygonize isoLevel (slices: CatSlice[]) partialRender = 
 
         let start = slices.[0].SliceParams
-        
         let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows
-        let points = Array.zeroCreate<int> (rows*columns*slices.Length)
-        let mutable index = 0
 
         let stepZ = slices |> Seq.pairwise 
                            |> Seq.map(fun (f, b) -> Math.Abs(f.SliceParams.UpperLeft.[2] - b.SliceParams.UpperLeft.[2])) 
@@ -206,12 +197,17 @@ module MarchingCubesZ =
                            |> Seq.exactlyOne
         
         let step = Vector3(float32 start.PixelSpacing.X, float32 start.PixelSpacing.Y, float32 stepZ)
-        for i in 0..columns - 1 do
-            for j in 0..rows - 1 do
-                let n = j*columns + i
-                for k in 0..slices.Length - 1 do
-                    points.[index] <- slices.[k].HounsfieldBuffer.[n]
-                    index <- index + 1
+
+        let valueAt index =
+            let k = index % slices.Length
+            let offset = index / slices.Length
+            let i = offset / rows
+            let j = offset % rows
+            let p = j*columns + i
+            if offset < slices.[k].HounsfieldBuffer.Length then
+                slices.[k].HounsfieldBuffer.[p] |> float32
+            else
+                0.0f
         
         let sizeZ = Math.Abs(slices.[slices.Length - 1].SliceParams.UpperLeft.[2] - slices.[0].SliceParams.UpperLeft.[2]) |> float32
         let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
@@ -228,7 +224,7 @@ module MarchingCubesZ =
             index <- index + 3
 
         MarchingCubes(columns - 1, rows - 1, slices.Length - 1, 
-                     sizeFactor, isoLevel, points, addPoint,
+                     sizeFactor, isoLevel, valueAt, addPoint,
                      upperLeft,
                      step)
 
