@@ -20,15 +20,16 @@ module CubesIterator =
         let setValues (row, column) x =
             let rowPlus1 = row + 1
             let columnPlus1 = column + 1
+            let valueIndex(i, j) = i*front.SliceParams.Dimensions.Columns + j
 
-            x.Levels.[0] <- back.HounsfieldBuffer.[rowPlus1, column]
-            x.Levels.[1] <- back.HounsfieldBuffer.[rowPlus1, columnPlus1]
-            x.Levels.[2] <- front.HounsfieldBuffer.[rowPlus1, columnPlus1]
-            x.Levels.[3] <- front.HounsfieldBuffer.[rowPlus1, column]
-            x.Levels.[4] <- back.HounsfieldBuffer.[row, column]
-            x.Levels.[5] <- back.HounsfieldBuffer.[row, columnPlus1]
-            x.Levels.[6] <- front.HounsfieldBuffer.[row, columnPlus1]
-            x.Levels.[7] <- front.HounsfieldBuffer.[row, column]
+            x.Levels.[0] <- back.HounsfieldBuffer.[valueIndex(rowPlus1, column)]
+            x.Levels.[1] <- back.HounsfieldBuffer.[valueIndex(rowPlus1, columnPlus1)]
+            x.Levels.[2] <- front.HounsfieldBuffer.[valueIndex(rowPlus1, columnPlus1)]
+            x.Levels.[3] <- front.HounsfieldBuffer.[valueIndex(rowPlus1, column)]
+            x.Levels.[4] <- back.HounsfieldBuffer.[valueIndex(row, column)]
+            x.Levels.[5] <- back.HounsfieldBuffer.[valueIndex(row, columnPlus1)]
+            x.Levels.[6] <- front.HounsfieldBuffer.[valueIndex(row, columnPlus1)]
+            x.Levels.[7] <- front.HounsfieldBuffer.[valueIndex(row, column)]
 
         let zFront, zBack = float32 front.SliceParams.UpperLeft.[2], float32 back.SliceParams.UpperLeft.[2]
         let stepX, stepY = float32 front.SliceParams.PixelSpacing.X, float32 front.SliceParams.PixelSpacing.Y

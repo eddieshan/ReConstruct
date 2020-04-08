@@ -58,18 +58,18 @@ module Hounsfield =
             | Some pixelPadding -> pixelPadding |> int |> capValue
             | _ -> rescale
 
-        let hounsfieldValues = Array2D.create sliceParams.Dimensions.Rows sliceParams.Dimensions.Columns (int 0)
+        let hounsfieldValues = Array.create (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (int 0)
 
         let mutable index = coordinates.StreamPosition |> int
         let limit = buffer.Length - 2
 
-        let setHounsfieldValue row column _ = 
+        let setHounsfieldValue n = 
             if (index < limit) then
                 let pixelValue = (int buffer.[index]) + ((int buffer.[index + 1]) <<< 8)
-                hounsfieldValues.[row, column] <- pixelValue |> getHounsfieldValue
+                hounsfieldValues.[n] <- pixelValue |> getHounsfieldValue
                 index <- index + 2
 
-        hounsfieldValues |> Array2D.iteri setHounsfieldValue
+        hounsfieldValues |> Array.iteri(fun i _ -> setHounsfieldValue i)
 
         // TODO: Unrolled loop. Keeping it here as a reminder to profile performance of plain loops vs. Array2D iterator.
 //        for row in 0..sliceParams.Dimensions.Rows - 1 do
@@ -81,7 +81,7 @@ module Hounsfield =
 
         hounsfieldValues
 
-    let getBitmap (buffer: int[,]) sliceParams =
+    let getBitmap (buffer: int[]) sliceParams =
 
         let windowLeftBorder = sliceParams.WindowCenter - (sliceParams.WindowWidth / 2)
 
@@ -94,15 +94,16 @@ module Hounsfield =
 
         let imageBuffer = Array.create (sliceParams.Dimensions.Rows*sliceParams.Dimensions.Columns*4) (byte 0)
 
-        let mutable position = 0
+        let mutable position, index = 0, 0
         for row in 0..sliceParams.Dimensions.Rows-1 do
             for column in 0..sliceParams.Dimensions.Columns-1 do
-                let aGrayValue = buffer.[row, column] |> normalizePixelValue
-                imageBuffer.[position] <- aGrayValue
-                imageBuffer.[position + 1] <- aGrayValue
-                imageBuffer.[position + 2] <- aGrayValue
+                let grayValue = buffer.[index] |> normalizePixelValue
+                imageBuffer.[position] <- grayValue
+                imageBuffer.[position + 1] <- grayValue
+                imageBuffer.[position + 2] <- grayValue
                 imageBuffer.[position + 3] <- byte 255
                 position <- position + 4
+                index <- index + 1
 
         (sliceParams.Dimensions.Columns, sliceParams.Dimensions.Rows, imageBuffer)
 

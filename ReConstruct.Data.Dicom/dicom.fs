@@ -127,7 +127,7 @@ type SliceParams =
 type CatSlice =
     {
         SliceParams: SliceParams;
-        HounsfieldBuffer: int[,];
+        HounsfieldBuffer: int[];
         GetRawImage: unit -> int*int*byte[];
     }
 

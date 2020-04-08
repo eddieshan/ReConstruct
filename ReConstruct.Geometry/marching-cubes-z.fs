@@ -208,8 +208,9 @@ module MarchingCubesZ =
         let step = Vector3(float32 start.PixelSpacing.X, float32 start.PixelSpacing.Y, float32 stepZ)
         for i in 0..columns - 1 do
             for j in 0..rows - 1 do
+                let n = j*columns + i
                 for k in 0..slices.Length - 1 do
-                    points.[index] <- slices.[k].HounsfieldBuffer.[j, i]
+                    points.[index] <- slices.[k].HounsfieldBuffer.[n]
                     index <- index + 1
         
         let sizeZ = Math.Abs(slices.[slices.Length - 1].SliceParams.UpperLeft.[2] - slices.[0].SliceParams.UpperLeft.[2]) |> float32
