@@ -38,7 +38,7 @@ module Hounsfield =
             StreamPosition = pixelData
         }
 
-    let getImage (buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
+    let getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
         let rescale =
             match coordinates.RescaleSlope with
             | 0 -> id
@@ -53,33 +53,23 @@ module Hounsfield =
                 else
                     pixelValue |> rescale 
 
-        let getHounsfieldValue =
+        let mapToLayout =
             match coordinates.PixelPadding with
             | Some pixelPadding -> pixelPadding |> int |> capValue
             | _ -> rescale
 
-        let hounsfieldValues = Array.create (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (int 0)
-
         let mutable index = coordinates.StreamPosition |> int
         let limit = buffer.Length - 2
 
-        let setHounsfieldValue n = 
+        let getHounsfieldValue() = 
             if (index < limit) then
-                let pixelValue = (int buffer.[index]) + ((int buffer.[index + 1]) <<< 8)
-                hounsfieldValues.[n] <- pixelValue |> getHounsfieldValue
+                let pixelValue = (int buffer.[index]) + ((int buffer.[index + 1]) <<< 8)                
                 index <- index + 2
+                pixelValue |> mapToLayout
+            else
+                0
 
-        hounsfieldValues |> Array.iteri(fun i _ -> setHounsfieldValue i)
-
-        // TODO: Unrolled loop. Keeping it here as a reminder to profile performance of plain loops vs. Array2D iterator.
-//        for row in 0..sliceParams.Dimensions.Rows - 1 do
-//            for column in 0..sliceParams.Dimensions.Columns-1 do
-//                if (index < limit) then
-//                    let pixelValue = Convert.ToInt32(((int pixels.[index+1]) <<< 8) + (int pixels.[index]))                    
-//                    buffer.[row, column] <- pixelValue |> hounsfieldValue
-//                    index <- index + 2
-
-        hounsfieldValues
+        Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
 
     let getBitmap (buffer: int[]) sliceParams =
 
@@ -143,7 +133,7 @@ module Cat =
     let slice (buffer, dicomTree) =
         let sliceParams = dicomTree |> sliceParams
         let coordinates = dicomTree |> hounsfieldCoordinates
-        let hField = Hounsfield.getImage(buffer, coordinates, sliceParams)
+        let hField = Hounsfield.getHField(buffer, coordinates, sliceParams)
 
         {
             Layout = sliceParams;
