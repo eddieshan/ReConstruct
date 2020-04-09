@@ -7,11 +7,12 @@ Any set of points sharing the same value define an iso surface.
 Hence, an iso surface representing tissue can be extracted from a set of slices.
 Different iso values can be used to filter different types of tissue.
 
-![Arm](Screenshot_Arm.png)
+![Arm](Screenshot_Arm_Bone.png)
 
 Eventually this project should evolve into an application for 3D reconstructions from any source of scalar field data, not just Radiology scans.
 Scalar field analysis is widely used in many areas of Science and Engineering.
 
+![Arm](Screenshot_Arm.png)
 
 ![Abdomen](Screenshot_Abdomen.png)
 
