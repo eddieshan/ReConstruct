@@ -37,8 +37,7 @@ module TransformView =
                 yield labelB |> iconButton |> withClick (rotate (axis, -delta)) :> UIElement
             }
 
-        let grid = uniformGrid()
-        grid.Columns <- 4
+        let grid = columnGrid 4
 
         let toRow title controls =
             title |> textBlock "panel-caption" >- grid

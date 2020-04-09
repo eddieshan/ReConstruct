@@ -54,6 +54,10 @@ module UI =
 
     let uniformGrid() = UniformGrid()
 
+    let columnGrid numColumns = UniformGrid(Columns = numColumns)
+
+    let rowGrid numRows = UniformGrid(Rows = numRows)
+
     let loadContent (panel: Panel) content =
         panel.Children.Clear()
         panel.Children.Add(content) |> ignore
