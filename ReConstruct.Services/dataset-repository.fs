@@ -22,7 +22,10 @@ module internal DatasetRepository =
 
     let private setCurrent dataSet = currentDataset <- dataSet |> Some
 
-    let private newIod (filePathName, buffer) =
+    [<Literal>]
+    let private UNKNOWN_VALUE = "???"
+
+    let private newSlice (filePathName, buffer) =
         let root = DicomParser.getDicomTree buffer
 
         let sopClassUID =  Tags.SopClassUID |> findTagValue root
@@ -58,24 +61,31 @@ module internal DatasetRepository =
         {
             DicomTree = root;
             FileName = filePathName |> Path.GetFileNameWithoutExtension;
-            TransferSyntaxUID = syntaxKey |> Option.map Tags.getTagName |> Option.defaultValue "???";
-            StudyInstanceUID =  Tags.StudyInstanceUID |> findTagValue root |> Option.defaultValue "???";
-            SeriesInstanceUID = Tags.SeriesInstanceUID |> findTagValue root |> Option.defaultValue "???";
-            SOPInstanceUID =  Tags.SopInstanceUID |> findTagValue root |> Option.defaultValue "???";
-            SOPClassUID = sopClassUID |> Option.defaultValue "???";
-            SOPClassName = sopClassUID |> Option.bind SopClass.Dictionary.TryFind |> Option.defaultValue "???";
-            PatientName = Tags.PatientName |> findTagValue root |> Option.defaultValue "???";
+            TransferSyntaxUID = syntaxKey |> Option.map Tags.getTagName |> Option.defaultValue UNKNOWN_VALUE;
+            StudyInstanceUID =  Tags.StudyInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
+            SeriesInstanceUID = Tags.SeriesInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
+            SOPInstanceUID =  Tags.SopInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
+            SOPClassUID = sopClassUID |> Option.defaultValue UNKNOWN_VALUE;
+            SOPClassName = sopClassUID |> Option.bind SopClass.Dictionary.TryFind |> Option.defaultValue UNKNOWN_VALUE;
+            PatientName = Tags.PatientName |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
             SortOrder = findSortOrder();
             CatSlice = catSlice;
         }
 
-    let private loadDataset id =
+    let private loadSlices id =
+        datasetsEntries 
+            |> Map.find id 
+            |> directoryFiles "*.*" SearchOption.AllDirectories
+            |> Array.map (bufferizeFile >> newSlice)
+            |> Array.sortBy(fun iod -> iod.SortOrder)
+
+    let private loadSlicesParallel id =
         // Image files are processed in a sequential fork-join pattern.
         // Files are read sequentially to avoid contention on disk reads.
         // After each file is loaded, an async task is started to process the image.
         let asAsyncImageProcess content =
             async {
-                return content |> newIod
+                return content |> newSlice
             }
 
         let tasks = datasetsEntries 
@@ -84,13 +94,10 @@ module internal DatasetRepository =
                     |> Array.map (bufferizeFile >> asAsyncImageProcess >> Async.StartAsTask)
 
         // Processed images are available when all async tasks have finished.
-        let iods = Task.WhenAll(tasks).Result |> Array.sortBy(fun iod -> iod.SortOrder)
+        Task.WhenAll(tasks).Result |> Array.sortBy(fun iod -> iod.SortOrder)
 
-        //let iods = datasetsEntries 
-        //            |> Map.find id 
-        //            |> directoryFiles "*.dcm" SearchOption.AllDirectories
-        //            |> Array.map (buffer >> newIod)
-        //            |> Array.sortBy(fun iod -> iod.SortOrder)
+    let private loadDataset id =
+        let iods = loadSlicesParallel id
 
         let (patient, sopClass, study, series), _ = iods |> Array.groupBy(fun iod -> (iod.PatientName, iod.SOPClassName, iod.StudyInstanceUID, iod.SeriesInstanceUID)) 
                                                          |> Array.exactlyOne
