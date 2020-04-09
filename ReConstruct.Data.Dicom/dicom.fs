@@ -129,6 +129,7 @@ type CatSlice =
         Layout: SliceLayout;
         HField: int[];
         GetRawImage: unit -> int*int*byte[];
+        GetValuesCount: unit -> (int*int)[];
     }
 
 // A Dicom instance.

@@ -149,4 +149,5 @@ module Cat =
             Layout = sliceParams;
             HField = hField;
             GetRawImage = fun() -> sliceParams |> Hounsfield.getBitmap hField;
+            GetValuesCount =  fun() -> hField |> Array.countBy id;
         }
