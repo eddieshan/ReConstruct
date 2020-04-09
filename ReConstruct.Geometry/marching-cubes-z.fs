@@ -188,11 +188,11 @@ module MarchingCubesZ =
 
     let polygonize isoLevel (slices: CatSlice[]) partialRender = 
 
-        let start = slices.[0].SliceParams
+        let start = slices.[0].Layout
         let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows
 
         let stepZ = slices |> Seq.pairwise 
-                           |> Seq.map(fun (f, b) -> Math.Abs(f.SliceParams.UpperLeft.[2] - b.SliceParams.UpperLeft.[2])) 
+                           |> Seq.map(fun (f, b) -> Math.Abs(f.Layout.UpperLeft.[2] - b.Layout.UpperLeft.[2])) 
                            |> Seq.distinct
                            |> Seq.exactlyOne
         
@@ -204,12 +204,12 @@ module MarchingCubesZ =
             let i = offset / rows
             let j = offset % rows
             let p = j*columns + i
-            if offset < slices.[k].HounsfieldBuffer.Length then
-                slices.[k].HounsfieldBuffer.[p] |> float32
+            if offset < slices.[k].HField.Length then
+                slices.[k].HField.[p] |> float32
             else
                 0.0f
         
-        let sizeZ = Math.Abs(slices.[slices.Length - 1].SliceParams.UpperLeft.[2] - slices.[0].SliceParams.UpperLeft.[2]) |> float32
+        let sizeZ = Math.Abs(slices.[slices.Length - 1].Layout.UpperLeft.[2] - slices.[0].Layout.UpperLeft.[2]) |> float32
         let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
         let upperLeft = Vector3(float32 start.UpperLeft.[0], float32 start.UpperLeft.[1], float32 start.UpperLeft.[2])
 
