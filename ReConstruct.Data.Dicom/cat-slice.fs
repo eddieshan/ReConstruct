@@ -38,7 +38,7 @@ module Hounsfield =
             StreamPosition = pixelData
         }
 
-    let getImage (buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceParams) =
+    let getImage (buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
         let rescale =
             match coordinates.RescaleSlope with
             | 0 -> id
@@ -143,10 +143,10 @@ module Cat =
     let slice (buffer, dicomTree) =
         let sliceParams = dicomTree |> sliceParams
         let coordinates = dicomTree |> hounsfieldCoordinates
-        let hounsfieldImage = Hounsfield.getImage(buffer, coordinates, sliceParams)
+        let hField = Hounsfield.getImage(buffer, coordinates, sliceParams)
 
         {
-            SliceParams = sliceParams;
-            HounsfieldBuffer = hounsfieldImage;
-            GetRawImage = fun() -> sliceParams |> Hounsfield.getBitmap hounsfieldImage;
+            Layout = sliceParams;
+            HField = hField;
+            GetRawImage = fun() -> sliceParams |> Hounsfield.getBitmap hField;
         }

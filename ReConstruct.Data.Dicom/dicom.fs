@@ -110,7 +110,7 @@ type SliceDimensions =
     }
 
 // Encapsulate CAT slice geometry params.
-type SliceParams =
+type SliceLayout =
     {
         Dimensions: SliceDimensions;
         UpperLeft: double[];
@@ -126,8 +126,8 @@ type SliceParams =
 // CAT slice.
 type CatSlice =
     {
-        SliceParams: SliceParams;
-        HounsfieldBuffer: int[];
+        Layout: SliceLayout;
+        HField: int[];
         GetRawImage: unit -> int*int*byte[];
     }
 
