@@ -2,8 +2,6 @@
 
 open System
 open System.Windows
-open System.Windows.Controls
-open System.Threading.Tasks
 
 open ReConstruct.UI.Core.Actions
 
@@ -24,4 +22,6 @@ type Mvc private(loadView, route) =
 
 module Mvc =
     let basicView v = (Some v, None)
-    let floatingView() = (None, None)
+    let floatingView view = 
+        view |> Window.floatingPanel |> ignore
+        (None, None)

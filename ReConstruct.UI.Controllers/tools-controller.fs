@@ -7,7 +7,7 @@ open ReConstruct.UI.View
 module ToolsController =
 
     let handle = function
-                 | OpenTransformPanel -> 
-                    TransformView.New() |> Window.floatingPanel |> ignore
-                    Mvc.floatingView()
+                 | OpenTransformPanel -> TransformView.New() |> Mvc.floatingView                    
+                 | OpenScalarFieldPanel -> ScalarFieldView.New() |> Mvc.floatingView
+                    
                     

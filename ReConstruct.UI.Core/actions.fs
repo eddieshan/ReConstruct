@@ -14,7 +14,7 @@ type DicomAction =
 
 type ToolAction = 
     | OpenTransformPanel
-    //| OpenGeometryPanel
+    | OpenScalarFieldPanel
 
 type AppAction =
     | File of FileAction

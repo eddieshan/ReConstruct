@@ -45,9 +45,10 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="utils.fs" />
+    <Compile Include="ui.fs" />
+    <Compile Include="window.fs" />
     <Compile Include="actions.fs" />
     <Compile Include="mvc.fs" />
-    <Compile Include="ui.fs" />
     <Compile Include="bind.fs" />
     <Compile Include="form.fs" />
     <Compile Include="toolbar.fs" />
@@ -55,7 +56,6 @@
     <Compile Include="tree-pager.fs" />
     <Compile Include="year-pager.fs" />
     <Compile Include="data-table.fs" />
-    <Compile Include="window.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
