@@ -52,6 +52,7 @@ module DatasetMainView =
                 
             let loadSlices dataset = dataset.Id |> LoadSlices |> Dicom |> Mvc.partial |> loadPartial
             let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            let openScalarFieldPanel dataset = dataset.Id |> OpenScalarFieldPanel |> Tool |> Mvc.send
             //let loadVolume dataset = (dataset.Id, Hounsfield.SKIN_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
             let loadTags dataset = dataset.Id |> LoadTags |> Dicom |> Mvc.partial |> loadPartial
 
@@ -60,6 +61,7 @@ module DatasetMainView =
 
             let imagingButtons = [ (Icons.IMAGE_SERIES |> iconButton, loadSlices) 
                                    (Icons.VIEW_3D |> iconButton, loadVolume)
+                                   (Icons.SCALAR_FIELD |> iconButton, openScalarFieldPanel)
                                    (Icons.SHIFTED_CIRCLE |> iconButton, fun _ -> OpenTransformPanel |> Tool |> Mvc.send) ] 
 
             let menuButtons = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable >> asUIElement)

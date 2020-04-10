@@ -134,10 +134,11 @@ module Cat =
         let sliceParams = dicomTree |> sliceParams
         let coordinates = dicomTree |> hounsfieldCoordinates
         let hField = Hounsfield.getHField(buffer, coordinates, sliceParams)
+        let zeroValue = 0        
 
         {
             Layout = sliceParams;
             HField = hField;
             GetRawImage = fun() -> sliceParams |> Hounsfield.getBitmap hField;
-            GetValuesCount =  fun() -> hField |> Array.countBy id;
+            GetValuesCount =  fun() -> hField |> Seq.filter(fun v -> v > zeroValue) |> Seq.countBy id |> Seq.toArray;
         }

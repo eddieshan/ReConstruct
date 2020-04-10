@@ -14,7 +14,7 @@ type DicomAction =
 
 type ToolAction = 
     | OpenTransformPanel
-    | OpenScalarFieldPanel
+    | OpenScalarFieldPanel of int
 
 type AppAction =
     | File of FileAction

@@ -69,7 +69,7 @@ module internal DatasetRepository =
             SOPClassName = sopClassUID |> Option.bind SopClass.Dictionary.TryFind |> Option.defaultValue UNKNOWN_VALUE;
             PatientName = Tags.PatientName |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
             SortOrder = findSortOrder();
-            CatSlice = catSlice;
+            Slice = catSlice;
         }
 
     let private loadSlices id =
@@ -102,7 +102,7 @@ module internal DatasetRepository =
         let (patient, sopClass, study, series), _ = iods |> Array.groupBy(fun iod -> (iod.PatientName, iod.SOPClassName, iod.StudyInstanceUID, iod.SeriesInstanceUID)) 
                                                          |> Array.exactlyOne
 
-        let pixelSlicesCount = iods |> Array.choose(fun iod -> iod.CatSlice)
+        let pixelSlicesCount = iods |> Array.choose(fun iod -> iod.Slice)
 
         {
             Id = id;
@@ -123,7 +123,7 @@ module internal DatasetRepository =
         
     let datasetSlices id = 
         let dataset = id |> byId
-        dataset.Iods |> Array.choose(fun iod -> iod.CatSlice)
+        dataset.Iods |> Array.choose(fun iod -> iod.Slice)
 
     let datasetIods id = 
         let dataset = id |> byId

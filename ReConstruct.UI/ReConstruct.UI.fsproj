@@ -91,6 +91,12 @@
     <Content Include="tree-view.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="chart.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="views.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Compile Include="Router.fs" />
     <Compile Include="Styles.fs" />
     <Compile Include="Program.fs" />
@@ -115,8 +121,6 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ReConstruct.UI.Controllers\ReConstruct.UI.Controllers.fsproj">
       <Name>ReConstruct.UI.Controllers</Name>
       <Project>{edb63c1e-35c2-4d44-b016-7831566bfc2d}</Project>
