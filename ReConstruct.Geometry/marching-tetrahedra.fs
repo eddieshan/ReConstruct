@@ -72,7 +72,7 @@ module MarchingTetrahedra =
                 
                 marchTetrahedron(tetraVertices, tetraValues, cube)
 
-    let polygonize isoLevel (slices: CatSlice[]) partialRender = 
+    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
         let queueJob = RenderAgent.renderQueue()
 
         let polygonizeSection (front, back) =

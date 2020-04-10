@@ -186,7 +186,7 @@ module MarchingCubesZ =
                                 addVertex normals.[index.[h]]
                             n <- n + 3
 
-    let polygonize isoLevel (slices: CatSlice[]) partialRender = 
+    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
         let start = slices.[0].Layout
         let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows

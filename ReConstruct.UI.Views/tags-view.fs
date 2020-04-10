@@ -25,7 +25,7 @@ module TagsView =
         let iodsList = listBox "list-box"
         
         let iodNode (index, iod: DicomInstance) = 
-            let imageMark = match iod.CatSlice with
+            let imageMark = match iod.Slice with
                             | Some _ -> "*" 
                             | None   -> ""
             let item = sprintf "%s %s" (Path.GetFileNameWithoutExtension(iod.FileName)) imageMark |> listBoxItem

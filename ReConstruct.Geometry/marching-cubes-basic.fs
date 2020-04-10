@@ -79,7 +79,7 @@ module MarchingCubesBasic =
 
                 index <- index + 3
 
-    let polygonize isoLevel (slices: CatSlice[]) partialRender = 
+    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
         let queueJob = RenderAgent.renderQueue()
 
         let polygonizeSection (front, back) =

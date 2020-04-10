@@ -123,8 +123,7 @@ type SliceLayout =
         x.UpperLeft.[1] <- x.UpperLeft.[1] - cy
         x.UpperLeft.[2] <- x.UpperLeft.[2] - cz
 
-// CAT slice.
-type CatSlice =
+type ImageSlice =
     {
         Layout: SliceLayout;
         HField: int[];
@@ -145,7 +144,7 @@ type DicomInstance =
         PatientName: string;
         TransferSyntaxUID: string;
         SortOrder: double;
-        CatSlice: CatSlice option; // CAT slice image, whenever there is one.
+        Slice: ImageSlice option; // CAT slice image, whenever there is one.
     }
 
 // A dataset contains analysis metadata and an array of Iods.
