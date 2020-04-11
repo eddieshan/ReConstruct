@@ -71,22 +71,22 @@ module Hounsfield =
 
         Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
 
-    let getBitmap (buffer: int[]) sliceParams =
+    let getBitmap (buffer: int[]) layout =
 
-        let windowLeftBorder = sliceParams.WindowCenter - (sliceParams.WindowWidth / 2)
+        let windowLeftBorder = layout.WindowCenter - (layout.WindowWidth / 2)
 
         let normalizePixelValue pixelValue =
-            let normalizedValue = (255 * (pixelValue - windowLeftBorder))/sliceParams.WindowWidth
+            let normalizedValue = (255 * (pixelValue - windowLeftBorder))/layout.WindowWidth
             match normalizedValue with
             | underMinimum when underMinimum <= 0   -> byte 0
             | overMaximum when overMaximum >= 255   -> byte 255
             | _                                     -> Convert.ToByte(normalizedValue)
 
-        let imageBuffer = Array.create (sliceParams.Dimensions.Rows*sliceParams.Dimensions.Columns*4) (byte 0)
+        let imageBuffer = Array.create (layout.Dimensions.Rows*layout.Dimensions.Columns*4) (byte 0)
 
         let mutable position, index = 0, 0
-        for row in 0..sliceParams.Dimensions.Rows-1 do
-            for column in 0..sliceParams.Dimensions.Columns-1 do
+        for row in 0..layout.Dimensions.Rows-1 do
+            for column in 0..layout.Dimensions.Columns-1 do
                 let grayValue = buffer.[index] |> normalizePixelValue
                 imageBuffer.[position] <- grayValue
                 imageBuffer.[position + 1] <- grayValue
@@ -95,7 +95,7 @@ module Hounsfield =
                 position <- position + 4
                 index <- index + 1
 
-        (sliceParams.Dimensions.Columns, sliceParams.Dimensions.Rows, imageBuffer)
+        (layout.Dimensions.Columns, layout.Dimensions.Rows, imageBuffer)
 
 module Cat =
     open Hounsfield

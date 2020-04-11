@@ -2,10 +2,8 @@
 
 open System
 open System.Collections.Generic
-open System.Windows
 open System.Windows.Controls
 open System.Windows.Shapes
-open System.Windows.Media
 
 open ReConstruct.Data.Dicom
 
@@ -14,10 +12,8 @@ open ReConstruct.UI.Core.UI
 module ScalarFieldView = 
 
     let private maxHeight = 500
-    let private barWidth = 3
 
     let private verticalBar n height =
-        let x = n * barWidth |> float
         Line(Y1 = float maxHeight - height, Y2 = float maxHeight, Style = style "vertical-bar")
 
     let valueOcurrences slice =
