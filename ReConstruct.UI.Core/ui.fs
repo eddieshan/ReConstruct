@@ -42,6 +42,8 @@ module UI =
 
     let stack styleKey = StackPanel(Style = style styleKey)
 
+    let canvas styleKey = Canvas(Style = style styleKey)
+
     let grid styleKey = Grid(Style = style styleKey)
 
     let border styleKey = Border(Style = style styleKey)

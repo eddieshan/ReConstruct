@@ -71,20 +71,21 @@ module Imaging =
 
         Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
 
-    let getBitmap slice =
+    let intMinValue, intMaxValue = 0, 255
+    let minValue, maxValue = 0uy, byte intMaxValue
 
-        let windowLeftBorder = slice.Layout.WindowCenter - (slice.Layout.WindowWidth / 2)
+    let pixelMapper sliceLayout =
+        let windowLeftBorder = sliceLayout.WindowCenter - (sliceLayout.WindowWidth / 2)
 
-        let intMinValue, intMaxValue = 0, 255
-        let minValue, maxValue = 0uy, byte intMaxValue 
-
-        let normalizePixelValue pixelValue =
-            let normalizedValue = (intMaxValue * (pixelValue - windowLeftBorder))/slice.Layout.WindowWidth
+        fun pixelValue ->
+            let normalizedValue = (intMaxValue * (pixelValue - windowLeftBorder))/sliceLayout.WindowWidth
             match normalizedValue with
             | underMinimum when underMinimum <= intMinValue -> minValue
             | overMaximum when overMaximum >= intMaxValue   -> maxValue
             | _                                             -> Convert.ToByte(normalizedValue)
-
+        
+    let getBitmap slice =
+        let normalizePixelValue = pixelMapper slice.Layout
         let numPixels = slice.Layout.Dimensions.Rows*slice.Layout.Dimensions.Columns
         let imageBuffer = Array.create (numPixels*4) (byte 0)
 

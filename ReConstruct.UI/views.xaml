@@ -7,7 +7,7 @@
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalAlignment" Value="Top"/>
         <Setter Property="Margin" Value="0,0,0,0"/>
-        <Setter Property="MaxWidth" Value="1200"/>
+        <Setter Property="MaxWidth" Value="1000"/>
     </Style>
 
 </ResourceDictionary>
