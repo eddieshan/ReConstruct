@@ -44,7 +44,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
-    <Compile Include="dicom-utils.fs" />
     <Compile Include="dicom-parser.fs" />
     <Compile Include="dataset-repository.fs" />
     <Compile Include="dicom-service.fs" />

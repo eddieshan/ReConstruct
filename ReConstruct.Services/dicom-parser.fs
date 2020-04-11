@@ -7,9 +7,7 @@ open ReConstruct.Core.Numeric
 open ReConstruct.Core.IO
 
 open ReConstruct.Data.Dicom
-open ReConstruct.Data.Dicom.BaseTypes
-
-open ReConstruct.Services.Utils
+open ReConstruct.Data.Dicom.Utils
 
 module internal DicomParser =
     [<Literal>]

@@ -3,7 +3,6 @@
 open System
 
 open ReConstruct.Core.Numeric
-open ReConstruct.Data.Dicom.BaseTypes
 
 // Dicom tags taxonomy.
 module Tags =
