@@ -75,25 +75,27 @@ module Imaging =
 
         let windowLeftBorder = slice.Layout.WindowCenter - (slice.Layout.WindowWidth / 2)
 
+        let intMinValue, intMaxValue = 0, 255
+        let minValue, maxValue = 0uy, byte intMaxValue 
+
         let normalizePixelValue pixelValue =
-            let normalizedValue = (255 * (pixelValue - windowLeftBorder))/slice.Layout.WindowWidth
+            let normalizedValue = (intMaxValue * (pixelValue - windowLeftBorder))/slice.Layout.WindowWidth
             match normalizedValue with
-            | underMinimum when underMinimum <= 0   -> byte 0
-            | overMaximum when overMaximum >= 255   -> byte 255
-            | _                                     -> Convert.ToByte(normalizedValue)
+            | underMinimum when underMinimum <= intMinValue -> minValue
+            | overMaximum when overMaximum >= intMaxValue   -> maxValue
+            | _                                             -> Convert.ToByte(normalizedValue)
 
-        let imageBuffer = Array.create (slice.Layout.Dimensions.Rows*slice.Layout.Dimensions.Columns*4) (byte 0)
+        let numPixels = slice.Layout.Dimensions.Rows*slice.Layout.Dimensions.Columns
+        let imageBuffer = Array.create (numPixels*4) (byte 0)
 
-        let mutable position, index = 0, 0
-        for row in 0..slice.Layout.Dimensions.Rows-1 do
-            for column in 0..slice.Layout.Dimensions.Columns-1 do
-                let grayValue = slice.HField.[index] |> normalizePixelValue
-                imageBuffer.[position] <- grayValue
-                imageBuffer.[position + 1] <- grayValue
-                imageBuffer.[position + 2] <- grayValue
-                imageBuffer.[position + 3] <- byte 255
-                position <- position + 4
-                index <- index + 1
+        let mutable position = 0
+        slice.HField |> Array.iter(fun v -> 
+                                    let grayValue = v |> normalizePixelValue
+                                    imageBuffer.[position] <- grayValue
+                                    imageBuffer.[position + 1] <- grayValue
+                                    imageBuffer.[position + 2] <- grayValue
+                                    imageBuffer.[position + 3] <- maxValue
+                                    position <- position + 4)
 
         (slice.Layout.Dimensions.Columns, slice.Layout.Dimensions.Rows, imageBuffer)
 
