@@ -50,8 +50,6 @@ type ImageSlice =
     {
         Layout: SliceLayout;
         HField: int[];
-        GetRawImage: unit -> int*int*byte[];
-        GetValuesCount: unit -> (int*int)[];
     }
 
 type DicomTree = 

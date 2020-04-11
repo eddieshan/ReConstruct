@@ -51,7 +51,7 @@ module DatasetMainView =
         let rightToolbar() = 
                 
             let loadSlices dataset = dataset.Id |> LoadSlices |> Dicom |> Mvc.partial |> loadPartial
-            let loadVolume dataset = (dataset.Id, Hounsfield.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
+            let loadVolume dataset = (dataset.Id, Imaging.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
             let openScalarFieldPanel dataset = dataset.Id |> OpenScalarFieldPanel |> Tool |> Mvc.send
             let loadTags dataset = dataset.Id |> LoadTags |> Dicom |> Mvc.partial |> loadPartial
 

@@ -27,7 +27,7 @@ module SlicesView =
             Title: TextBlock
         } with
         member x.Set iod =
-            iod.Slice |> Option.iter(fun v -> x.Image.Source <- v.GetRawImage() |> Imaging.bitmapFrom)
+            iod.Slice |> Option.iter(fun v -> x.Image.Source <- v |> Imaging.getBitmap |> Imaging.bitmapFrom)
             x.Title.Text <- iod.SortOrder |> sprintf "Slice %O"
 
     // Uses a sliding window pattern to page through all the slices in the study series.

@@ -17,7 +17,7 @@ module ScalarFieldView =
         Line(Y1 = float maxHeight - height, Y2 = float maxHeight, Style = style "vertical-bar")
 
     let valueOcurrences slice =
-        let sliceLevels = slice.GetValuesCount() |> Array.sortByDescending snd
+        let sliceLevels = slice |> Imaging.getValuesCount |> Array.sortByDescending snd
         let trend = sliceLevels |> Seq.tryHead |> Option.defaultValue (0, 0)
         let total = sliceLevels |> Seq.sumBy snd
         (sliceLevels, trend, total)

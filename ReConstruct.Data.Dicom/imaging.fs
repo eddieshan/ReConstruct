@@ -7,7 +7,18 @@ open ReConstruct.Core.Numeric
 
 open ReConstruct.Data.Dicom.DicomTree
 
-module Hounsfield =
+// Image parameters used to calculate a Hounsfield gradient.
+type private HounsfieldCoordinates =
+    {
+        RescaleIntercept: int;
+        RescaleSlope: int;
+        PixelPadding: uint16 option;
+        PixelPaddingRangeLimit: uint16 option;
+        PixelRepresentation: uint16 option;
+        StreamPosition: Int64;
+    }
+
+module Imaging =
     
     [<Literal>]
     let BONES_ISOVALUE = 500.0f
@@ -15,18 +26,7 @@ module Hounsfield =
     [<Literal>]
     let SKIN_ISOVALUE = 30.0f
 
-    // Image parameters used to calculate a Hounsfield gradient.
-    type HounsfieldCoordinates =
-        {
-            RescaleIntercept: int;
-            RescaleSlope: int;
-            PixelPadding: uint16 option;
-            PixelPaddingRangeLimit: uint16 option;
-            PixelRepresentation: uint16 option;
-            StreamPosition: Int64;
-        }
-
-    let hounsfieldCoordinates root =
+    let private hounsfieldCoordinates root =
         let pixelData = Tags.PixelData |> findNode root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
 
         {
@@ -38,7 +38,7 @@ module Hounsfield =
             StreamPosition = pixelData
         }
 
-    let getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
+    let private getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
         let rescale =
             match coordinates.RescaleSlope with
             | 0 -> id
@@ -71,23 +71,23 @@ module Hounsfield =
 
         Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
 
-    let getBitmap (buffer: int[]) layout =
+    let getBitmap slice =
 
-        let windowLeftBorder = layout.WindowCenter - (layout.WindowWidth / 2)
+        let windowLeftBorder = slice.Layout.WindowCenter - (slice.Layout.WindowWidth / 2)
 
         let normalizePixelValue pixelValue =
-            let normalizedValue = (255 * (pixelValue - windowLeftBorder))/layout.WindowWidth
+            let normalizedValue = (255 * (pixelValue - windowLeftBorder))/slice.Layout.WindowWidth
             match normalizedValue with
             | underMinimum when underMinimum <= 0   -> byte 0
             | overMaximum when overMaximum >= 255   -> byte 255
             | _                                     -> Convert.ToByte(normalizedValue)
 
-        let imageBuffer = Array.create (layout.Dimensions.Rows*layout.Dimensions.Columns*4) (byte 0)
+        let imageBuffer = Array.create (slice.Layout.Dimensions.Rows*slice.Layout.Dimensions.Columns*4) (byte 0)
 
         let mutable position, index = 0, 0
-        for row in 0..layout.Dimensions.Rows-1 do
-            for column in 0..layout.Dimensions.Columns-1 do
-                let grayValue = buffer.[index] |> normalizePixelValue
+        for row in 0..slice.Layout.Dimensions.Rows-1 do
+            for column in 0..slice.Layout.Dimensions.Columns-1 do
+                let grayValue = slice.HField.[index] |> normalizePixelValue
                 imageBuffer.[position] <- grayValue
                 imageBuffer.[position + 1] <- grayValue
                 imageBuffer.[position + 2] <- grayValue
@@ -95,12 +95,9 @@ module Hounsfield =
                 position <- position + 4
                 index <- index + 1
 
-        (layout.Dimensions.Columns, layout.Dimensions.Rows, imageBuffer)
+        (slice.Layout.Dimensions.Columns, slice.Layout.Dimensions.Rows, imageBuffer)
 
-module Cat =
-    open Hounsfield
-
-    let sliceParams (root: DicomTree) =
+    let private parseSliceLayout (root: DicomTree) =
 
         let parseDoubles (value: string option) = 
             match value with 
@@ -130,15 +127,16 @@ module Cat =
             WindowWidth =  Tags.WindowWidth |> findTagValueAsNumber root int |> Option.defaultValue 0;
         }
 
+    let getValuesCount slice =  
+        let zeroValue = 0
+        slice.HField |> Seq.filter(fun v -> v > zeroValue) |> Seq.countBy id |> Seq.toArray
+
     let slice (buffer, dicomTree) =
-        let sliceParams = dicomTree |> sliceParams
+        let sliceParams = dicomTree |> parseSliceLayout
         let coordinates = dicomTree |> hounsfieldCoordinates
-        let hField = Hounsfield.getHField(buffer, coordinates, sliceParams)
-        let zeroValue = 0        
+        let hField = getHField(buffer, coordinates, sliceParams)        
 
         {
             Layout = sliceParams;
-            HField = hField;
-            GetRawImage = fun() -> sliceParams |> Hounsfield.getBitmap hField;
-            GetValuesCount =  fun() -> hField |> Seq.filter(fun v -> v > zeroValue) |> Seq.countBy id |> Seq.toArray;
+            HField = hField;            
         }

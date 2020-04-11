@@ -56,7 +56,7 @@ module internal DatasetRepository =
         //                | (_, _)                          -> false
 
         let catSlice = match Tags.PixelData|> findTagValue root with
-                        | Some _ -> syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Cat.slice(buffer, root))
+                        | Some _ -> syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Imaging.slice(buffer, root))
                         | _      -> None
         {
             DicomTree = root;
