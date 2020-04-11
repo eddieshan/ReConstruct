@@ -52,6 +52,7 @@
     <Compile Include="data-elements.fs" />
     <Compile Include="transfer-syntax.fs" />
     <Compile Include="sop-class.fs" />
+    <Compile Include="dicom-parser.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

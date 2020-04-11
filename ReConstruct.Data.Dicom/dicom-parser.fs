@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.Services
+﻿namespace ReConstruct.Data.Dicom
 
 open System
 
@@ -6,10 +6,9 @@ open ReConstruct.Core
 open ReConstruct.Core.Numeric
 open ReConstruct.Core.IO
 
-open ReConstruct.Data.Dicom
 open ReConstruct.Data.Dicom.Utils
 
-module internal DicomParser =
+module DicomParser =
     [<Literal>]
     let STANDARD_PREAMBLE = "DICM"
 
@@ -25,7 +24,7 @@ module internal DicomParser =
         | _, VREncoding.Explicit, _, _  -> reader |> readExplicitVR
         | _, _, true, _                 -> vrType
         | _, _, false, true             -> LONG_STRING
-        | _, _, false, false            -> UNKNOWN        
+        | _, _, false, false            -> UNKNOWN
 
     let asU16 = (INT16_SIZE, toUInt16)
     let asU32 = (INT32_SIZE, toUInt32)
