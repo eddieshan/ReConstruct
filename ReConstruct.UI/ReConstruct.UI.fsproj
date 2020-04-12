@@ -100,8 +100,8 @@
     <Content Include="views.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Compile Include="Router.fs" />
-    <Compile Include="Styles.fs" />
+    <Compile Include="router.fs" />
+    <Compile Include="styles.fs" />
     <Compile Include="Program.fs" />
     <Content Include="Fonts\Material-Design-Iconic-Font.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

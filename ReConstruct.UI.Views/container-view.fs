@@ -3,12 +3,8 @@
 open System
 open System.Windows
 open System.Windows.Controls
-open System.Windows.Data
-open System.Windows.Input
 
-open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
-open ReConstruct.UI.Core.Actions
 
 module ContainerView = 
     let New navigationContainer =
