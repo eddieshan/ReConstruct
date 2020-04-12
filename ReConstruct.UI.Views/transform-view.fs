@@ -23,25 +23,25 @@ module TransformView =
         //        yield Icons.CAMERA_OUT |> iconButton |> withClick (moveCameraZ -zoomFactor) :> UIElement
         //    }
 
+        let spinner up down =
+            let container = stack "spinner"
+            Icons.CHEVRON_UP |> button "icon-button-mini" |> withClick up >- container
+            Icons.CHEVRON_DOWN |> button "icon-button-mini" |> withClick down  >- container
+            container
+
         let scaleControls caption =
-            seq {
-                yield Icons.ZOOM_IN |> iconButton |> withClick (scale scaleFactor) :> UIElement
+            seq {                
                 yield caption :> UIElement
-                yield Icons.ZOOM_OUT |> iconButton |> withClick (scale -scaleFactor) :> UIElement
+                yield (spinner (scale scaleFactor) ((scale -scaleFactor))) :> UIElement
             }
 
-        let rotationControls(labelA, labelB, axis, caption) = 
+        let rotationControls(axis, caption) = 
             seq {
-                yield labelA |> iconButton |> withClick (rotate (axis, delta)) :> UIElement
                 yield caption :> UIElement
-                yield labelB |> iconButton |> withClick (rotate (axis, -delta)) :> UIElement
+                yield (spinner (rotate (axis, delta)) (rotate (axis, -delta))) :> UIElement
             }
 
-        let grid = columnGrid 4
-
-        let toRow title controls =
-            title |> textBlock "panel-caption" >- grid
-            controls |> Seq.iter(fun c -> c >- grid)
+        let view = stack "transform-view"
 
         let transformText() = textBlock "panel-caption" "0.00"
         let rotXText, rotYText, rotZText, scaleText = transformText(), transformText(), transformText(), transformText()
@@ -54,11 +54,16 @@ module TransformView =
             scaleText.Text <- sprintf "%.2f" scale
 
         Events.VolumeTransformed.Publish |> Event.add updateTransform
-    
-        rotationControls (Icons.CHEVRON_UP, Icons.CHEVRON_DOWN, Axis.X, rotXText) |> toRow "Rotate X"
-        rotationControls (Icons.CHEVRON_LEFT, Icons.CHEVRON_RIGHT, Axis.Y, rotYText) |> toRow "Rotate Y"
-        rotationControls (Icons.ROTATE_LEFT, Icons.ROTATE_RIGHT, Axis.Z, rotZText) |> toRow "Rotate Z"
-        scaleControls scaleText |> toRow "Scale"
+        
+        seq {
+            yield Icons.ROTATE_RIGHT |> textBlock "icon-text" :> UIElement
+            yield! rotationControls (Axis.X, rotXText)
+            yield! rotationControls (Axis.Y, rotYText)
+            yield! rotationControls (Axis.Z, rotZText)
+            yield Icons.CAMERA_IN |> textBlock "icon-text" :> UIElement
+            yield! scaleControls scaleText
+        } |> Seq.iter(fun c -> c >- view)
+        
         //cameraControls() |> toRow "Zoom"
 
-        grid
+        view

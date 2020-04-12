@@ -52,7 +52,6 @@
 
     <Style x:Key="toggle-button" BasedOn="{StaticResource base-button}" TargetType="{x:Type ToggleButton}"/>
 
-
     <Style x:Key="icon-button" TargetType="Button">
         <Setter Property="Margin" Value="0"/>
         <Setter Property="Padding" Value="0"/>
@@ -83,6 +82,12 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="icon-button-mini" TargetType="Button" BasedOn="{StaticResource icon-button}">
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+        <Setter Property="FontSize" Value="16" />
     </Style>
 
 
