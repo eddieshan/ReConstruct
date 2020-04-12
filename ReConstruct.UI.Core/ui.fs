@@ -36,7 +36,7 @@ module UI =
     
     let customText text styleKey = TextBlock(Text = text, Style = style styleKey)
 
-    let button content = Button(Content = content, Style = style "base-button")
+    let button styleKey content = Button(Content = content, Style = style styleKey)
 
     let iconButton content = Button(Content = content, Style = style "icon-button")
 

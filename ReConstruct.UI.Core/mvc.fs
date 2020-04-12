@@ -22,6 +22,6 @@ type Mvc private(loadView, route) =
 
 module Mvc =
     let basicView v = (Some v, None)
-    let floatingView view = 
-        view |> Window.floatingPanel |> ignore
+    let floatingView title view = 
+        view |> Window.floatingPanel title |> ignore
         (None, None)

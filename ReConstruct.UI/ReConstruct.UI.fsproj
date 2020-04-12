@@ -94,6 +94,9 @@
     <Content Include="chart.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="window.xaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="views.xaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -120,6 +123,7 @@
     <Reference Include="System.ValueTuple">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="WindowsBase" />
     <ProjectReference Include="..\ReConstruct.UI.Controllers\ReConstruct.UI.Controllers.fsproj">
       <Name>ReConstruct.UI.Controllers</Name>

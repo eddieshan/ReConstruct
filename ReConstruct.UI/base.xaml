@@ -34,46 +34,6 @@
         <Setter Property="FontSize"  Value="12"/>
     </Style>
 
-    <Style x:Key="floating-panel" TargetType="Window" BasedOn="{StaticResource ResourceKey={x:Type Window}}">
-        <Setter Property="Background"  Value="{StaticResource panel-background}" />
-        <Setter Property="AllowsTransparency"  Value="true" />
-        <Setter Property="WindowStyle"  Value="None" />
-        <Setter Property="SizeToContent" Value="WidthAndHeight" />
-        <Setter Property="Padding"  Value="3" />
-        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="HorizontalContentAlignment"  Value="Center" />
-    </Style>
-
-    <Style x:Key="handlebar" TargetType="StackPanel">
-        <Setter Property="HorizontalAlignment" Value="Stretch" />
-        <Setter Property="Height" Value="15" />
-    </Style>
-
-    <Style x:Key="close-panel" TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource discrete}" />
-        <Setter Property="FontFamily" Value="{StaticResource base-font}" />
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="VerticalAlignment"  Value="Center" />
-        <Setter Property="HorizontalAlignment"  Value="Stretch" />
-        <Setter Property="TextAlignment"  Value="Right" />
-        <Setter Property="Margin" Value="0,0,4,0" />
-        <Setter Property="Padding" Value="0" />
-    </Style>
-
-    <Style x:Key="panel-caption" TargetType="TextBlock" BasedOn="{StaticResource ResourceKey={x:Type TextBlock}}">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{StaticResource discrete}" />
-        <Setter Property="FontFamily" Value="{StaticResource base-font}" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="VerticalAlignment"  Value="Center" />
-        <Setter Property="HorizontalAlignment"  Value="Left" />
-        <Setter Property="TextAlignment"  Value="Right" />
-        <Setter Property="Margin" Value="4,0,0,0" />
-        <Setter Property="Padding" Value="0" />
-    </Style>
-
     <Style TargetType="Label" BasedOn="{StaticResource ResourceKey={x:Type Label}}">
         <Setter Property="Background" Value="{StaticResource background}"/>
         <Setter Property="Foreground" Value="{StaticResource discrete}"/>

@@ -9,6 +9,6 @@ open ReConstruct.UI.View
 module ToolsController =
 
     let handle = function
-                 | OpenTransformPanel -> TransformView.New() |> Mvc.floatingView                    
-                 | OpenScalarFieldPanel id -> id |> DicomService.getVolume |> ScalarFieldView.New |> Mvc.floatingView                 
+                 | OpenTransformPanel -> TransformView.New() |> Mvc.floatingView "Transform tools"
+                 | OpenScalarFieldPanel id -> id |> DicomService.getVolume |> ScalarFieldView.New |> Mvc.floatingView "Field levels"
                     

@@ -2,18 +2,22 @@
 
 open System
 open System.Windows
+open System.Windows.Controls
 
 open ReConstruct.UI.Core.UI
 
 module Window =
-    let floatingPanel content =
+    let floatingPanel title content =
         let layout = stack "vertical"
-        let container = new Window(Style = style "floating-panel", Content = layout)
-        let handleBar = stack "handlebar"
-        handleBar.MouseLeftButtonDown |> Event.add(fun ev -> container.DragMove())
+        let container = Window(Style = style "floating-panel", Content = layout)
 
-        let closePanel = textBlock "close-panel" "x"
-        closePanel >- handleBar
+        let panelTitle = textBlock "panel-caption" title
+        let closePanel = "x" |> button "panel-button" |> withClick (fun _ -> container.Close())
+
+        let handleBar = DockPanel(Style = style "panel-handle")
+        handleBar.MouseLeftButtonDown |> Event.add(fun ev -> container.DragMove())
+        closePanel |> dockTo handleBar Dock.Right
+        panelTitle |> dockTo handleBar Dock.Left
 
         handleBar >- layout
         content >- layout
