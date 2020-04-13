@@ -75,7 +75,7 @@
         </Setter>
     </Style>
 
-    <Style TargetType="{x:Type ScrollViewer}">
+    <Style x:Key="scroller" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource ResourceKey={x:Type ScrollViewer}}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ScrollViewer}">

@@ -12,29 +12,30 @@ open ReConstruct.UI.Core.UI
 
 module ScalarFieldView = 
 
-    let private maxHeight = 200
+    let private maxHeight, itemWidth, barWidth = 200.0, 30.0, 10.0
+    let private relativeBarOffset = (itemWidth - barWidth)/2.0
 
-    let private scrollable control = 
-        let scroller = ScrollViewer(HorizontalScrollBarVisibility = ScrollBarVisibility.Visible)
-        scroller.Content <- control
-        scroller
+    let private scrollable control = ScrollViewer(Style = style "horizontal-scroller", Content = control)
 
-    let private chartContainer height = 
-        let chart = canvas "vertical-bars-container"
-        chart.Height <- float height
-        chart
+    let private attachToCanvas (left, bottom) control =
+        Canvas.SetLeft(control, left)
+        Canvas.SetBottom(control, bottom)
 
-    let private verticalBar n height =
-        let x = (float n)*7.0
-        let bar = Line(X1 = x, Y1 = 0.0, X2 = x, Y2 = float height, Style = style "vertical-bar")
-        Canvas.SetBottom(bar, 0.0)
-        Canvas.SetLeft(bar, 0.0)
-        bar
+    let private chartContainer numItems = Canvas(Style = style "levels-chart", Height = maxHeight, Width = (float numItems)*itemWidth)
 
-    let valueOcurrences = Imaging.getValuesCount >> Array.sortByDescending snd
+    let private verticalBar root n value height =
+        let offset = (float n)*itemWidth
+
+        let label = value.ToString() |> textBlock "level-label"
+        label |> attachToCanvas (offset, 0.0)
+        label >- root
+
+        let bar = Line(X1 = 0.0, Y1 = 0.0, X2 = 0.0, Y2 = float height, Style = style "level-bar", StrokeThickness = barWidth)
+        bar |> attachToCanvas (offset + relativeBarOffset, 25.0)
+        bar >- root
         
     let New (slices: ImageSlice[]) =
-        let valuesCount = slices |> Array.Parallel.map valueOcurrences
+        let valuesCount = slices |> Array.Parallel.map Imaging.getValuesCount
         let countTable = new Dictionary<int, int> (500)
 
         let addCount (hValue, count) =    
@@ -45,25 +46,25 @@ module ScalarFieldView =
 
         valuesCount |> Seq.iter(Seq.iter addCount)
 
-        let descendingCounts = countTable |> Seq.sortByDescending(fun pair -> pair.Value) |> Seq.toArray
-        let maxCount = (descendingCounts |> Seq.head).Value
-        let mapHeight count = (float (count*maxHeight))/(float maxCount)
-
-        let totalsHeight = descendingCounts |> Array.map(fun pair -> (pair.Key, mapHeight pair.Value))
-
-        let trendHeight trend = 
-            match trend with
-            | None -> 0.0
-            | Some (value, _) -> totalsHeight |> Seq.find(fun (v, _) -> v = value) |> snd               
+        let sortedLevels = countTable |> Seq.sortBy(fun pair -> pair.Key) |> Seq.toArray
+        let maxCount = countTable |> Seq.maxBy(fun p -> p.Value)
+        let minCount = countTable |> Seq.minBy(fun p -> p.Value)
+        let countRange = (maxCount.Value - minCount.Value) |> float
+        let mapHeight count = (float count)*maxHeight/countRange
         
-        let slicesCountChart = chartContainer maxHeight
-        valuesCount |> Seq.iteri(fun i levels -> levels |> Seq.tryHead |> trendHeight |> verticalBar i >- slicesCountChart)
+        let slicesCountChart = chartContainer valuesCount.Length
+        valuesCount |> Seq.iteri(fun i levels -> 
+                                    match levels |> Seq.isEmpty with
+                                    | true -> verticalBar slicesCountChart i 0 0.0
+                                    | false -> 
+                                        let value, count = levels |> Seq.maxBy(fun (_, count) -> count)
+                                        count |> mapHeight |> verticalBar slicesCountChart i value)
 
-        let totalCountChart = chartContainer maxHeight
-        totalsHeight |> Seq.iteri(fun i (_, height) -> height |> verticalBar i >- totalCountChart)        
+        let totalCountChart = chartContainer sortedLevels.Length
+        sortedLevels |> Seq.iteri(fun i p -> p.Value |> mapHeight |> verticalBar totalCountChart p.Key i)
 
-        let scalarFieldView = stack "slice-levels"
-        slicesCountChart |> scrollable >- scalarFieldView
+        let scalarFieldView = stack "slice-levels"        
         totalCountChart |> scrollable >- scalarFieldView
+        slicesCountChart |> scrollable >- scalarFieldView
 
         scalarFieldView
