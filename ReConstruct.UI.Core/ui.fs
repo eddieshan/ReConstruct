@@ -48,6 +48,8 @@ module UI =
 
     let border styleKey = Border(Style = style styleKey)
 
+    let withBorder styleKey child = Border(Style = style styleKey, Child = child)
+
     let withStyle styleKey (control: FrameworkElement) = control.Style <- style styleKey
 
     let withIcon icon (button: Button) = button.Content <- icon
@@ -95,6 +97,8 @@ module UI =
         parent
 
     let addItemTo (parent: ItemsControl) child = parent.Items.Add(child) |> ignore
+
+    let dock styleKey = DockPanel(Style = style styleKey)
 
     let dockTo (parent:DockPanel) position child = 
         parent.Children.Add(child) |> ignore

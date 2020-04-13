@@ -3,9 +3,14 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="panel-handle" TargetType="DockPanel">
-        <Setter Property="Margin" Value="5" />        
+        <Setter Property="Margin" Value="5" />
         <Setter Property="Height" Value="15" />
         <Setter Property="LastChildFill" Value="True" />
+    </Style>
+
+    <Style x:Key="panel-handle-border" TargetType="Border">
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
     </Style>
 
     <Style x:Key="panel-button" TargetType="Button" BasedOn="{StaticResource ResourceKey=icon-button}">

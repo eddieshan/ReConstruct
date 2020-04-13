@@ -14,11 +14,11 @@ module Window =
         let panelTitle = textBlock "panel-caption" title
         let closePanel = "x" |> button "panel-button" |> withClick (fun _ -> container.Close())
 
-        let handleBar = DockPanel(Style = style "panel-handle")
+        let handleBar = "panel-handle" |> dock 
         handleBar.MouseLeftButtonDown |> Event.add(fun ev -> container.DragMove())
         closePanel |> dockTo handleBar Dock.Right
         panelTitle |> dockTo handleBar Dock.Left
 
-        handleBar >- layout
+        handleBar |> withBorder "panel-handle-border" >- layout
         content >- layout
         container.Show()
