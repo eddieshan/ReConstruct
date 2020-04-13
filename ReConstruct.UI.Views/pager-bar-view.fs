@@ -1,11 +1,7 @@
 ﻿namespace ReConstruct.UI.View
 
 open System
-open System.IO
 open System.Windows
-open System.Windows.Controls
-open System.Windows.Data
-open System.Windows.Input
 
 open ReConstruct.UI.Core.UI
 
@@ -26,7 +22,7 @@ module PagerBar =
             buttons.[index] |> withIcon selectedIcon
             index |> loadPage
 
-        buttons |> List.iteri(fun index button -> button |> withClick (fun _ -> index |> selectPage) >- bar)
+        buttons |> List.iteri(fun index button -> button |> onClick (fun _ -> index |> selectPage) >- bar)
 
         defaultPage |> loadPage
 

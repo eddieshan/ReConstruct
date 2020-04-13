@@ -12,7 +12,7 @@ module DatasetsView =
     let private entryRow (id, name) =
         let row = stack "horizontal"
 
-        Icons.EDIT |> iconButton |> withClick (fun _ -> id |> DatasetEntry |> Dicom |> Mvc.send) >- row
+        Icons.EDIT |> iconButton |> onClick (fun _ -> id |> DatasetEntry |> Dicom |> Mvc.send) >- row
 
         name |> textBlock "caption-text" >- row
         row

@@ -104,8 +104,8 @@ module UI =
         parent.Children.Add(child) |> ignore
         DockPanel.SetDock(child, position)
 
-    let withClick onClick (button:Button) = 
-        button.Click |> Event.add(fun e -> onClick button)
+    let onClick handler (button:Button) = 
+        button.Click |> Event.add handler
         button
 
     let whenChildIs (apply: 'T -> unit) (children: UIElementCollection) = [0 .. children.Count - 1] 

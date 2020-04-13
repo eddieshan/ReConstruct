@@ -69,8 +69,8 @@ module DatasetMainView =
             let toolbar = menuButtons |> Toolbar.Right
 
             let loadContent dataset =
-                buttons |> Seq.iter(fun (b, f) -> b |> enable |> withClick(fun _ -> dataset |> f) |> ignore)
-                imagingButtons |> Seq.iter(fun (b, f) -> b |> enableIf dataset.HasPixelData |> withClick(fun _ -> dataset |> f) |> ignore)
+                buttons |> Seq.iter(fun (b, f) -> b |> enable |> onClick(fun _ -> dataset |> f) |> ignore)
+                imagingButtons |> Seq.iter(fun (b, f) -> b |> enableIf dataset.HasPixelData |> onClick(fun _ -> dataset |> f) |> ignore)
                 dataset |> loadSlices
 
             (toolbar, loadContent)

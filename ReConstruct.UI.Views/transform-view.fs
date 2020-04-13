@@ -25,8 +25,8 @@ module TransformView =
 
         let spinner up down =
             let container = stack "spinner"
-            Icons.CHEVRON_UP |> button "icon-button-mini" |> withClick up >- container
-            Icons.CHEVRON_DOWN |> button "icon-button-mini" |> withClick down  >- container
+            Icons.CHEVRON_UP |> button "icon-button-mini" |> onClick up >- container
+            Icons.CHEVRON_DOWN |> button "icon-button-mini" |> onClick down  >- container
             container
 
         let scaleControls caption =

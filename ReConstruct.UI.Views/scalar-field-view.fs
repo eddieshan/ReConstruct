@@ -31,12 +31,13 @@ module ScalarFieldView =
         label >- root
 
         let bar = Line(X1 = 0.0, Y1 = 0.0, X2 = 0.0, Y2 = float height, Style = style "level-bar", StrokeThickness = barWidth)
-        bar |> attachToCanvas (offset + relativeBarOffset, 25.0)
+        bar |> attachToCanvas (offset + relativeBarOffset, 20.0)
         bar >- root
         
     let New (slices: ImageSlice[]) =
         let valuesCount = slices |> Array.Parallel.map Imaging.getValuesCount
-        let countTable = new Dictionary<int, int> (500)
+        let estimatedNumLevels = valuesCount |> Seq.head |> Seq.length
+        let countTable = Dictionary<int, int> estimatedNumLevels
 
         let addCount (hValue, count) =    
             if countTable.ContainsKey hValue then

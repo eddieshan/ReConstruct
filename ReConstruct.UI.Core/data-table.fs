@@ -35,7 +35,7 @@ module DataTable =
         let inline cellText (text, width, styleKey) = TextBlock(Text = text, Width = float width, Style = style styleKey)
         let typedCell style value = cellText(value, width, style) :> UIElement
         let styledCell (value, style) = cellText(value, width, style) :> UIElement
-        let actionCell (icon, action) =  icon |> iconButton |> withClick(fun e -> action()) :> UIElement
+        let actionCell (icon, action) =  icon |> iconButton |> onClick(fun e -> action()) :> UIElement
 
         match cell with
         | IntCell(getValue)                         -> (fun r -> r |> getValue |> toString |> typedCell "numeric-cell"), cellText(title, width, "numeric-header")
