@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="app-state.fs" />
     <Compile Include="events.fs" />
     <Compile Include="icons.fs" />
     <Compile Include="message-view.fs" />

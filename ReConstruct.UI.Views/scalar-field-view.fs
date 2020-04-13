@@ -22,15 +22,24 @@ module ScalarFieldView =
         Canvas.SetBottom(control, bottom)
 
     let private chartContainer numItems = Canvas(Style = style "levels-chart", Height = maxHeight, Width = (float numItems)*itemWidth)
+    let mutable private selectedBar:Option<Line> = None 
 
     let private verticalBar root n value height =
         let offset = (float n)*itemWidth
 
+        let bar = Line(X1 = 0.0, Y1 = 0.0, X2 = 0.0, Y2 = float height, Style = style "level-bar", StrokeThickness = barWidth)
         let label = value.ToString() |> textBlock "level-label"
+
+        let setCurrentLevel() =
+            AppState.Level <- value |> float32 |> Some   
+            selectedBar |> Option.iter(withStyle "level-bar")
+            bar |> withStyle "level-bar-selected"
+            selectedBar <- Some bar
+
+        label.MouseDown |> Event.add(fun _ -> setCurrentLevel())
         label |> attachToCanvas (offset, 0.0)
         label >- root
 
-        let bar = Line(X1 = 0.0, Y1 = 0.0, X2 = 0.0, Y2 = float height, Style = style "level-bar", StrokeThickness = barWidth)
         bar |> attachToCanvas (offset + relativeBarOffset, 20.0)
         bar >- root
         
