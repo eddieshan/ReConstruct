@@ -12,7 +12,7 @@ open ReConstruct.UI.Core.UI
 
 module ScalarFieldView = 
 
-    let private maxHeight, itemWidth, barWidth = 200.0, 30.0, 10.0
+    let private maxHeight, itemWidth, barWidth = 200.0, 36.0, 10.0
     let private relativeBarOffset = (itemWidth - barWidth)/2.0
 
     let private scrollable control = ScrollViewer(Style = style "horizontal-scroller", Content = control)
@@ -61,7 +61,7 @@ module ScalarFieldView =
                                         count |> mapHeight |> verticalBar slicesCountChart i value)
 
         let totalCountChart = chartContainer sortedLevels.Length
-        sortedLevels |> Seq.iteri(fun i p -> p.Value |> mapHeight |> verticalBar totalCountChart p.Key i)
+        sortedLevels |> Seq.iteri(fun i p -> p.Value |> mapHeight |> verticalBar totalCountChart i p.Key)
 
         let scalarFieldView = stack "slice-levels"        
         totalCountChart |> scrollable >- scalarFieldView
