@@ -30,11 +30,12 @@ module MarchingCubesBasic =
         let v1, v2 = x.Levels.[index1], x.Levels.[index2]        
 
         if x.IsoValue = v1 then
-            x.Vertices.[index1]   
+            x.Vertices.[index1]
         elif x.IsoValue = v2 then
             x.Vertices.[index2]
-        elif v1 - v2 = 0 then
-            x.Vertices.[index1]
+        elif v1 = v2 then
+            let mu = 0.5f
+            x.Vertices.[index1] + mu*(x.Vertices.[index2] - x.Vertices.[index1])
         else
             let mu = float32(x.IsoValue - v1) / float32(v2 - v1)
             x.Vertices.[index1] + mu*(x.Vertices.[index2] - x.Vertices.[index1])
@@ -71,13 +72,13 @@ module MarchingCubesBasic =
 
                 index <- index + 3
 
-    let polygonize isoLevel (slices: ImageSlice[]) partialRender =         
+    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
         let polygonizeSection (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
             let mutable bufferChain = List.empty
 
-            let addPoint (p: System.Numerics.Vector3) = 
+            let addPoint (p: Vector3) = 
                 if index = capacity then
                     bufferChain <- currentBuffer :: bufferChain
                     currentBuffer <- borrowBuffer()
