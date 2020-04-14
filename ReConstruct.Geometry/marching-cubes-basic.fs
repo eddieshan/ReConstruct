@@ -17,7 +17,7 @@ module private RenderAgent =
 
     let renderQueue() = 
         let throttledForkJoinAgent = Async.throttlingAgent parallelThrottle context
-        Async.ThrottledJob >> throttledForkJoinAgent.Post
+        fun processResult job -> (job, processResult) |> Async.ThrottledJob |> throttledForkJoinAgent.Post
 
 module MarchingCubesBasic =
 
@@ -42,10 +42,7 @@ module MarchingCubesBasic =
             point1
         else
             let mu = (x.IsoValue - val1) / (val2 - val1)
-            let x = point1.X + mu * (point2.X - point1.X)
-            let y = point1.Y + mu * (point2.Y - point1.Y)
-            let z = point1.Z + mu * (point2.Z - point1.Z)
-            Vector3(x, y, z)
+            point1 + mu*(point2 - point1)
 
     let private marchCube (cube: Cube) =
 
@@ -79,8 +76,7 @@ module MarchingCubesBasic =
 
                 index <- index + 3
 
-    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
-        let queueJob = RenderAgent.renderQueue()
+    let polygonize isoLevel (slices: ImageSlice[]) partialRender =         
 
         let polygonizeSection (front, back) =
             let mutable currentBuffer, index = borrowBuffer(), 0
@@ -109,6 +105,10 @@ module MarchingCubesBasic =
                 bufferPool.Return buffer
             bufferChain |> List.iteri dumpBuffer
 
-        let polygonizeJob i = (async { return polygonizeSection (slices.[i - 1], slices.[i]) }, addPoints)
+        let queueJob = RenderAgent.renderQueue()
+        let polygonizeJob i = async { return polygonizeSection (slices.[i - 1], slices.[i]) }
+        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> (queueJob addPoints))
 
-        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> queueJob)
+        /// NOT TO BE REMOVED. Single-thread version for testing.
+        //let polygonizeJob i = polygonizeSection (slices.[i - 1], slices.[i]) |> addPoints
+        //seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob)

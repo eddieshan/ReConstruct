@@ -102,6 +102,6 @@ module MarchingTetrahedra =
                 bufferPool.Return buffer
             bufferChain |> List.iteri dumpBuffer
 
-        let polygonizeJob i = (async { return polygonizeSection (slices.[i - 1], slices.[i]) }, addPoints)
+        let polygonizeJob i = async { return polygonizeSection (slices.[i - 1], slices.[i]) }
 
-        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> queueJob)
+        seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> (queueJob addPoints))
