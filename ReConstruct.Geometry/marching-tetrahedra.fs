@@ -15,14 +15,12 @@ module MarchingTetrahedra =
     let private capacity = 9000
     let private borrowBuffer() = bufferPool.Rent capacity
 
-    let lerpVertex(fValue1, fValue2, fValueDesired) =
-        let tolerance = 0.00001f
-        let fDelta = fValue2 - fValue1
-    
-        if fDelta < tolerance then 0.5f
-        else (fValueDesired - fValue1)/fDelta
+    let lerpVertex(v1, v2, isoLevel) =
+        let delta = v2 - v1    
+        if delta = 0 then 0.5f
+        else float32(isoLevel - v1)/(float32 delta)
 
-    let marchTetrahedron (vertices: Vector3[], values: float32[], v: Cube) =
+    let marchTetrahedron (vertices: Vector3[], values: int[], v: Cube) =
         let mutable tetraIndex = 0
         let trianglesVertices = Array.zeroCreate<Vector3> 6
 
@@ -60,7 +58,7 @@ module MarchingTetrahedra =
 
     let marchCube (cube: Cube) =
             let tetraVertices = Array.zeroCreate<Vector3> 4
-            let tetraValues = Array.zeroCreate<float32> 4
+            let tetraValues = Array.zeroCreate<int> 4
     
             for i in 0..5 do
                 for j in 0..3 do
@@ -68,7 +66,7 @@ module MarchingTetrahedra =
                     tetraVertices.[j].X <- cube.Vertices.[cubeVertexIndex].X
                     tetraVertices.[j].Y <- cube.Vertices.[cubeVertexIndex].Y
                     tetraVertices.[j].Z <- cube.Vertices.[cubeVertexIndex].Z
-                    tetraValues.[j] <- float32 cube.Levels.[cubeVertexIndex]
+                    tetraValues.[j] <- cube.Levels.[cubeVertexIndex]
                 
                 marchTetrahedron(tetraVertices, tetraValues, cube)
 

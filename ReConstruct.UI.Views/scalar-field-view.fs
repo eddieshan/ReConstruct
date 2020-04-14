@@ -31,7 +31,7 @@ module ScalarFieldView =
         let label = value.ToString() |> textBlock "level-label"
 
         let setCurrentLevel() =
-            AppState.Level <- value |> float32 |> Some   
+            AppState.Level <- value |> Some   
             selectedBar |> Option.iter(withStyle "level-bar")
             bar |> withStyle "level-bar-selected"
             selectedBar <- Some bar

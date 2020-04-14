@@ -9,7 +9,7 @@ module CubesIterator =
 
     type Cube =
         {
-            IsoValue: float32
+            IsoValue: int
             Vertices: Vector3[]
             Levels: int[]
             AddPoint: Vector3 -> unit
