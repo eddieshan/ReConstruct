@@ -19,10 +19,6 @@ module MarchingTetrahedra =
         let delta = v2 - v1
         if delta = 0 then 
             0.5f
-        elif isoLevel = v1 then
-            0.0f
-        elif isoLevel = v2 then
-            1.0f
         else 
             float32(isoLevel - v1)/(float32 delta)
 

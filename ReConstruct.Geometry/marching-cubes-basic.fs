@@ -25,28 +25,12 @@ module MarchingCubesBasic =
     let private capacity = 9000
     let private borrowBuffer() = bufferPool.Rent capacity
 
-    let private lerpVertex edgeIndex (x: Cube) =
-        let index1, index2 = EdgeTraversal.[edgeIndex]
-        let v1, v2 = x.Levels.[index1], x.Levels.[index2]        
-
-        if x.IsoValue = v1 then
-            x.Vertices.[index1]
-        elif x.IsoValue = v2 then
-            x.Vertices.[index2]
-        elif v1 = v2 then
-            let mu = 0.5f
-            x.Vertices.[index1] + mu*(x.Vertices.[index2] - x.Vertices.[index1])
-        else
-            let mu = float32(x.IsoValue - v1) / float32(v2 - v1)
-            x.Vertices.[index1] + mu*(x.Vertices.[index2] - x.Vertices.[index1])
-
     let private marchCube (cube: Cube) =
 
         let mutable cubeIndex = 0
-        let intIsoLevel = int cube.IsoValue
 
         for i in 0..cube.Levels.Length-1 do
-            if (cube.Levels.[i] <= intIsoLevel) then
+            if (cube.Levels.[i] <= cube.IsoValue) then
                 cubeIndex <- cubeIndex ||| (1 <<< i)
 
         if EdgeTable.[cubeIndex] <> 0 then
@@ -54,7 +38,15 @@ module MarchingCubesBasic =
             
             for i in 0..EdgeTraversal.Length-1 do
                 if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
-                    vertlist.[i] <- lerpVertex i cube
+                    let index1, index2 = EdgeTraversal.[i]
+                    let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
+                    let delta = v2 - v1
+                    let mu =
+                        if delta = 0 then
+                            0.5f
+                        else
+                            float32(cube.IsoValue - v1) / (float32 delta)
+                    vertlist.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
 
             let mutable index = 0
             while TriTable.[cubeIndex, index] <> -1 do
