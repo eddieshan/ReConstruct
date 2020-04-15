@@ -21,10 +21,10 @@ type private HounsfieldCoordinates =
 module Imaging =
     
     [<Literal>]
-    let BONES_ISOVALUE = 500.0f
+    let BONES_ISOVALUE = 500
 
     [<Literal>]
-    let SKIN_ISOVALUE = 30.0f
+    let SKIN_ISOVALUE = 30
 
     let private hounsfieldCoordinates root =
         let pixelData = Tags.PixelData |> findNode root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L

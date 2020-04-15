@@ -9,23 +9,22 @@
     <!--<FontFamily x:Key="base-font">Tungsten Narrow</FontFamily>-->
     <!--<FontFamily x:Key="base-font">Bahnschrift Condensed</FontFamily>-->
     <FontFamily x:Key="base-font">./Fonts/Oswald-VariableFont_wght.ttf#Oswald</FontFamily>
-    <!--<FontFamily x:Key="icon-font">Material-Design-Iconic-Font</FontFamily>-->
     <FontFamily x:Key="icon-font">./Fonts/Material-Design-Iconic-Font.ttf#Material-Design-Iconic-Font</FontFamily>
     <!--<Color x:Key="graphite">#222E31</Color>-->
-    <Color x:Key="graphite">#424E51</Color>
-    <Color x:Key="blue">#1BA1E2</Color>
-    <Color x:Key="monza">#CF000F</Color>
+    <Color x:Key="graphite">#424e51</Color>
+    <Color x:Key="blue">#1ba1e2</Color>
+    <Color x:Key="monza">#cf000f</Color>
     <Color x:Key="red">#e51400</Color>
+    <Color x:Key="goldenrod-yellow">#fbfcd4</Color>
     <Color x:Key="carbon">#000000</Color>
     
-    <!--<Color x:Key="Turquoise">#1BA1E2</Color>-->    
-    <!--<Color x:Key="DarkGray">#2F4F4F</Color>-->
     <SolidColorBrush x:Key="background" Color="{StaticResource carbon}" />
     <SolidColorBrush x:Key="discrete" Color="{StaticResource graphite}" />
     <SolidColorBrush x:Key="ContentText" Color="{StaticResource graphite}" />
     <SolidColorBrush x:Key="highlight-accent" Color="{StaticResource blue}" />
     <SolidColorBrush x:Key="light-accent" Color="DarkGray" />
     <SolidColorBrush x:Key="alert-accent" Color="{StaticResource red}" />
+    <SolidColorBrush x:Key="light-selection" Color="{StaticResource goldenrod-yellow}" />
     <SolidColorBrush x:Key="panel-background" Color="{StaticResource carbon}" Opacity="0.8" />
 
     <Style x:Key="DefaultWindow" TargetType="Window" BasedOn="{StaticResource ResourceKey={x:Type Window}}">
