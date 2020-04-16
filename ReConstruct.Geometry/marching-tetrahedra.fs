@@ -22,7 +22,7 @@ module MarchingTetrahedra =
         else 
             float32(isoLevel - v1)/(float32 delta)
 
-    let marchTetrahedron (vertices: Vector3[], values: int[], v: Cube) =
+    let marchTetrahedron addPoint (vertices: Vector3[], values: int[], v: Cube) =
         let mutable tetraIndex = 0
         let trianglesVertices = Array.zeroCreate<Vector3> 6
 
@@ -51,14 +51,14 @@ module MarchingTetrahedra =
                     let v2 = trianglesVertices.[TriTable.[tetraIndex].[i + 2]]
                     let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
-                    v.AddPoint v0
-                    v.AddPoint normal
-                    v.AddPoint v1
-                    v.AddPoint normal
-                    v.AddPoint v2
-                    v.AddPoint normal
+                    addPoint v0
+                    addPoint normal
+                    addPoint v1
+                    addPoint normal
+                    addPoint v2
+                    addPoint normal
 
-    let marchCube (cube: Cube) =
+    let marchCube addPoint (cube: Cube) =
             let tetraVertices = Array.zeroCreate<Vector3> 4
             let tetraValues = Array.zeroCreate<int> 4
     
@@ -70,7 +70,7 @@ module MarchingTetrahedra =
                     tetraVertices.[j].Z <- cube.Vertices.[cubeVertexIndex].Z
                     tetraValues.[j] <- cube.Levels.[cubeVertexIndex]
                 
-                marchTetrahedron(tetraVertices, tetraValues, cube)
+                marchTetrahedron addPoint (tetraVertices, tetraValues, cube)
 
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
         let queueJob = RenderAgent.renderQueue()
@@ -88,7 +88,7 @@ module MarchingTetrahedra =
                 p.CopyTo(currentBuffer, index)
                 index <- index + 3
 
-            CubesIterator.iterate (front, back) isoLevel addPoint marchCube
+            CubesIterator.iterate (front, back) isoLevel (marchCube addPoint)
 
             bufferChain <- currentBuffer :: bufferChain
 

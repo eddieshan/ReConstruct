@@ -25,7 +25,7 @@ module MarchingCubesBasic =
     let private capacity = 9000
     let private borrowBuffer() = bufferPool.Rent capacity
 
-    let private marchCube (cube: Cube) =
+    let private marchCube addPoint (cube: Cube) =
 
         let mutable cubeIndex = 0
 
@@ -55,12 +55,12 @@ module MarchingCubesBasic =
                 let v2 = vertlist.[TriTable.[cubeIndex, index + 2]]
                 let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
-                cube.AddPoint v0
-                cube.AddPoint normal
-                cube.AddPoint v1
-                cube.AddPoint normal
-                cube.AddPoint v2
-                cube.AddPoint normal
+                addPoint v0
+                addPoint normal
+                addPoint v1
+                addPoint normal
+                addPoint v2
+                addPoint normal
 
                 index <- index + 3
 
@@ -79,7 +79,7 @@ module MarchingCubesBasic =
                 p.CopyTo(currentBuffer, index)
                 index <- index + 3
 
-            CubesIterator.iterate (front, back) isoLevel addPoint marchCube
+            CubesIterator.iterate (front, back) isoLevel (marchCube addPoint)
 
             bufferChain <- currentBuffer :: bufferChain
 
