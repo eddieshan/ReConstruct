@@ -1,6 +1,7 @@
 ﻿namespace ReConstruct.Render.OpenGL
 
 open System
+open System.Diagnostics
 open System.Windows
 open System.Windows.Forms
 open System.Windows.Forms.Integration
@@ -24,9 +25,7 @@ module RenderView =
 
     let mutable private currentBufferSize = 0
 
-    let totalTriangles() = currentBufferSize / 3
-
-    let glContainer (estimatedSize, progressiveMesh) (width, height) =
+    let glContainer (estimatedSize, progressiveMesh, onUpdate) (width, height) =
 
         let container = new GLControl(GraphicsMode.Default)
         container.Width <- width
@@ -124,6 +123,7 @@ module RenderView =
             if subBufferSize > maxSubBufferSize || isLast then    
                 subBufferSize <- 0
                 render()
+                onUpdate currentBufferSize
 
         let mutable firstRender = true
 

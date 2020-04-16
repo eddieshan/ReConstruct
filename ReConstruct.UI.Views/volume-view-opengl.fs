@@ -25,10 +25,10 @@ module VolumeViewOpenGL =
         slices |> Array.iter(fun slice -> slice.Layout.AdjustToCenter centroid)
         let estimatedModelSize = Math.Abs(lastSlice.Layout.UpperLeft.[2] - firstSlice.Layout.UpperLeft.[2]) |> float32
 
-        //let progressiveMesh = MarchingCubesBasic.polygonize isoLevel slices
         let calculateMesh partialRender =
-            let clock = Stopwatch.StartNew()
             MarchingCubesBasic.polygonize isoLevel slices partialRender
-            sprintf "%.2fs | %i triangles" clock.Elapsed.TotalSeconds (RenderView.totalTriangles()) |> Events.Status.Trigger
-
-        RenderView.buildScene (estimatedModelSize, calculateMesh)
+        
+        let clock = Stopwatch.StartNew()
+        let onUpdate numPoints =
+            sprintf "%.2fs | %i triangles" clock.Elapsed.TotalSeconds numPoints |> Events.Status.Trigger
+        RenderView.buildScene (estimatedModelSize, calculateMesh, onUpdate)
