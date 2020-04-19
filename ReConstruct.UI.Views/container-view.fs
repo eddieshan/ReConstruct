@@ -4,6 +4,7 @@ open System
 open System.Windows
 open System.Windows.Controls
 
+open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 
 module ContainerView = 
@@ -12,6 +13,7 @@ module ContainerView =
         Events.Progress.Publish |> Event.add (fun p -> progressIndicator.IsEnabled <- p)
 
         let root = new DockPanel()
-        progressIndicator |> dockTo root Dock.Top
-        navigationContainer |> dockTo root Dock.Left
+
+        progressIndicator |> Dock.top root
+        navigationContainer |> Dock.left root
         root :> UIElement

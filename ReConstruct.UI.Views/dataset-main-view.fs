@@ -26,7 +26,7 @@ module DatasetMainView =
             view |> Option.iter(fun v ->
                                     Events.Status.Trigger(String.Empty)
                                     contentView.Children.Clear()
-                                    v |> dockTo contentView Dock.Top)
+                                    v |> Dock.top contentView)
             onLoad |> Option.iter(fun f -> f())
 
         let statusArea() =
@@ -72,8 +72,8 @@ module DatasetMainView =
             false |> Events.Progress.Trigger            
             Math.Round(time.TotalSeconds, 2) |> sprintf "%.2fs" |> Events.Status.Trigger
 
-        toolbar |> dockTo container Dock.Top
-        contentView |> dockTo container Dock.Bottom
+        toolbar |> Dock.top container
+        contentView |> Dock.bottom container
 
         Events.Status.Trigger("Processing images, please wait ...")
         Events.Progress.Trigger(true)

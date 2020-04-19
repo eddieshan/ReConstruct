@@ -100,9 +100,9 @@ module UI =
 
     let dock styleKey = DockPanel(Style = style styleKey)
 
-    let dockTo (parent:DockPanel) position child = 
-        parent.Children.Add(child) |> ignore
-        DockPanel.SetDock(child, position)
+    //let dockTo (parent:DockPanel) position child = 
+    //    parent.Children.Add(child) |> ignore
+    //    DockPanel.SetDock(child, position)
 
     let onClick handler (button:Button) = 
         button.Click |> Event.add handler

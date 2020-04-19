@@ -46,6 +46,7 @@
     <Content Include="packages.config" />
     <Compile Include="utils.fs" />
     <Compile Include="ui.fs" />
+    <Compile Include="layout.fs" />
     <Compile Include="window.fs" />
     <Compile Include="actions.fs" />
     <Compile Include="mvc.fs" />

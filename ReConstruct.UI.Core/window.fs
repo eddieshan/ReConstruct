@@ -2,8 +2,8 @@
 
 open System
 open System.Windows
-open System.Windows.Controls
 
+open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 
 module Window =
@@ -16,8 +16,8 @@ module Window =
 
         let handleBar = "panel-handle" |> dock 
         handleBar.MouseLeftButtonDown |> Event.add(fun ev -> container.DragMove())
-        closePanel |> dockTo handleBar Dock.Right
-        panelTitle |> dockTo handleBar Dock.Left
+        closePanel |> Dock.right handleBar
+        panelTitle |> Dock.left handleBar
 
         handleBar |> withBorder "panel-handle-border" >- layout
         content >- layout

@@ -36,7 +36,7 @@ module TagsView =
 
 //        container.FlowDirection <- FlowDirection.LeftToRight
 //        container.LastChildFill <- true
-        iodsList |> dockTo container Dock.Right
-        contentView |> dockTo container Dock.Left
+        iodsList |> Dock.right container
+        contentView |> Dock.left container
 
         container :> UIElement

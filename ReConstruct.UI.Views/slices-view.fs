@@ -8,6 +8,7 @@ open System.Windows.Media.Imaging
 
 open ReConstruct.Data.Dicom
 
+open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 
 module Imaging = 
@@ -79,7 +80,8 @@ module SlicesView =
             seq { startIndex..endIndex } |> Seq.iteri(fun cellIndex sliceIndex -> iods.[sliceIndex] |> cells.[cellIndex].Set)
 
         cells |> Array.chunkBySize columns |> Array.iter(fun cell -> cell |> sliceRow >- sliceContainer)
-        sliceContainer |> dockTo container Dock.Left
-        pageCount |> PagerBar.New loadPage |> dockTo container Dock.Right
+
+        sliceContainer |> Dock.left container
+        pageCount |> PagerBar.New loadPage |> Dock.right container
 
         container :> UIElement
