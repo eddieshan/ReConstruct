@@ -19,3 +19,12 @@ module Toolbar =
     let Left<'T when 'T :> UIElement> (items: 'T seq) = items |> New "left-toolbar"
 
     let Right<'T when 'T :> UIElement> (items: 'T seq) = items |> New "right-toolbar"
+
+    let top status items =
+        let toolBar = border "top-toolbar"
+        let container = DockPanel(HorizontalAlignment = HorizontalAlignment.Stretch, LastChildFill=true)
+        items |> Seq.iter(fun item -> item |> dockTo container Dock.Left)
+        status |> dockTo container Dock.Right
+        container |> onlyChildOf toolBar
+
+        toolBar

@@ -98,6 +98,14 @@
         <Setter Property="HorizontalAlignment" Value="Right"/>        
     </Style>
 
+    <Style x:Key="top-toolbar" TargetType="Border">
+        <Setter Property="Padding" Value="2,0,2,0" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
+        <Setter Property="Margin" Value="3,3,0,3" />
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+
     <Style x:Key="vertical" TargetType="StackPanel">
         <Setter Property="Orientation" Value="Vertical"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>

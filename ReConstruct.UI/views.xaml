@@ -2,6 +2,11 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
+
+    <Style x:Key="status-caption" TargetType="TextBlock" BasedOn="{StaticResource caption-text}">
+        <Setter Property="HorizontalAlignment" Value="Right"/>
+    </Style>
+
     <!-- Transform view  -->
     <Style x:Key="transform-view" TargetType="StackPanel">
         <Setter Property="Orientation" Value="Horizontal"/>

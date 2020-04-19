@@ -9,14 +9,13 @@
         <Setter Property="FontSize" Value="16" />
         <Setter Property="VerticalAlignment"  Value="Center" />
         <Setter Property="TextAlignment"  Value="Left" />
-        <!--<Setter Property="VerticalAlignment"  Value="Bottom" />-->
-        <Setter Property="Height" Value="20" />
+        <Setter Property="Height" Value="25" />
         <Setter Property="Margin" Value="0" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
     <Style x:Key="caption-text" TargetType="TextBlock" BasedOn="{StaticResource text}">
-        <Setter Property="HorizontalAlignment" Value="Left"/>        
+        <Setter Property="HorizontalAlignment" Value="Left"/>
     </Style>
 
     <Style x:Key="accent-text" TargetType="TextBlock" BasedOn="{StaticResource text}">

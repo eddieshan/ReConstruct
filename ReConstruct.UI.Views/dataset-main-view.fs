@@ -29,31 +29,19 @@ module DatasetMainView =
                                     v |> dockTo contentView Dock.Top)
             onLoad |> Option.iter(fun f -> f())
 
-        let header() =
-            let header = DockPanel()
-            let status = String.Empty |> textBlock "caption-text"
-            status |> dockTo header Dock.Right
-
-            let caption =  String.Empty |> textBlock "caption-text"
-            caption |> dockTo header Dock.Left
-
+        let statusArea() =
+            let status = String.Empty |> textBlock "status-caption"
             Events.Status.Publish |> Event.add(fun s -> status.Text <- s)
             Events.RenderStatus.Publish |> Event.add(fun s -> status.Text <- s)
+            status
 
-            let loadContent entry = 
-                let iodsInfo = match entry.HasPixelData with
-                               | true  -> sprintf "%i slices with image data" entry.Iods.Length
-                               | false -> sprintf "%i slices, no image data" entry.Iods.Length
-                caption.Text <- sprintf "%s - %s" entry.SopClass iodsInfo
-
-            (header, loadContent)
+        let status = statusArea()
         
         let rightToolbar() = 
                 
             let loadSlices dataset = dataset.Id |> LoadSlices |> Dicom |> Mvc.partial |> loadPartial
             let loadVolume dataset = 
                 AppState.Level |> Option.iter(fun level -> (dataset.Id, level) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial)
-                //(dataset.Id, Imaging.BONES_ISOVALUE) |> LoadVolume |> Dicom |> Mvc.partial |> loadPartial
             let openScalarFieldPanel dataset = dataset.Id |> OpenScalarFieldPanel |> Tool |> Mvc.send
             let loadTags dataset = dataset.Id |> LoadTags |> Dicom |> Mvc.partial |> loadPartial
 
@@ -68,7 +56,7 @@ module DatasetMainView =
                                    (Icons.SHIFTED_CIRCLE |> iconButton, fun _ -> OpenTransformPanel |> Tool |> Mvc.send) |]
 
             let menuButtons = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable >> asUIElement)
-            let toolbar = menuButtons |> Toolbar.Right
+            let toolbar = menuButtons |> Toolbar.top status
 
             let loadContent dataset =
                 buttons |> Seq.iter(fun (b, f) -> b |> enable |> onClick(fun _ -> dataset |> f) |> ignore)
@@ -78,18 +66,14 @@ module DatasetMainView =
             (toolbar, loadContent)
 
         let toolbar, loadToolbar = rightToolbar()
-        let header, loadHeader = header()
         
         let loadContent (entry, (time: TimeSpan)) =
-            entry |> loadHeader
             entry |> loadToolbar
-            false |> Events.Progress.Trigger
-            
+            false |> Events.Progress.Trigger            
             Math.Round(time.TotalSeconds, 2) |> sprintf "%.2fs" |> Events.Status.Trigger
 
-        toolbar |> dockTo container Dock.Right
-        header |> dockTo container Dock.Top
-        contentView |> dockTo container Dock.Top
+        toolbar |> dockTo container Dock.Top
+        contentView |> dockTo container Dock.Bottom
 
         Events.Status.Trigger("Processing images, please wait ...")
         Events.Progress.Trigger(true)
