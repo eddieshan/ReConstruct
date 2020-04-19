@@ -179,8 +179,8 @@ module MarchingCubesZ =
                                 calculateVertex n
                 
                         let mutable n = 0
-                        while TriTable.[cubeIndex, n] <> -1 do
-                            let index = [| TriTable.[cubeIndex, n+2]; TriTable.[cubeIndex, n+1]; TriTable.[cubeIndex, n] |]
+                        while TriTable.[cubeIndex].[n] <> -1 do
+                            let index = [| TriTable.[cubeIndex].[n+2]; TriTable.[cubeIndex].[n+1]; TriTable.[cubeIndex].[n] |]
                             for h in 0..2 do
                                 addVertex vertices.[index.[h]]
                                 addVertex normals.[index.[h]]

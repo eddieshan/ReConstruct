@@ -38,7 +38,7 @@ module MarchingCubesBasic =
             
             for i in 0..EdgeTraversal.Length-1 do
                 if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
-                    let index1, index2 = EdgeTraversal.[i]
+                    let index1, index2 = EdgeTraversal.[i].[0], EdgeTraversal.[i].[1]
                     let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
                     let delta = v2 - v1
                     let mu =
@@ -48,11 +48,16 @@ module MarchingCubesBasic =
                             float32(cube.IsoValue - v1) / (float32 delta)
                     vertlist.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
 
-            let mutable index = 0
-            while TriTable.[cubeIndex, index] <> -1 do
-                let v0 = vertlist.[TriTable.[cubeIndex, index]]
-                let v1 = vertlist.[TriTable.[cubeIndex, index + 1]]
-                let v2 = vertlist.[TriTable.[cubeIndex, index + 2]]
+            let index = ref 0
+            let triangles = TriTable.[cubeIndex]
+            while triangles.[!index] <> -1 do
+                let v0 = vertlist.[triangles.[!index]]
+                incr index
+                let v1 = vertlist.[triangles.[!index]]
+                incr index
+                let v2 = vertlist.[triangles.[!index]]
+                incr index
+
                 let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
                 addPoint v0
@@ -61,8 +66,6 @@ module MarchingCubesBasic =
                 addPoint normal
                 addPoint v2
                 addPoint normal
-
-                index <- index + 3
 
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
