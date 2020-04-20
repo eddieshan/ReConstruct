@@ -27,18 +27,21 @@ module MarchingCubesBasic =
 
     let private marchCube addPoint (cube: Cube) =
 
-        let mutable cubeIndex = 0
+        let mutable _cubeIndex = 0uy
+        let mutable triIndex = 0
 
         for i in 0..cube.Levels.Length-1 do
             if (cube.Levels.[i] <= cube.IsoValue) then
-                cubeIndex <- cubeIndex ||| (1 <<< i)
+                _cubeIndex <- _cubeIndex ||| (1uy <<< i)
+
+        let cubeIndex = int _cubeIndex
 
         if EdgeTable.[cubeIndex] <> 0 then
             let vertlist = Array.zeroCreate<Vector3> 12
             
             for i in 0..EdgeTraversal.Length-1 do
                 if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
-                    let index1, index2 = EdgeTraversal.[i].[0], EdgeTraversal.[i].[1]
+                    let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
                     let delta = v2 - v1
                     let mu =
@@ -48,15 +51,13 @@ module MarchingCubesBasic =
                             float32(cube.IsoValue - v1) / (float32 delta)
                     vertlist.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
 
-            let index = ref 0
             let triangles = TriTable.[cubeIndex]
-            while triangles.[!index] <> -1 do
-                let v0 = vertlist.[triangles.[!index]]
-                incr index
-                let v1 = vertlist.[triangles.[!index]]
-                incr index
-                let v2 = vertlist.[triangles.[!index]]
-                incr index
+            triIndex <- 0
+
+            while triangles.[triIndex] <> -1 do
+                let v0 = vertlist.[triangles.[triIndex]]
+                let v1 = vertlist.[triangles.[triIndex + 1]]
+                let v2 = vertlist.[triangles.[triIndex + 2]]
 
                 let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
@@ -66,6 +67,7 @@ module MarchingCubesBasic =
                 addPoint normal
                 addPoint v2
                 addPoint normal
+                triIndex <- triIndex + 3
 
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
