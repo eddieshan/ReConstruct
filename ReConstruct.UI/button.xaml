@@ -53,7 +53,7 @@
     <Style x:Key="toggle-button" BasedOn="{StaticResource base-button}" TargetType="{x:Type ToggleButton}"/>
 
     <Style x:Key="icon-button" TargetType="Button">
-        <Setter Property="Margin" Value="0"/>
+        <Setter Property="Margin" Value="2"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Width" Value="28" />
         <Setter Property="Height" Value="28" />
