@@ -48,13 +48,14 @@
     </Style>
 
     <Style x:Key="level-bar" TargetType="Line">
+        <Setter Property="Opacity" Value="0.5"/>
         <Setter Property="Stroke" Value="{StaticResource highlight-accent}"/>
         <Setter Property="StrokeThickness" Value="5"/>
         <Setter Property="Margin" Value="0"/>
     </Style>
 
     <Style x:Key="level-bar-selected" TargetType="Line" BasedOn="{StaticResource level-bar}">
-        <Setter Property="Stroke" Value="{StaticResource light-selection}"/>
+        <Setter Property="Opacity" Value="1"/>
     </Style>
 
 </ResourceDictionary>

@@ -12,7 +12,7 @@ open ReConstruct.UI.Core.UI
 
 module ScalarFieldView = 
 
-    let private maxHeight, itemWidth, barWidth = 200.0, 36.0, 10.0
+    let private maxHeight, itemWidth, barWidth = 200.0, 36.0, 7.0
     let private relativeBarOffset = (itemWidth - barWidth)/2.0
 
     let private scrollable control = ScrollViewer(Style = style "horizontal-scroller", Content = control)
@@ -40,7 +40,7 @@ module ScalarFieldView =
         label |> attachToCanvas (offset, 0.0)
         label >- root
 
-        bar |> attachToCanvas (offset + relativeBarOffset, 20.0)
+        bar |> attachToCanvas (offset + relativeBarOffset, label.Height)
         bar >- root
         
     let New (slices: ImageSlice[]) =
