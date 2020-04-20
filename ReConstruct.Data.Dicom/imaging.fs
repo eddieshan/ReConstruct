@@ -38,7 +38,7 @@ module Imaging =
             StreamPosition = pixelData
         }
 
-    let private getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceDimensions) =
+    let private getHField (buffer: byte[]) (rows, columns) (coordinates: HounsfieldCoordinates) =
         let rescale =
             match coordinates.RescaleSlope with
             | 0 -> id
@@ -69,7 +69,7 @@ module Imaging =
             else
                 0s
 
-        Array.init (sliceDimensions.Rows * sliceDimensions.Columns) (fun _ -> getHounsfieldValue())
+        Array.init (rows * columns) (fun _ -> getHounsfieldValue())
 
     let intMinValue, intMaxValue = 0, 255
     let minValue, maxValue = 0uy, byte intMaxValue
@@ -86,7 +86,7 @@ module Imaging =
         
     let getBitmap slice =
         let normalizePixelValue = pixelMapper slice
-        let numPixels = slice.Dimensions.Rows*slice.Dimensions.Columns
+        let numPixels = slice.Rows*slice.Columns
         let imageBuffer = Array.create (numPixels*4) (byte 0)
 
         let mutable position = 0
@@ -98,7 +98,7 @@ module Imaging =
                                     imageBuffer.[position + 3] <- maxValue
                                     position <- position + 4)
 
-        (slice.Dimensions.Columns, slice.Dimensions.Rows, imageBuffer)
+        (slice.Columns, slice.Rows, imageBuffer)
 
     let slice (buffer, root) =
 
@@ -114,18 +114,14 @@ module Imaging =
             | 0 -> 0.0, 0.0
             | _ -> pixelSpacing.[0], pixelSpacing.[1]
 
-        let dimensions = 
-            { 
-                Rows =  Tags.Rows|> findTagValueAsNumber root int |> Option.defaultValue 0;
-                Columns =  Tags.Columns|> findTagValueAsNumber root int |> Option.defaultValue 0;
-            };
-
-        let coordinates = root |> hounsfieldCoordinates
-        let hField = getHField(buffer, coordinates, dimensions)
+        let rows =  Tags.Rows|> findTagValueAsNumber root int |> Option.defaultValue 0
+        let columns =  Tags.Columns|> findTagValueAsNumber root int |> Option.defaultValue 0
+        let hField = root |> hounsfieldCoordinates |> getHField buffer (rows, columns)
 
         {
             HField = hField;
-            Dimensions = dimensions;
+            Rows = rows;
+            Columns = columns;
             UpperLeft = imagePosition;
             PixelSpacingX = spacingX;
             PixelSpacingY = spacingY;

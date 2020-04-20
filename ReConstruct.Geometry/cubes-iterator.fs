@@ -40,7 +40,7 @@ module CubesIterator =
 
         let setValues offset =
             let right = offset + 1
-            let bottom = offset + front.Dimensions.Columns
+            let bottom = offset + front.Columns
             let bottomRight = bottom + 1
 
             cube.Levels.[0] <- back.HField.[bottom]
@@ -54,7 +54,7 @@ module CubesIterator =
 
 
         let mutable rowOffset = 0
-        for row in 0..front.Dimensions.Rows - 2 do
+        for row in 0..front.Rows - 2 do
             cube.Vertices.[0].X <- left
             cube.Vertices.[1].X <- right
             cube.Vertices.[2].X <- right
@@ -64,7 +64,7 @@ module CubesIterator =
             cube.Vertices.[6].X <- right
             cube.Vertices.[7].X <- left
 
-            for column in 0..front.Dimensions.Columns - 2 do
+            for column in 0..front.Columns - 2 do
 
                 setValues (rowOffset + column)
                 polygonize cube
@@ -75,4 +75,4 @@ module CubesIterator =
             for n in 0..7 do
                 cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
 
-            rowOffset <- rowOffset + front.Dimensions.Columns
+            rowOffset <- rowOffset + front.Columns

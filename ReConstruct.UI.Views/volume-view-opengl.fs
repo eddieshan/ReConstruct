@@ -11,8 +11,8 @@ open ReConstruct.Render.OpenGL
 module VolumeViewOpenGL = 
 
     let getVolumeCenter firstSlice lastSlice =
-        let x = firstSlice.UpperLeft.[0] + (firstSlice.PixelSpacingX * (double firstSlice.Dimensions.Columns) / 2.0)
-        let y = firstSlice.UpperLeft.[1] + (firstSlice.PixelSpacingY * (double firstSlice.Dimensions.Rows) / 2.0)
+        let x = firstSlice.UpperLeft.[0] + (firstSlice.PixelSpacingX * (double firstSlice.Columns) / 2.0)
+        let y = firstSlice.UpperLeft.[1] + (firstSlice.PixelSpacingY * (double firstSlice.Rows) / 2.0)
         let z = firstSlice.UpperLeft.[2] + (Math.Abs(lastSlice.UpperLeft.[2] - firstSlice.UpperLeft.[2]) / 2.0)
         (x, y, z)
 

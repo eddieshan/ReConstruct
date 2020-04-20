@@ -189,7 +189,7 @@ module MarchingCubesZ =
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
         let start = slices.[0]
-        let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows
+        let columns, rows = start.Columns, start.Rows
 
         let stepZ = slices |> Seq.pairwise 
                            |> Seq.map(fun (f, b) -> Math.Abs(f.UpperLeft.[2] - b.UpperLeft.[2])) 

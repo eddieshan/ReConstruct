@@ -20,21 +20,14 @@ type DicomDataElement =
         ValueField: string;
     }
 
-type SliceDimensions =
-    {
-        Columns: int;
-        Rows: int;
-    }
-
-// Encapsulate CAT slice geometry params.
 type ImageSlice =
     {
         HField: int16[];
-        Dimensions: SliceDimensions;
+        Columns: int;
+        Rows: int;
         UpperLeft: double[];
         PixelSpacingX: double;
         PixelSpacingY: double;
-        //PixelSpacing: PixelSpacing;
         WindowCenter: int;
         WindowWidth: int;
     } 
