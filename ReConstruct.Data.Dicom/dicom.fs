@@ -20,12 +20,6 @@ type DicomDataElement =
         ValueField: string;
     }
 
-type PixelSpacing =
-    {
-        X: double;
-        Y: double;
-    }
-
 type SliceDimensions =
     {
         Columns: int;
@@ -33,11 +27,14 @@ type SliceDimensions =
     }
 
 // Encapsulate CAT slice geometry params.
-type SliceLayout =
+type ImageSlice =
     {
+        HField: int16[];
         Dimensions: SliceDimensions;
         UpperLeft: double[];
-        PixelSpacing: PixelSpacing;
+        PixelSpacingX: double;
+        PixelSpacingY: double;
+        //PixelSpacing: PixelSpacing;
         WindowCenter: int;
         WindowWidth: int;
     } 
@@ -45,12 +42,6 @@ type SliceLayout =
         x.UpperLeft.[0] <- x.UpperLeft.[0] - cx
         x.UpperLeft.[1] <- x.UpperLeft.[1] - cy
         x.UpperLeft.[2] <- x.UpperLeft.[2] - cz
-
-type ImageSlice =
-    {
-        Layout: SliceLayout;
-        HField: int16[];
-    }
 
 type DicomTree = 
     {

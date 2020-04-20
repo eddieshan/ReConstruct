@@ -38,7 +38,7 @@ module Imaging =
             StreamPosition = pixelData
         }
 
-    let private getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceParams: SliceLayout) =
+    let private getHField(buffer: byte[], coordinates: HounsfieldCoordinates, sliceDimensions) =
         let rescale =
             match coordinates.RescaleSlope with
             | 0 -> id
@@ -69,7 +69,7 @@ module Imaging =
             else
                 0s
 
-        Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
+        Array.init (sliceDimensions.Rows * sliceDimensions.Columns) (fun _ -> getHounsfieldValue())
 
     let intMinValue, intMaxValue = 0, 255
     let minValue, maxValue = 0uy, byte intMaxValue
@@ -85,8 +85,8 @@ module Imaging =
             | _                                             -> Convert.ToByte(normalizedValue)
         
     let getBitmap slice =
-        let normalizePixelValue = pixelMapper slice.Layout
-        let numPixels = slice.Layout.Dimensions.Rows*slice.Layout.Dimensions.Columns
+        let normalizePixelValue = pixelMapper slice
+        let numPixels = slice.Dimensions.Rows*slice.Dimensions.Columns
         let imageBuffer = Array.create (numPixels*4) (byte 0)
 
         let mutable position = 0
@@ -98,9 +98,9 @@ module Imaging =
                                     imageBuffer.[position + 3] <- maxValue
                                     position <- position + 4)
 
-        (slice.Layout.Dimensions.Columns, slice.Layout.Dimensions.Rows, imageBuffer)
+        (slice.Dimensions.Columns, slice.Dimensions.Rows, imageBuffer)
 
-    let private parseSliceLayout (root: DicomTree) =
+    let slice (buffer, root) =
 
         let parseDoubles (value: string option) = 
             match value with 
@@ -114,18 +114,21 @@ module Imaging =
             | 0 -> 0.0, 0.0
             | _ -> pixelSpacing.[0], pixelSpacing.[1]
 
+        let dimensions = 
+            { 
+                Rows =  Tags.Rows|> findTagValueAsNumber root int |> Option.defaultValue 0;
+                Columns =  Tags.Columns|> findTagValueAsNumber root int |> Option.defaultValue 0;
+            };
+
+        let coordinates = root |> hounsfieldCoordinates
+        let hField = getHField(buffer, coordinates, dimensions)
+
         {
-            Dimensions = 
-                { 
-                    Rows =  Tags.Rows|> findTagValueAsNumber root int |> Option.defaultValue 0;
-                    Columns =  Tags.Columns|> findTagValueAsNumber root int |> Option.defaultValue 0;
-                };
+            HField = hField;
+            Dimensions = dimensions;
             UpperLeft = imagePosition;
-            PixelSpacing = 
-                {
-                    X = spacingX; 
-                    Y = spacingY; 
-                };
+            PixelSpacingX = spacingX;
+            PixelSpacingY = spacingY;
             WindowCenter = Tags.WindowCenter |> findTagValueAsNumber root int |> Option.defaultValue 0;
             WindowWidth =  Tags.WindowWidth |> findTagValueAsNumber root int |> Option.defaultValue 0;
         }
@@ -133,13 +136,3 @@ module Imaging =
     let getValuesCount slice =  
         let zeroValue = 0s
         slice.HField |> Seq.filter(fun v -> v > zeroValue) |> Seq.countBy id |> Seq.toArray
-
-    let slice (buffer, dicomTree) =
-        let sliceParams = dicomTree |> parseSliceLayout
-        let coordinates = dicomTree |> hounsfieldCoordinates
-        let hField = getHField(buffer, coordinates, sliceParams)        
-
-        {
-            Layout = sliceParams;
-            HField = hField;            
-        }

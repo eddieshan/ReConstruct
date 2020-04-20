@@ -188,15 +188,15 @@ module MarchingCubesZ =
 
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
-        let start = slices.[0].Layout
+        let start = slices.[0]
         let columns, rows = start.Dimensions.Columns, start.Dimensions.Rows
 
         let stepZ = slices |> Seq.pairwise 
-                           |> Seq.map(fun (f, b) -> Math.Abs(f.Layout.UpperLeft.[2] - b.Layout.UpperLeft.[2])) 
+                           |> Seq.map(fun (f, b) -> Math.Abs(f.UpperLeft.[2] - b.UpperLeft.[2])) 
                            |> Seq.distinct
                            |> Seq.exactlyOne
         
-        let step = Vector3(float32 start.PixelSpacing.X, float32 start.PixelSpacing.Y, float32 stepZ)
+        let step = Vector3(float32 start.PixelSpacingX, float32 start.PixelSpacingY, float32 stepZ)
 
         let valueAt index =
             let k = index % slices.Length
@@ -209,7 +209,7 @@ module MarchingCubesZ =
             else
                 0.0f
         
-        let sizeZ = Math.Abs(slices.[slices.Length - 1].Layout.UpperLeft.[2] - slices.[0].Layout.UpperLeft.[2]) |> float32
+        let sizeZ = Math.Abs(slices.[slices.Length - 1].UpperLeft.[2] - slices.[0].UpperLeft.[2]) |> float32
         let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
         let upperLeft = Vector3(float32 start.UpperLeft.[0], float32 start.UpperLeft.[1], float32 start.UpperLeft.[2])
 
