@@ -17,12 +17,12 @@ module MarchingTetrahedra =
 
     let lerpVertex(v1, v2, isoLevel) =
         let delta = v2 - v1
-        if delta = 0 then 
+        if delta = 0s then 
             0.5f
         else 
             float32(isoLevel - v1)/(float32 delta)
 
-    let marchTetrahedron addPoint (vertices: Vector3[], values: int[], v: Cube) =
+    let marchTetrahedron addPoint (vertices: Vector3[], values: int16[], v: Cube) =
         let mutable tetraIndex = 0
         let trianglesVertices = Array.zeroCreate<Vector3> 6
 
@@ -60,7 +60,7 @@ module MarchingTetrahedra =
 
     let marchCube addPoint (cube: Cube) =
             let tetraVertices = Array.zeroCreate<Vector3> 4
-            let tetraValues = Array.zeroCreate<int> 4
+            let tetraValues = Array.zeroCreate<int16> 4
     
             for i in 0..5 do
                 for j in 0..3 do

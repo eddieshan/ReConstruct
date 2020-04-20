@@ -45,7 +45,7 @@ module MarchingCubesBasic =
                     let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
                     let delta = v2 - v1
                     let mu =
-                        if delta = 0 then
+                        if delta = 0s then
                             0.5f
                         else
                             float32(cube.IsoValue - v1) / (float32 delta)

@@ -9,9 +9,9 @@ module CubesIterator =
 
     type Cube =
         {
-            IsoValue: int
+            IsoValue: int16
             Vertices: Vector3[]
-            Levels: int[]
+            Levels: int16[]
         }
 
     let iterate (front, back) isoValue polygonize = 
@@ -35,7 +35,7 @@ module CubesIterator =
                     Vector3(0.0f, top, zFront)
                     Vector3(0.0f, top, zFront)
                 |]
-                Levels = Array.zeroCreate<int> 8
+                Levels = Array.zeroCreate<int16> 8
              }
 
         let setValues offset =

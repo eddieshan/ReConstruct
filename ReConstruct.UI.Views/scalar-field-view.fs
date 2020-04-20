@@ -46,7 +46,7 @@ module ScalarFieldView =
     let New (slices: ImageSlice[]) =
         let valuesCount = slices |> Array.Parallel.map Imaging.getValuesCount
         let estimatedNumLevels = valuesCount |> Seq.head |> Seq.length
-        let countTable = Dictionary<int, int> estimatedNumLevels
+        let countTable = Dictionary<int16, int> estimatedNumLevels
 
         let addCount (hValue, count) =    
             if countTable.ContainsKey hValue then
@@ -65,7 +65,7 @@ module ScalarFieldView =
         let slicesCountChart = chartContainer valuesCount.Length
         valuesCount |> Seq.iteri(fun i levels -> 
                                     match levels |> Seq.isEmpty with
-                                    | true -> verticalBar slicesCountChart i 0 0.0
+                                    | true -> verticalBar slicesCountChart i 0s 0.0
                                     | false -> 
                                         let value, count = levels |> Seq.maxBy(fun (_, count) -> count)
                                         count |> mapHeight |> verticalBar slicesCountChart i value)

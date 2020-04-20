@@ -21,10 +21,10 @@ type private HounsfieldCoordinates =
 module Imaging =
     
     [<Literal>]
-    let BONES_ISOVALUE = 500
+    let BONES_ISOVALUE = 500s
 
     [<Literal>]
-    let SKIN_ISOVALUE = 30
+    let SKIN_ISOVALUE = 30s
 
     let private hounsfieldCoordinates root =
         let pixelData = Tags.PixelData |> findNode root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
@@ -65,9 +65,9 @@ module Imaging =
             if (index < limit) then
                 let pixelValue = (int buffer.[index]) + ((int buffer.[index + 1]) <<< 8)                
                 index <- index + 2
-                pixelValue |> mapToLayout
+                pixelValue |> mapToLayout |> int16
             else
-                0
+                0s
 
         Array.init (sliceParams.Dimensions.Rows * sliceParams.Dimensions.Columns) (fun _ -> getHounsfieldValue())
 
@@ -91,7 +91,7 @@ module Imaging =
 
         let mutable position = 0
         slice.HField |> Array.iter(fun v -> 
-                                    let grayValue = v |> normalizePixelValue
+                                    let grayValue = v |> int |> normalizePixelValue
                                     imageBuffer.[position] <- grayValue
                                     imageBuffer.[position + 1] <- grayValue
                                     imageBuffer.[position + 2] <- grayValue
@@ -131,7 +131,7 @@ module Imaging =
         }
 
     let getValuesCount slice =  
-        let zeroValue = 0
+        let zeroValue = 0s
         slice.HField |> Seq.filter(fun v -> v > zeroValue) |> Seq.countBy id |> Seq.toArray
 
     let slice (buffer, dicomTree) =

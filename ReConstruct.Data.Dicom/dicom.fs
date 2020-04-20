@@ -49,7 +49,7 @@ type SliceLayout =
 type ImageSlice =
     {
         Layout: SliceLayout;
-        HField: int[];
+        HField: int16[];
     }
 
 type DicomTree = 
