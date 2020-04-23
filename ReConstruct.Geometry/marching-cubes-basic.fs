@@ -27,20 +27,19 @@ module MarchingCubesBasic =
 
     let private marchCube addPoint (cube: Cube) =
 
-        let mutable _cubeIndex = 0uy
-        let mutable triIndex = 0
+        let mutable cubeIndex = 0uy
 
         for i in 0..cube.Levels.Length-1 do
             if (cube.Levels.[i] <= cube.IsoValue) then
-                _cubeIndex <- _cubeIndex ||| (1uy <<< i)
+                cubeIndex <- cubeIndex ||| (1uy <<< i)
 
-        let cubeIndex = int _cubeIndex
+        let cubeIndexAsInt = int cubeIndex
 
-        if EdgeTable.[cubeIndex] <> 0 then
+        if EdgeTable.[cubeIndexAsInt] <> 0 then
             let vertlist = Array.zeroCreate<Vector3> 12
             
             for i in 0..EdgeTraversal.Length-1 do
-                if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
+                if (EdgeTable.[cubeIndexAsInt] &&& (1 <<< i)) > 0 then
                     let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
                     let delta = v2 - v1
@@ -51,13 +50,12 @@ module MarchingCubesBasic =
                             float32(cube.IsoValue - v1) / (float32 delta)
                     vertlist.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
 
-            let triangles = TriTable.[cubeIndex]
-            triIndex <- 0
+            let triangles = TriTable2.[cubeIndexAsInt]
 
-            while triangles.[triIndex] <> -1 do
-                let v0 = vertlist.[triangles.[triIndex]]
-                let v1 = vertlist.[triangles.[triIndex + 1]]
-                let v2 = vertlist.[triangles.[triIndex + 2]]
+            for triangle in triangles do
+                let v0 = vertlist.[triangle.[0]]
+                let v1 = vertlist.[triangle.[1]]
+                let v2 = vertlist.[triangle.[2]]
 
                 let normal = Vector3.Cross(v2 - v0, v1 - v0) |> Vector3.Normalize
 
@@ -67,7 +65,6 @@ module MarchingCubesBasic =
                 addPoint normal
                 addPoint v2
                 addPoint normal
-                triIndex <- triIndex + 3
 
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
@@ -100,6 +97,7 @@ module MarchingCubesBasic =
 
         let queueJob = RenderAgent.renderQueue()
         let polygonizeJob i = async { return polygonizeSection (slices.[i - 1], slices.[i]) }
+        
         seq { 1..slices.Length - 1 } |> Seq.iter(polygonizeJob >> (queueJob addPoints))
 
         /// NOT TO BE REMOVED. Single-thread version for testing.
