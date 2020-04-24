@@ -51,12 +51,8 @@ module CubesGradientIterator =
             cubeIndex
 
         let jumpRight = 1
-        let jumpRightRight = jumpRight + jumpRight
         let jumpBottom = front.Columns
-        let jumpUnder = 2*front.Columns
-        let jumpUnderRight = jumpUnder + jumpRight
         let jumpBottomRight = jumpBottom + jumpRight
-        let jumpBottomRightRight = jumpBottomRight + jumpRight
 
         let processCube topLeft (row, column) =
             let topRight = topLeft + jumpRight
@@ -76,17 +72,11 @@ module CubesGradientIterator =
 
             if EdgeTable.[cubeIndex] <> 0 then
 
-                let underBottomLeft, underBottomRight = 
-                    if row < lastRow then
-                        topLeft + jumpUnder, topLeft + jumpUnderRight
-                    else
-                        bottomLeft, bottomRight
+                let jumpUnder = (1 - row/lastRow) * jumpBottom
+                let underBottomLeft, underBottomRight = bottomLeft + jumpUnder, bottomRight + jumpUnder
 
-                let rightBottomRight, rightTopRight = 
-                    if column < lastColumn then
-                        topLeft + jumpBottomRightRight, topLeft + jumpRightRight
-                    else
-                        bottomRight, topRight
+                let jumpNextRight = (1- column/lastColumn) * jumpRight
+                let rightBottomRight, rightTopRight = bottomRight + jumpNextRight, topRight + jumpNextRight
 
                 cube.Gradients.[0].X <- (back.HField.[bottomRight] - back.HField.[bottomLeft]) |> float32
                 cube.Gradients.[0].Y <- (back.HField.[underBottomLeft] - back.HField.[bottomLeft]) |> float32
