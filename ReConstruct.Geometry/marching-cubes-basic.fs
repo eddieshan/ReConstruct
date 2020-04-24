@@ -48,7 +48,8 @@ module MarchingCubesBasic =
                             0.5f
                         else
                             float32(cube.IsoValue - v1) / (float32 delta)
-                    vertlist.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
+
+                    vertlist.[i] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
 
             let triangles = TriTable2.[cubeIndexAsInt]
 
