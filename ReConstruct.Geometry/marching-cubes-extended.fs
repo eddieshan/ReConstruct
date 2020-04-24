@@ -17,35 +17,28 @@ module MarchingCubesExtended =
     let private capacity = 9000
     let private borrowBuffer() = bufferPool.Rent capacity
 
-    let private marchCube addPoint (cube: Cube) =
+    let polygonize isoValue (slices: ImageSlice[]) partialRender = 
 
-        let mutable cubeIndex = 0uy
+        let marchCube addPoint (cube: Cube) cubeIndex =
 
-        for i in 0..cube.Levels.Length-1 do
-            if (cube.Levels.[i] <= cube.IsoValue) then
-                cubeIndex <- cubeIndex ||| (1uy <<< i)
-
-        let cubeIndexAsInt = int cubeIndex
-
-        if EdgeTable.[cubeIndexAsInt] <> 0 then
             let vertices = Array.zeroCreate<Vector3> 12
             let gradients = Array.zeroCreate<Vector3> 12
-            
+        
             for i in 0..EdgeTraversal.Length-1 do
-                if (EdgeTable.[cubeIndexAsInt] &&& (1 <<< i)) > 0 then
+                if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
                     let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
+                    let v1, v2 = cube.Values.[index1], cube.Values.[index2]
                     let delta = v2 - v1
                     let mu =
                         if delta = 0s then
                             0.5f
                         else
-                            float32(cube.IsoValue - v1) / (float32 delta)
+                            float32(isoValue - v1) / (float32 delta)
                     vertices.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
                     //gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu) |> Vector3.Normalize
                     gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
 
-            let triangles = TriTable2.[cubeIndexAsInt]
+            let triangles = TriTable2.[cubeIndex]
 
             for triangle in triangles do
                 let v0 = vertices.[triangle.[0]]
@@ -63,8 +56,6 @@ module MarchingCubesExtended =
                 addPoint v2
                 addPoint g2
 
-    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
-
         let polygonizeSection (front, back, next) =
             let mutable currentBuffer, index = borrowBuffer(), 0
             let mutable bufferChain = List.empty
@@ -78,7 +69,7 @@ module MarchingCubesExtended =
                 p.CopyTo(currentBuffer, index)
                 index <- index + 3
 
-            CubesGradientIterator.iterate (front, back, next) isoLevel (marchCube addPoint)
+            CubesGradientIterator.iterate (front, back, next) isoValue (marchCube addPoint)
 
             bufferChain <- currentBuffer :: bufferChain
 
