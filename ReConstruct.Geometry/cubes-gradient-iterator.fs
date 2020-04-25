@@ -54,6 +54,9 @@ module CubesGradientIterator =
         let jumpBottom = front.Columns
         let jumpBottomRight = jumpBottom + jumpRight
 
+        let vertices = Array.zeroCreate<Vector3> 12
+        let gradients = Array.zeroCreate<Vector3> 12
+
         let processCube topLeft (row, column) =
             let topRight = topLeft + jumpRight
             let bottomLeft = topLeft + jumpBottom
@@ -109,9 +112,6 @@ module CubesGradientIterator =
                 cube.Gradients.[7].X <- (front.HField.[topRight] - front.HField.[topLeft]) |> float32
                 cube.Gradients.[7].Y <- (front.HField.[bottomLeft] - front.HField.[topLeft]) |> float32
                 cube.Gradients.[7].Z <- (back.HField.[topLeft] - front.HField.[topLeft]) |> float32
-
-                let vertices = Array.zeroCreate<Vector3> 12
-                let gradients = Array.zeroCreate<Vector3> 12
         
                 for i in 0..EdgeTraversal.Length-1 do
                     if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
