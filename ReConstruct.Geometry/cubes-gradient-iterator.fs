@@ -57,7 +57,7 @@ module CubesGradientIterator =
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
 
-        let processCube topLeft (row, column) =
+        let processCube topLeft row column =
             let topRight = topLeft + jumpRight
             let bottomLeft = topLeft + jumpBottom
             let bottomRight = topLeft + jumpBottomRight
@@ -125,26 +125,19 @@ module CubesGradientIterator =
                             else
                                 float32(isoValue - v1) / (float32 delta)
                         vertices.[i] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
-                        //gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu) |> Vector3.Normalize
                         gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
 
                 let triangles = TriTable2.[cubeIndex]
 
                 for triangle in triangles do
-                    let v0 = vertices.[triangle.[0]]
-                    let v1 = vertices.[triangle.[1]]
-                    let v2 = vertices.[triangle.[2]]
+                    vertices.[triangle.[0]] |> addPoint
+                    gradients.[triangle.[0]] |> addPoint
+                    
+                    vertices.[triangle.[1]] |> addPoint
+                    gradients.[triangle.[1]] |> addPoint
 
-                    let g0 = gradients.[triangle.[0]]
-                    let g1 = gradients.[triangle.[1]]
-                    let g2 = gradients.[triangle.[2]]
-
-                    addPoint v0
-                    addPoint g0
-                    addPoint v1
-                    addPoint g1
-                    addPoint v2
-                    addPoint g2
+                    vertices.[triangle.[2]] |> addPoint
+                    gradients.[triangle.[2]] |> addPoint
 
 
         let mutable rowOffset = 0
@@ -164,7 +157,7 @@ module CubesGradientIterator =
 
             for column in 0..lastColumn do
 
-                processCube (rowOffset + column) (row, column)
+                processCube (rowOffset + column) row column
 
                 for n in 0..7 do
                     cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
