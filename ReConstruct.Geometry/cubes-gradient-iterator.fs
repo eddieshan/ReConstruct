@@ -16,39 +16,39 @@ module CubesGradientIterator =
             Gradients: Vector3[]
         }
 
-    let iterate (front, back, next) isoValue polygonize = 
-
+    let newCube front back =
         let zFront, zBack = float32 front.UpperLeft.[2], float32 back.UpperLeft.[2]
-        let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
+        let stepY = float32 front.PixelSpacingY
 
-        let top, left = float32 front.UpperLeft.[1], float32 front.UpperLeft.[0]
-        let bottom, right = top + stepY, left + stepX
+        let top = float32 front.UpperLeft.[1]
+        let bottom = top + stepY
 
-        let lastRow = front.Rows - 2
-        let lastColumn = front.Columns - 2
+        {
+            Values = Array.zeroCreate<int16> 8
+            Vertices = [|
+                Vector3(0.0f, bottom, zBack)
+                Vector3(0.0f, bottom, zBack)
+                Vector3(0.0f, bottom, zFront)
+                Vector3(0.0f, bottom, zFront)
+                Vector3(0.0f, top, zBack)
+                Vector3(0.0f, top, zBack)
+                Vector3(0.0f, top, zFront)
+                Vector3(0.0f, top, zFront)
+            |]
+            Gradients = Array.zeroCreate<Vector3> 8
+        }
 
-        let cube = 
-            {
-                Values = Array.zeroCreate<int16> 8
-                Vertices = [|
-                    Vector3(0.0f, bottom, zBack)
-                    Vector3(0.0f, bottom, zBack)
-                    Vector3(0.0f, bottom, zFront)
-                    Vector3(0.0f, bottom, zFront)
-                    Vector3(0.0f, top, zBack)
-                    Vector3(0.0f, top, zBack)
-                    Vector3(0.0f, top, zFront)
-                    Vector3(0.0f, top, zFront)
-                |]
-                Gradients = Array.zeroCreate<Vector3> 8
-             }
+    let iterate (front, back, next) isoValue addPoint = 
+        let lastRow, lastColumn = front.Rows - 2, front.Columns - 2
+
+        let cube = newCube front back
 
         let getCubeIndex() =
             let mutable cubeIndex = 0uy
             for i in 0..cube.Values.Length-1 do
                 if (cube.Values.[i] <= isoValue) then
                     cubeIndex <- cubeIndex ||| (1uy <<< i)
-            cubeIndex
+            cubeIndex |> int
 
         let jumpRight = 1
         let jumpBottom = front.Columns
@@ -68,7 +68,7 @@ module CubesGradientIterator =
             cube.Values.[6] <- front.HField.[topRight]
             cube.Values.[7] <- front.HField.[topLeft]
 
-            let cubeIndex = getCubeIndex() |> int
+            let cubeIndex = getCubeIndex()
 
             if EdgeTable.[cubeIndex] <> 0 then
 
@@ -110,10 +110,47 @@ module CubesGradientIterator =
                 cube.Gradients.[7].Y <- (front.HField.[bottomLeft] - front.HField.[topLeft]) |> float32
                 cube.Gradients.[7].Z <- (back.HField.[topLeft] - front.HField.[topLeft]) |> float32
 
-                polygonize cube cubeIndex
+                let vertices = Array.zeroCreate<Vector3> 12
+                let gradients = Array.zeroCreate<Vector3> 12
+        
+                for i in 0..EdgeTraversal.Length-1 do
+                    if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
+                        let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
+                        let v1, v2 = cube.Values.[index1], cube.Values.[index2]
+                        let delta = v2 - v1
+
+                        let mu =
+                            if delta = 0s then
+                                0.5f
+                            else
+                                float32(isoValue - v1) / (float32 delta)
+                        vertices.[i] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
+                        //gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu) |> Vector3.Normalize
+                        gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
+
+                let triangles = TriTable2.[cubeIndex]
+
+                for triangle in triangles do
+                    let v0 = vertices.[triangle.[0]]
+                    let v1 = vertices.[triangle.[1]]
+                    let v2 = vertices.[triangle.[2]]
+
+                    let g0 = gradients.[triangle.[0]]
+                    let g1 = gradients.[triangle.[1]]
+                    let g2 = gradients.[triangle.[2]]
+
+                    addPoint v0
+                    addPoint g0
+                    addPoint v1
+                    addPoint g1
+                    addPoint v2
+                    addPoint g2
 
 
         let mutable rowOffset = 0
+        let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
+        let left = float32 front.UpperLeft.[0]
+        let right = left + stepX
 
         for row in 0..lastRow do
             cube.Vertices.[0].X <- left
