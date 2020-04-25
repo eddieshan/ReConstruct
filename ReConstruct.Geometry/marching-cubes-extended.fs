@@ -29,12 +29,13 @@ module MarchingCubesExtended =
                     let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     let v1, v2 = cube.Values.[index1], cube.Values.[index2]
                     let delta = v2 - v1
+
                     let mu =
                         if delta = 0s then
                             0.5f
                         else
                             float32(isoValue - v1) / (float32 delta)
-                    vertices.[i] <- cube.Vertices.[index1] + mu*(cube.Vertices.[index2] - cube.Vertices.[index1])
+                    vertices.[i] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
                     //gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu) |> Vector3.Normalize
                     gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
 
