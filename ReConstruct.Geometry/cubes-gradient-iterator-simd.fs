@@ -50,15 +50,16 @@ module CubesGradientIteratorSIMD =
                     cubeIndex <- cubeIndex ||| (1uy <<< i)
             cubeIndex |> int
 
-        let jumpRight = 1
-        let jumpBottom = front.Columns
-
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
 
-        let mutable corners = Vector([| 0; 1; front.Columns; front.Columns + 1; |])
+        //let mutable corners = Vector([| 0; 1; front.Columns; front.Columns + 1; |])
+        let corners = [| 0; 1; front.Columns; front.Columns + 1; |]
+        let step = Vector([| 2; front.Columns + 1; front.Columns; front.Columns; |])
 
-        let processCube row column =
+        let neighbour = [| 0; 0; 0; 0; |]
+
+        let processCube() =
             let topLeft = corners.[0]
             let topRight = corners.[1]
             let bottomLeft = corners.[2]
@@ -77,11 +78,11 @@ module CubesGradientIteratorSIMD =
 
             if EdgeTable.[cubeIndex] <> 0 then
 
-                let jumpUnder = (1 - row/lastRow) * jumpBottom
-                let underBottomLeft, underBottomRight = bottomLeft + jumpUnder, bottomRight + jumpUnder
+                //let neighbour = Vector.Add(corners, step)
+                (Vector(corners) + step).CopyTo neighbour
 
-                let jumpNextRight = (1- column/lastColumn) * jumpRight
-                let rightBottomRight, rightTopRight = bottomRight + jumpNextRight, topRight + jumpNextRight
+                let underBottomLeft, underBottomRight = neighbour.[2], neighbour.[3]
+                let rightBottomRight, rightTopRight = neighbour.[1], neighbour.[0]
 
                 cube.Gradients.[0].X <- (back.HField.[bottomRight] - back.HField.[bottomLeft]) |> float32
                 cube.Gradients.[0].Y <- (back.HField.[underBottomLeft] - back.HField.[bottomLeft]) |> float32
@@ -157,13 +158,15 @@ module CubesGradientIteratorSIMD =
             cube.Vertices.[7].X <- left
 
             for column in 0..lastColumn do
-                processCube row column
-                corners <- Vector.Add(corners, Vector.One)
+                processCube()
+                //corners <- Vector.Add(corners, Vector.One)
+                (Vector(corners) + Vector.One).CopyTo corners
 
                 for n in 0..7 do
                     cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
             
-            corners <- Vector.Add(corners, Vector.One)
+            //corners <- Vector.Add(corners, Vector.One)
+            (Vector(corners) + Vector.One).CopyTo corners
             
             for n in 0..7 do
                 cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
