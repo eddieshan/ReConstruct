@@ -10,9 +10,9 @@ open ReConstruct.Data.Dicom.DicomTree
 // Image parameters used to calculate a Hounsfield gradient.
 type private HounsfieldCoordinates =
     {
-        RescaleIntercept: int;
-        RescaleSlope: int;
-        PixelPadding: uint16 option;
+        RescaleIntercept: int16;
+        RescaleSlope: int16;
+        PixelPadding: int16 option;
         PixelPaddingRangeLimit: uint16 option;
         PixelRepresentation: uint16 option;
         StreamPosition: Int64;
@@ -30,9 +30,9 @@ module Imaging =
         let pixelData = Tags.PixelData |> findNode root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
 
         {
-            RescaleIntercept = Tags.RescaleIntercept |> findTagValueAsNumber root int |> Option.defaultValue 0;
-            RescaleSlope = Tags.RescaleSlope|> findTagValueAsNumber root int |> Option.defaultValue 0;
-            PixelPadding = Tags.PixelPadding|> findTagValueAsNumber root uint16;
+            RescaleIntercept = Tags.RescaleIntercept |> findTagValueAsNumber root int16 |> Option.defaultValue 0s;
+            RescaleSlope = Tags.RescaleSlope|> findTagValueAsNumber root int16 |> Option.defaultValue 0s;
+            PixelPadding = Tags.PixelPadding|> findTagValueAsNumber root int16;
             PixelPaddingRangeLimit = Tags.PixelPaddingRangeLimit|> findTagValueAsNumber root uint16;
             PixelRepresentation = Tags.PixelRepresentation |> findTagValueAsNumber root uint16;
             StreamPosition = pixelData
@@ -41,21 +41,33 @@ module Imaging =
     let private getHField (buffer: byte[]) (rows, columns) (coordinates: HounsfieldCoordinates) =
         let rescale =
             match coordinates.RescaleSlope with
-            | 0 -> id
+            | 0s -> id
             | _ -> fun pixelValue -> pixelValue*coordinates.RescaleSlope + coordinates.RescaleIntercept
 
-        let defaultHounsfieldValue = Int16.MinValue |> int |> rescale
+        let defaultHounsfieldValue = 
+            match coordinates.RescaleSlope with
+            | 0s -> Int16.MinValue
+            | _ -> 
+                // Test possible underflow of minimum value, cap to Int16.MinValue.
+                let minValue = int Int16.MinValue
+                /// TODO: find a way to avoid repeated rescale calculation. 
+                /// For now there is no other way, casting to int is needed to check underflow.
+                let testMinOverflow = minValue*(int coordinates.RescaleSlope) + (int coordinates.RescaleIntercept)
+                if testMinOverflow < minValue then
+                    Int16.MinValue
+                else
+                    testMinOverflow |> int16
 
         let capValue max = 
             fun pixelValue -> 
-                if pixelValue >= max then 
+                if pixelValue = max then 
                     defaultHounsfieldValue
                 else
                     pixelValue |> rescale 
 
         let mapToLayout =
             match coordinates.PixelPadding with
-            | Some pixelPadding -> pixelPadding |> int |> capValue
+            | Some pixelPadding -> pixelPadding |> capValue
             | _ -> rescale
 
         let mutable index = coordinates.StreamPosition |> int
@@ -63,9 +75,9 @@ module Imaging =
 
         let getHounsfieldValue() = 
             if (index < limit) then
-                let pixelValue = (int buffer.[index]) + ((int buffer.[index + 1]) <<< 8)                
+                let pixelValue = (int16 buffer.[index]) + ((int16 buffer.[index + 1]) <<< 8)
                 index <- index + 2
-                pixelValue |> mapToLayout |> int16
+                pixelValue |> mapToLayout
             else
                 0s
 
