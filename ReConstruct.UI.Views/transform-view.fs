@@ -35,15 +35,16 @@ module TransformView =
                 yield (spinner (scale scaleFactor) ((scale -scaleFactor))) :> UIElement
             }
 
-        let rotationControls(axis, caption) = 
+        let rotationControls(axis, caption, label) = 
             seq {
+                yield label |> textBlock "value-text" :> UIElement
                 yield caption :> UIElement
                 yield (spinner (rotate (axis, delta)) (rotate (axis, -delta))) :> UIElement
             }
 
         let view = stack "transform-view"
 
-        let transformText() = textBlock "panel-caption" "0.00"
+        let transformText() = textBlock "value-text" "0.00"
         let rotXText, rotYText, rotZText, scaleText = transformText(), transformText(), transformText(), transformText()
 
         let updateTransform transform =
@@ -54,16 +55,24 @@ module TransformView =
             scaleText.Text <- sprintf "%.2f" scale
 
         Events.VolumeTransformed.Publish |> Event.add updateTransform
-        
+
+        let transformBlock name controls =
+            let block = stack "panel-block"
+            seq {
+                yield name |> label "panel-block-caption" :> UIElement
+                let toolPanel = stack "horizontal"
+                controls |> Seq.iter (fun c -> c >- toolPanel)
+                yield toolPanel :> UIElement
+            } |> Seq.iter(fun c -> c >- block)
+            block
+
         seq {
-            yield Icons.ROTATE_RIGHT |> textBlock "icon-text" :> UIElement
-            yield! rotationControls (Axis.X, rotXText)
-            yield! rotationControls (Axis.Y, rotYText)
-            yield! rotationControls (Axis.Z, rotZText)
-            yield Icons.CAMERA_IN |> textBlock "icon-text" :> UIElement
-            yield! scaleControls scaleText
+            yield seq {
+                yield! rotationControls (Axis.X, rotXText, "X")
+                yield! rotationControls (Axis.Y, rotYText, "Y")
+                yield! rotationControls (Axis.Z, rotZText, "Z")
+            } |> transformBlock "Rotate"
+            yield scaleText |> scaleControls |> transformBlock "Scale"
         } |> Seq.iter(fun c -> c >- view)
         
-        //cameraControls() |> toRow "Zoom"
-
         view

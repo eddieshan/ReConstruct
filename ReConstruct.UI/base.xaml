@@ -33,7 +33,7 @@
         <Setter Property="FontSize"  Value="12"/>
     </Style>
 
-    <Style TargetType="Label" BasedOn="{StaticResource ResourceKey={x:Type Label}}">
+    <Style x:Key="label" TargetType="Label" BasedOn="{StaticResource ResourceKey={x:Type Label}}">
         <Setter Property="Background" Value="{StaticResource background}"/>
         <Setter Property="Foreground" Value="{StaticResource discrete}"/>
         <Setter Property="FontFamily" Value="{StaticResource base-font}"/>

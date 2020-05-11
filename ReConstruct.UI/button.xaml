@@ -85,8 +85,8 @@
     </Style>
 
     <Style x:Key="icon-button-mini" TargetType="Button" BasedOn="{StaticResource icon-button}">
-        <Setter Property="Width" Value="12" />
-        <Setter Property="Height" Value="12" />
+        <Setter Property="Width" Value="10" />
+        <Setter Property="Height" Value="10" />
         <Setter Property="FontSize" Value="16" />
     </Style>
 

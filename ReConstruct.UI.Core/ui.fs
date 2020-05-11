@@ -28,7 +28,7 @@ module UI =
                     | false -> fun b -> b
 
 
-    let label content = Label(Content = content, Style = style "Label")
+    let label styleKey content = Label(Content = content, Style = style styleKey)
 
     let textBlock styleKey text = TextBlock(Text = text, Style = style styleKey)
 
