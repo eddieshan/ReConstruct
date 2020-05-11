@@ -84,8 +84,8 @@ module UI =
 
     let onlyChildOf (parent:Decorator) child = parent.Child <- child
 
-    let childrenOf (parent:Panel) (children: UIElement seq) =
-        children |> Seq.map(fun child -> parent.Children.Add(child)) |> ignore
+    let childrenOf<'T when 'T:>UIElement> (parent:Panel) (children: 'T seq) =
+        children |> Seq.iter(parent.Children.Add >> ignore)
         parent
 
     let withChild child (parent:Panel) = 

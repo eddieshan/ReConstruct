@@ -24,10 +24,10 @@ module TransformView =
         //    }
 
         let spinner up down =
-            let container = stack "spinner"
-            Icons.CHEVRON_UP |> button "icon-button-mini" |> onClick up >- container
-            Icons.CHEVRON_DOWN |> button "icon-button-mini" |> onClick down  >- container
-            container
+            seq {
+                Icons.CHEVRON_UP |> button "icon-button-mini" |> onClick up
+                Icons.CHEVRON_DOWN |> button "icon-button-mini" |> onClick down
+            } |> childrenOf (stack "spinner")
 
         let scaleControls caption =
             seq {                
@@ -42,8 +42,6 @@ module TransformView =
                 yield (spinner (rotate (axis, delta)) (rotate (axis, -delta))) :> UIElement
             }
 
-        let view = stack "transform-view"
-
         let transformText() = textBlock "value-text" "0.00"
         let rotXText, rotYText, rotZText, scaleText = transformText(), transformText(), transformText(), transformText()
 
@@ -57,14 +55,10 @@ module TransformView =
         Events.VolumeTransformed.Publish |> Event.add updateTransform
 
         let transformBlock name controls =
-            let block = stack "panel-block"
             seq {
                 yield name |> label "panel-block-caption" :> UIElement
-                let toolPanel = stack "horizontal"
-                controls |> Seq.iter (fun c -> c >- toolPanel)
-                yield toolPanel :> UIElement
-            } |> Seq.iter(fun c -> c >- block)
-            block
+                yield controls |> childrenOf (stack "horizontal") :> UIElement
+            } |> childrenOf (stack "panel-block")
 
         seq {
             yield seq {
@@ -73,6 +67,4 @@ module TransformView =
                 yield! rotationControls (Axis.Z, rotZText, "Z")
             } |> transformBlock "Rotate"
             yield scaleText |> scaleControls |> transformBlock "Scale"
-        } |> Seq.iter(fun c -> c >- view)
-        
-        view
+        } |> childrenOf (stack "transform-view")
