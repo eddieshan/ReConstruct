@@ -10,5 +10,5 @@ module ToolsController =
 
     let handle = function
                  | OpenTransformPanel -> TransformView.New() |> Mvc.floatingView "Transform tools"
+                 | OpenLightingPanel -> LightingView.New() |> Mvc.floatingView "Scene lighting"
                  | OpenScalarFieldPanel id -> id |> DicomService.getVolume |> ScalarFieldView.New |> Mvc.floatingView "Field levels"
-                    

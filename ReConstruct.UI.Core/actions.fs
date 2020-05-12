@@ -14,6 +14,7 @@ type DicomAction =
 
 type ToolAction = 
     | OpenTransformPanel
+    | OpenLightingPanel
     | OpenScalarFieldPanel of int
 
 type AppAction =

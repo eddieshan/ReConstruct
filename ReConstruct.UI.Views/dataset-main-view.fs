@@ -55,7 +55,8 @@ module DatasetMainView =
                                    (Icons.IMAGE_SERIES |> iconButton, loadSlices) 
                                    (Icons.VIEW_3D |> iconButton, loadVolume)
                                    (Icons.SCALAR_FIELD |> iconButton, openScalarFieldPanel)
-                                   (Icons.SHIFTED_CIRCLE |> iconButton, fun _ -> OpenTransformPanel |> Tool |> Mvc.send) |]
+                                   (Icons.SHIFTED_CIRCLE |> iconButton, fun _ -> OpenTransformPanel |> Tool |> Mvc.send)
+                                   (Icons.FLARE |> iconButton, fun _ -> OpenLightingPanel |> Tool |> Mvc.send) |]
 
             let menuButtons = imagingButtons |> Seq.append buttons |> Seq.map (fst >> disable >> asUIElement)
             let toolbar = menuButtons |> Toolbar.top status

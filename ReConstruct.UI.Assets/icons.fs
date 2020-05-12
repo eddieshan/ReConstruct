@@ -59,5 +59,8 @@ module Icons =
     let ZOOM_IN = "\uf1ee"
     [<Literal>]
     let ZOOM_OUT = "\uf1ef"  
+    
+    [<Literal>]
+    let FLARE = "\uf163"
 
 

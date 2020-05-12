@@ -27,7 +27,6 @@ module UI =
                     | true  -> enable
                     | false -> fun b -> b
 
-
     let label styleKey content = Label(Content = content, Style = style styleKey)
 
     let textBlock styleKey text = TextBlock(Text = text, Style = style styleKey)

@@ -58,6 +58,7 @@
     <Compile Include="datasets-view.fs" />
     <Compile Include="transform-view.fs" />
     <Compile Include="scalar-field-view.fs" />
+    <Compile Include="lighting-view.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
