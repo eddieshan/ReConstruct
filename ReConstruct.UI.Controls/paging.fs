@@ -1,6 +1,8 @@
-﻿namespace ReConstruct.UI.Core
+﻿namespace ReConstruct.UI.Controls
 
 open System
+
+open ReConstruct.UI.Core
 
 type DataPage<'T> =
     | Page of 'T list*string

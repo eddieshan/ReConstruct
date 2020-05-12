@@ -5,34 +5,34 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>6544c821-3f1f-47ef-895b-6e6ed3b7682a</ProjectGuid>
+    <ProjectGuid>c824fb8e-b8bd-4bd4-a2be-60e87c0e5a6d</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>ReConstruct.UI.Core</RootNamespace>
-    <AssemblyName>ReConstruct.UI.Core</AssemblyName>
+    <RootNamespace>ReConstruct.UI.Controls</RootNamespace>
+    <AssemblyName>ReConstruct.UI.Controls</AssemblyName>
     <UseStandardResourceNames>true</UseStandardResourceNames>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <WarningsAsErrors>3239;$(WarningsAsErrors)</WarningsAsErrors>
-    <Name>ReConstruct.UI.Core</Name>
+    <Name>ReConstruct.UI.Controls</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -44,13 +44,12 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
-    <Compile Include="utils.fs" />
-    <Compile Include="ui.fs" />
-    <Compile Include="layout.fs" />
-    <Compile Include="window.fs" />
-    <Compile Include="actions.fs" />
-    <Compile Include="mvc.fs" />
-    <Compile Include="bind.fs" />
+    <Compile Include="paging.fs" />
+    <Compile Include="tree-pager.fs" />
+    <Compile Include="year-pager.fs" />
+    <Compile Include="data-table.fs" />
+    <Compile Include="form.fs" />
+    <Compile Include="toolbar.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
@@ -71,6 +70,11 @@
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
       <Name>ReConstruct.Core</Name>
       <Project>{b0a2b3ae-2330-4dbd-875e-e5392a029344}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.UI.Core\ReConstruct.UI.Core.fsproj">
+      <Name>ReConstruct.UI.Core</Name>
+      <Project>{6544c821-3f1f-47ef-895b-6e6ed3b7682a}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

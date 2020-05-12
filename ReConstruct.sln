@@ -32,6 +32,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Render.OpenGL",
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.Render", "ReConstruct.Render\ReConstruct.Render.fsproj", "{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "ReConstruct.UI.Controls", "ReConstruct.UI.Controls\ReConstruct.UI.Controls.fsproj", "{C824FB8E-B8BD-4BD4-A2BE-60E87C0E5A6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +80,10 @@ Global
 		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79A5DAF8-E0FA-436B-B221-D4F84C0A3C03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C824FB8E-B8BD-4BD4-A2BE-60E87C0E5A6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C824FB8E-B8BD-4BD4-A2BE-60E87C0E5A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C824FB8E-B8BD-4BD4-A2BE-60E87C0E5A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C824FB8E-B8BD-4BD4-A2BE-60E87C0E5A6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

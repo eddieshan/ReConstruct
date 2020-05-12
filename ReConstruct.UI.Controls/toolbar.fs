@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.UI.Core
+﻿namespace ReConstruct.UI.Controls
 
 open System
 open System.Windows

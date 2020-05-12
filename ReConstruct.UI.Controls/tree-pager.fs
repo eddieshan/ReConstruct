@@ -1,9 +1,7 @@
-﻿namespace ReConstruct.UI.Core
+﻿namespace ReConstruct.UI.Controls
 
 open System
-open System.Windows
 open System.Windows.Controls
-open System.Windows.Controls.Primitives
 
 open ReConstruct.UI.Core.UI
 

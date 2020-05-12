@@ -1,8 +1,6 @@
-﻿namespace ReConstruct.UI.Core
+﻿namespace ReConstruct.UI.Controls
 
 open System
-
-open ReConstruct.UI.Core
 
 module YearPager =
     let New (displayPage: 'T list -> unit) (getYear: 'T -> int) data =

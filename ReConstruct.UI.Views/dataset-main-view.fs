@@ -9,6 +9,7 @@ open ReConstruct.Data.Dicom
 open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 open ReConstruct.UI.Core.Actions
+open ReConstruct.UI.Controls
 
 open ReConstruct.Render
 

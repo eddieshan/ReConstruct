@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.UI.Core
+﻿namespace ReConstruct.UI.Controls
 
 open System
 open System.Windows
@@ -6,6 +6,7 @@ open System.Windows.Controls
 
 open ReConstruct.Core.Patterns
 
+open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 
 type Form<'E> =
