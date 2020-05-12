@@ -1,4 +1,4 @@
-﻿namespace ReConstruct.UI.View
+﻿namespace ReConstruct.UI.Assets
 
 module Icons =
     [<Literal>]

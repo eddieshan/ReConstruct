@@ -6,6 +6,7 @@ open System.Windows.Controls
 
 open ReConstruct.Data.Dicom
 
+open ReConstruct.UI.Assets
 open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 open ReConstruct.UI.Core.Actions

@@ -3,6 +3,7 @@
 open System
 open System.Windows
 
+open ReConstruct.UI.Assets
 open ReConstruct.UI.Core
 open ReConstruct.UI.Core.UI
 open ReConstruct.UI.Core.Actions

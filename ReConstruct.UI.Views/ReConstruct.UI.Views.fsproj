@@ -46,7 +46,6 @@
     <Content Include="packages.config" />
     <Compile Include="app-state.fs" />
     <Compile Include="events.fs" />
-    <Compile Include="icons.fs" />
     <Compile Include="message-view.fs" />
     <Compile Include="pager-bar-view.fs" />
     <Compile Include="dataset-main-view.fs" />
@@ -84,6 +83,11 @@
     <ProjectReference Include="..\ReConstruct.Render\ReConstruct.Render.fsproj">
       <Name>ReConstruct.Render</Name>
       <Project>{79a5daf8-e0fa-436b-b221-d4f84c0a3c03}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ReConstruct.UI.Assets\ReConstruct.UI.Assets.fsproj">
+      <Name>ReConstruct.UI.Assets</Name>
+      <Project>{a30e5e6e-b66f-4e41-ad72-aa0ffa0964c4}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Controls\ReConstruct.UI.Controls.fsproj">
