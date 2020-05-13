@@ -25,6 +25,7 @@
     <Style x:Key="floating-panel" TargetType="{x:Type Window}">
         <Setter Property="WindowStyle" Value="None"/>
         <Setter Property="AllowsTransparency" Value="True"/>
+        <Setter Property="Topmost" Value="True"/>
         <Setter Property="Background"  Value="{StaticResource panel-background}" />
         <Setter Property="ResizeMode" Value="NoResize"/>
         <Setter Property="BorderBrush" Value="{StaticResource discrete}" />
