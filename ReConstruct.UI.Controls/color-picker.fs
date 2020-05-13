@@ -1,8 +1,8 @@
 ﻿namespace ReConstruct.UI.Controls
 
 open System
-open System.Drawing
 open System.Windows
+open System.Windows.Media
 open System.Windows.Controls
 
 open ReConstruct.UI.Assets
@@ -11,29 +11,34 @@ open ReConstruct.UI.Core.UI
 
 module ColorPicker =
 
-    let spinner up down =
+    let private spinner up down =
         seq {
             Icons.CHEVRON_UP |> button "icon-button-mini" |> onClick up
             Icons.CHEVRON_DOWN |> button "icon-button-mini" |> onClick down
         } |> childrenOf (stack "spinner")
 
-    let updatableText value =
-        let textBox = TextBox(Text = value)
+    let private updatableText value updateColor =
+        let textBox = TextBox(Text = value.ToString())
+        textBox.TextChanged |> Event.add (fun _ -> textBox.Text |> Convert.ToByte |> updateColor)
         let update delta =
-            textBox.Text <- ((textBox.Text |> Convert.ToInt16) + delta).ToString()
+            let newValue = (textBox.Text |> Convert.ToInt16) + delta |> byte
+            textBox.Text <- newValue.ToString()
         (textBox, update)
 
-    let colorComponent caption value: UIElement seq =
+    let private colorPart caption updateColor value: UIElement seq =
         seq {
             yield TextBlock(Text = caption)
-            let textBox, update = updatableText value
+            let textBox, update = updatableText value updateColor
             yield textBox
             yield spinner (fun _ -> update 1s) (fun _ -> update -1s)
         }
 
-    let create (color: Color) = 
+    let create color = 
         seq {
-            yield! color.R.ToString() |> colorComponent "R"
-            yield! color.G.ToString() |> colorComponent "G"
-            yield! color.B.ToString() |> colorComponent "B"
+            let sample = Border(Background = SolidColorBrush(color), Style = style "color-sample")
+            let updateColor color = sample.Background <- SolidColorBrush(color)
+            yield! color.R |> colorPart "R" (fun r -> Color.FromRgb(r, color.G, color.B) |> updateColor)
+            yield! color.G |> colorPart "G" (fun g -> Color.FromRgb(color.R, g, color.B) |> updateColor)
+            yield! color.B |> colorPart "B" (fun b -> Color.FromRgb(color.R, color.G, b) |> updateColor)
+            yield sample :> UIElement
         } |> childrenOf (stack "horizontal")

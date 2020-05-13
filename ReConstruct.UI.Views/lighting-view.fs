@@ -1,8 +1,8 @@
 ﻿namespace ReConstruct.UI.View
 
 open System
-open System.Drawing
 open System.Windows
+open System.Windows.Media
 
 open ReConstruct.UI.Controls
 open ReConstruct.UI.Core.UI
@@ -25,7 +25,7 @@ module LightingView =
             } |> childrenOf (stack "panel-block")
 
         seq {
-            yield block "Ambient" Color.White
-            yield block "Diffuse" Color.White
-            yield block "Specular" Color.White
+            yield block "Ambient" Colors.White
+            yield block "Diffuse" Colors.White
+            yield block "Specular" Colors.White
         } |> childrenOf (stack "transform-view")
