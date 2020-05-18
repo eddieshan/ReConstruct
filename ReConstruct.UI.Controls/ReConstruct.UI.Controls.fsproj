@@ -51,6 +51,7 @@
     <Compile Include="form.fs" />
     <Compile Include="toolbar.fs" />
     <Compile Include="color-picker.fs" />
+    <Compile Include="spinner.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
