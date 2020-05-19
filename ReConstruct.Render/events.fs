@@ -6,3 +6,4 @@ module Events =
     let OnScale = new Event<float32>()
     let RenderStatus = new Event<string>()
     let VolumeTransformed = new Event<ModelTransform>() 
+    let OnSceneUpdate = new Event<bool>()

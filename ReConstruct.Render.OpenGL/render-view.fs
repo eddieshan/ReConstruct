@@ -149,6 +149,9 @@ module RenderView =
         Events.OnCameraMoved.Publish |> Event.add (update moveCamera)
         Events.OnRotation.Publish |> Event.add (update modelTransform.Rotate)
         Events.OnScale.Publish |> Event.add (update modelTransform.Rescale)
+
+        Events.OnSceneUpdate.Publish |> Event.add(fun _ -> render())
+
         container.HandleDestroyed |> Event.add (fun _ -> cleanUp())
         
         container

@@ -52,6 +52,7 @@
     <Compile Include="toolbar.fs" />
     <Compile Include="spinner.fs" />
     <Compile Include="color-picker.fs" />
+    <Compile Include="vector3-picker.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">

@@ -10,10 +10,7 @@ module internal Projection =
         Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
 module Lighting =
-    let Color = Vector3(1.0f, 1.0f, 1.0f)
-    let Ambient = Vector3(0.05f, 0.05f, 0.05f)
-    let Diffuse = Vector3(0.5f, 0.5f, 0.5f)
-    let Specular = Vector3(0.4f, 0.4f, 0.4f)
+    let private toV3(v: System.Numerics.Vector3) = Vector3(v.X, v.Y, v.Z)
 
     let dirLightPositions = [|
             Vector3(0.0f, 1.0f, 0.0f);
@@ -26,7 +23,7 @@ module Lighting =
 
         for i in 0..dirLightPositions.Length-1 do
             shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])
-            shader.SetVector3(sprintf "dirLights[%i].color" i, Color)
-            shader.SetVector3(sprintf "dirLights[%i].ambient" i, Ambient)
-            shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Diffuse)
-            shader.SetVector3(sprintf "dirLights[%i].specular" i, Specular)
+            shader.SetVector3(sprintf "dirLights[%i].color" i, Scene.getColor() |> toV3)
+            shader.SetVector3(sprintf "dirLights[%i].ambient" i, Scene.getAmbient() |> toV3)
+            shader.SetVector3(sprintf "dirLights[%i].diffuse" i, Scene.getDiffuse() |> toV3)
+            shader.SetVector3(sprintf "dirLights[%i].specular" i, Scene.getSpecular() |> toV3)
