@@ -6,6 +6,11 @@
         <Setter Property="HorizontalAlignment" Value="Right"/>
     </Style>
 
+    <Style x:Key="spinner-text" TargetType="TextBox" BasedOn="{StaticResource ResourceKey={x:Type TextBox}}">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+
     <Style x:Key="color-sample" TargetType="Border">
         <Setter Property="Width" Value="20" />
         <Setter Property="Height" Value="20" />
@@ -34,6 +39,10 @@
     </Style>
 
     <!-- Transform view  -->
+    <Style x:Key="lighting-view" TargetType="UniformGrid">
+        <Setter Property="Columns" Value="4"/>
+        <Setter Property="MinHeight" Value="50"/>
+    </Style>    
     <Style x:Key="transform-view" TargetType="StackPanel">
         <Setter Property="Orientation" Value="Horizontal"/>
         <Setter Property="MinHeight" Value="50"/>

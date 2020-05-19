@@ -18,7 +18,7 @@ module RenderView =
     let private TRIANGLE_POINTS = 3
     let private TRIANGLE_VALUES = 3*TRIANGLE_POINTS
 
-    let private maxTriangles = 3000000
+    let private maxTriangles = 9000000
     let private bufferSize = TRIANGLE_VALUES*maxTriangles
     let private vertexBufferStep = 6 * sizeof<float32>
     let private normalsOffset = 3 * sizeof<float32>
@@ -63,8 +63,6 @@ module RenderView =
         GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, vertexBufferStep, 0)        
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, vertexBufferStep, normalsOffset)
 
-        Lighting.configure shader
-
         //let mutable cameraZ, zNear, zFar = estimatedSize*0.8f, 0.125f, estimatedSize*4.0f
         //let perspectiveProjection() =
         //    let fovy = 45.0f
@@ -88,6 +86,8 @@ module RenderView =
 
         let render() =
             GL.Clear(ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
+
+            Lighting.configure shader
 
             let camera = cameraPosition()
             let modelProjection = modelTransform |> Projection.transformMatrix

@@ -5,4 +5,4 @@ module Events =
     let OnCameraMoved = new Event<float32>()
     let OnScale = new Event<float32>()
     let RenderStatus = new Event<string>()
-    let VolumeTransformed = new Event<ModelTransform>()
+    let VolumeTransformed = new Event<ModelTransform>() 

@@ -7,9 +7,9 @@ open ReConstruct.Render
 module internal Projection =
     let transformMatrix modelTransform =
         let mutable (rotX, rotY, rotZ), scale = modelTransform.Rotation(), modelTransform.Scale()
-        Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)        
+        Matrix4.CreateScale(scale) * Matrix4.CreateRotationX(rotX) * Matrix4.CreateRotationY(rotY) * Matrix4.CreateRotationZ(rotZ)
 
-module internal Lighting =
+module Lighting =
     let Color = Vector3(1.0f, 1.0f, 1.0f)
     let Ambient = Vector3(0.05f, 0.05f, 0.05f)
     let Diffuse = Vector3(0.5f, 0.5f, 0.5f)
@@ -22,7 +22,7 @@ module internal Lighting =
 
     let configure shader =
 
-        shader.SetFloat32("material.shininess", 32.0f)
+        shader.SetFloat32("material.shininess", Scene.getReflectivity())
 
         for i in 0..dirLightPositions.Length-1 do
             shader.SetVector3(sprintf "dirLights[%i].direction" i, dirLightPositions.[i])

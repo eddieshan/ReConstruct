@@ -9,23 +9,21 @@ open ReConstruct.UI.Core.UI
 
 module Spinner =
 
-    let private spinner up down =
+    let spinner up down =
         seq {
             Icons.CHEVRON_UP |> button "icon-button-mini" |> onClick up
             Icons.CHEVRON_DOWN |> button "icon-button-mini" |> onClick down
         } |> childrenOf (stack "spinner")
 
-    let private updatableText value onTextChanged =
-        let textBox = TextBox(Text = value.ToString())
-        textBox.TextChanged |> Event.add (fun _ -> textBox.Text |> onTextChanged)
-        let update delta =
-            let newValue = (textBox.Text |> Convert.ToInt16) + delta
-            textBox.Text <- newValue.ToString()
-        (textBox, update)
+    let inline create onValueChanged (convert: string->'T) (delta, value) =
+        let textBox = TextBox(Text = value.ToString(), Style = style "spinner-text")
+        textBox.TextChanged |> Event.add (fun _ -> textBox.Text |> convert |> onValueChanged)
 
-    let create onTextChanged value =
+        let update v =
+            let newValue = (textBox.Text |> convert) + v
+            textBox.Text <- newValue.ToString()
+
         seq {
-            let textBox, update = updatableText value onTextChanged
             yield textBox :> UIElement
-            yield (spinner (fun _ -> update 1s) (fun _ -> update -1s)) :> UIElement
+            yield (spinner (fun _ -> update delta) (fun _ -> update -delta)) :> UIElement
         } |> childrenOf (stack "horizontal")

@@ -3,6 +3,7 @@
 open System
 open System.Windows
 open System.Windows.Media
+open System.Windows.Controls.Primitives
 
 open ReConstruct.UI.Controls
 open ReConstruct.UI.Core.UI
@@ -12,20 +13,11 @@ open ReConstruct.Render
 module LightingView = 
 
     let New() =
-        //let rotate v = fun _ -> v |> Events.OnRotation.Trigger
-        //let moveCameraZ v = fun _ -> v |> Events.OnCameraMoved.Trigger
-        //let scale v = fun _ -> v |> Events.OnScale.Trigger
-        //let delta, zoomFactor, scaleFactor = 0.1f, 0.05f, 0.05f
-        //Events.VolumeTransformed.Publish |> Event.add updateTransform
-
-        let block caption color =
-            seq {
-                yield caption |> label "panel-block-caption" :> UIElement
-                yield color |> ColorPicker.create :> UIElement
-            } |> childrenOf (stack "panel-block")
+        let labels = seq { "Ambient"; "Diffuse"; "Specular"; "Reflectivity" }
+        let colors = seq { Colors.White; Colors.White; Colors.White }
 
         seq {
-            yield block "Ambient" Colors.White
-            yield block "Diffuse" Colors.White
-            yield block "Specular" Colors.White
-        } |> childrenOf (stack "transform-view")
+            yield! labels |> Seq.map(fun l -> l |> label "panel-block-caption" :> UIElement)
+            yield! colors |> Seq.map(fun color -> color |> ColorPicker.create :> UIElement)
+            yield (0.1f, Scene.getReflectivity()) |> Spinner.create Scene.setReflectivity Single.Parse :> UIElement
+        } |> childrenOf (UniformGrid(Style = style "lighting-view"))

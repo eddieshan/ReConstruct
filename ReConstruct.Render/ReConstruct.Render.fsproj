@@ -46,6 +46,7 @@
     <None Include="Script.fsx" />
     <Content Include="packages.config" />
     <Compile Include="common.fs" />
+    <Compile Include="scene.fs" />
     <Compile Include="events.fs" />
     <Compile Include="vertex-buffer.fs" />
   </ItemGroup>
