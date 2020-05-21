@@ -1,7 +1,6 @@
 ﻿namespace ReConstruct.Geometry
 
 open System
-open System.Buffers
 open System.Numerics
 
 open ReConstruct.Data.Dicom
@@ -9,10 +8,6 @@ open ReConstruct.Data.Dicom
 open ReConstruct.Geometry.MarchingTetrahedraTables
 
 module MarchingTetrahedra =
-
-    let private bufferPool = ArrayPool<float32>.Shared
-    let private capacity = 9000
-    let private borrowBuffer() = bufferPool.Rent capacity
 
     let lerpVertex(v1, v2, isoLevel) =
         let delta = v2 - v1
@@ -75,13 +70,13 @@ module MarchingTetrahedra =
         let queueJob = RenderAgent.renderQueue()
 
         let polygonizeSection (front, back) =
-            let mutable currentBuffer, index = borrowBuffer(), 0
+            let mutable currentBuffer, index = BufferPool.borrow(), 0
             let mutable bufferChain = List.empty
 
             let addPoint (p: System.Numerics.Vector3) = 
-                if index = capacity then
+                if index = BufferPool.Capacity then
                     bufferChain <- currentBuffer :: bufferChain
-                    currentBuffer <- borrowBuffer()
+                    currentBuffer <- BufferPool.borrow()
                     index <- 0
 
                 p.CopyTo(currentBuffer, index)
@@ -91,14 +86,14 @@ module MarchingTetrahedra =
 
             bufferChain <- currentBuffer :: bufferChain
 
-            (index, capacity, bufferChain)
+            (index, BufferPool.Capacity, bufferChain)
 
         let addPoints (index, capacity, bufferChain) =
             let lastBufferIndex = List.length bufferChain - 1
             let dumpBuffer i (buffer: float32[]) =
                 let size = if i = 0 then index else capacity
                 partialRender (size, buffer) (i = lastBufferIndex)
-                bufferPool.Return buffer
+                BufferPool.ret buffer
             bufferChain |> List.iteri dumpBuffer
 
         let polygonizeJob i = async { return polygonizeSection (slices.[i - 1], slices.[i]) }

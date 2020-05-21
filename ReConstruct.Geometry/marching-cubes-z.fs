@@ -1,7 +1,6 @@
 ﻿namespace ReConstruct.Geometry
 
 open System
-open System.Buffers
 open System.Numerics
 
 open ReConstruct.Data.Dicom
@@ -49,10 +48,6 @@ module MarchingCubesZ =
         [| 3; 8; 0; 0; 1; |]
         [| 7; 128; 0; 1; 1; |]
     |]
-
-    let private bufferPool = ArrayPool<float32>.Shared
-    let private capacity = 9000
-    let private borrowBuffer() = bufferPool.Rent capacity
 
     let v3(v4: Vector4) = Vector3(v4.X, v4.Y, v4.Z)
 
@@ -213,10 +208,10 @@ module MarchingCubesZ =
         let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
         let upperLeft = Vector3(float32 start.UpperLeft.[0], float32 start.UpperLeft.[1], float32 start.UpperLeft.[2])
 
-        let mutable currentBuffer, index = borrowBuffer(), 0
+        let mutable currentBuffer, index = BufferPool.borrow(), 0
 
         let addPoint (p: Vector3) = 
-            if index = capacity then
+            if index = BufferPool.Capacity then
                 partialRender (index, currentBuffer) false
                 index <- 0
 

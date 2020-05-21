@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="utils.fs" />
     <Compile Include="cube.fs" />
     <Compile Include="cubes-iterator.fs" />
     <Compile Include="marching-cubes-tables.fs" />

@@ -2,13 +2,11 @@
 
 open System
 open System.Numerics
-open System.Buffers
 
 open ReConstruct.Core
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Geometry.CubesIterator
 open ReConstruct.Geometry.MarchingCubesTables
 
 module private RenderAgent =
@@ -20,10 +18,6 @@ module private RenderAgent =
         fun processResult job -> (job, processResult) |> Async.ThrottledJob |> throttledForkJoinAgent.Post
 
 module MarchingCubesBasic =
-
-    let private bufferPool = ArrayPool<float32>.Shared
-    let private capacity = 9000
-    let private borrowBuffer() = bufferPool.Rent capacity
 
     let private marchCube addPoint (cube: Cube) =
 
@@ -64,13 +58,13 @@ module MarchingCubesBasic =
     let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
 
         let polygonizeSection (front, back) =
-            let mutable currentBuffer, index = borrowBuffer(), 0
+            let mutable currentBuffer, index = BufferPool.borrow(), 0
             let mutable bufferChain = List.empty
 
             let addPoint (p: Vector3) = 
-                if index = capacity then
+                if index = BufferPool.Capacity then
                     bufferChain <- currentBuffer :: bufferChain
-                    currentBuffer <- borrowBuffer()
+                    currentBuffer <- BufferPool.borrow()
                     index <- 0
 
                 p.CopyTo(currentBuffer, index)
@@ -80,14 +74,14 @@ module MarchingCubesBasic =
 
             bufferChain <- currentBuffer :: bufferChain
 
-            (index, capacity, bufferChain)
+            (index, BufferPool.Capacity, bufferChain)
 
         let addPoints (index, capacity, bufferChain) =
             let lastBufferIndex = List.length bufferChain - 1
             let dumpBuffer i (buffer: float32[]) =
                 let size = if i = 0 then index else capacity
                 partialRender (size, buffer) (i = lastBufferIndex)
-                bufferPool.Return buffer
+                BufferPool.ret buffer
             bufferChain |> List.iteri dumpBuffer
 
         let queueJob = RenderAgent.renderQueue()
