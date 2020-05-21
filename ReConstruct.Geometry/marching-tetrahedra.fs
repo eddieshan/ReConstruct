@@ -68,7 +68,7 @@ module MarchingTetrahedra =
                     tetraVertices.[j].X <- cube.Vertices.[cubeVertexIndex].X
                     tetraVertices.[j].Y <- cube.Vertices.[cubeVertexIndex].Y
                     tetraVertices.[j].Z <- cube.Vertices.[cubeVertexIndex].Z
-                    tetraValues.[j] <- cube.Levels.[cubeVertexIndex]
+                    tetraValues.[j] <- cube.Values.[cubeVertexIndex]
                 
                 marchTetrahedron addPoint (tetraVertices, tetraValues, cube)
 

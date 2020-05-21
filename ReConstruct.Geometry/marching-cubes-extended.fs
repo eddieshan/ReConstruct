@@ -29,8 +29,8 @@ module MarchingCubesExtended =
                 p.CopyTo(currentBuffer, index)
                 index <- index + 3
 
-            CubesGradientIteratorSIMD.iterate (front, back, next) isoValue addPoint
-            //CubesGradientIterator.iterate (front, back, next) isoValue addPoint
+            //CubesGradientIteratorSIMD.iterate (front, back, next) isoValue addPoint
+            CubesGradientIterator.iterate (front, back, next) isoValue addPoint
 
             bufferChain <- currentBuffer :: bufferChain
 

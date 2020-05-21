@@ -29,8 +29,8 @@ module MarchingCubesBasic =
 
         let mutable cubeIndex = 0uy
 
-        for i in 0..cube.Levels.Length-1 do
-            if (cube.Levels.[i] <= cube.IsoValue) then
+        for i in 0..cube.Values.Length-1 do
+            if (cube.Values.[i] <= cube.IsoValue) then
                 cubeIndex <- cubeIndex ||| (1uy <<< i)
 
         let cubeIndexAsInt = int cubeIndex
@@ -41,7 +41,7 @@ module MarchingCubesBasic =
             for i in 0..EdgeTraversal.Length-1 do
                 if (EdgeTable.[cubeIndexAsInt] &&& (1 <<< i)) > 0 then
                     let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    let v1, v2 = cube.Levels.[index1], cube.Levels.[index2]
+                    let v1, v2 = cube.Values.[index1], cube.Values.[index2]
                     let delta = v2 - v1
                     let mu =
                         if delta = 0s then

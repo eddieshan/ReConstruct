@@ -11,7 +11,7 @@ module CubesIterator =
         {
             IsoValue: int16
             Vertices: Vector3[]
-            Levels: int16[]
+            Values: int16[]
         }
 
     let iterate (front, back) isoValue polygonize = 
@@ -35,7 +35,7 @@ module CubesIterator =
                     Vector3(0.0f, top, zFront)
                     Vector3(0.0f, top, zFront)
                 |]
-                Levels = Array.zeroCreate<int16> 8
+                Values = Array.zeroCreate<int16> 8
              }
 
         let setValues offset =
@@ -43,14 +43,14 @@ module CubesIterator =
             let bottom = offset + front.Columns
             let bottomRight = bottom + 1
 
-            cube.Levels.[0] <- back.HField.[bottom]
-            cube.Levels.[1] <- back.HField.[bottomRight]
-            cube.Levels.[2] <- front.HField.[bottomRight]
-            cube.Levels.[3] <- front.HField.[bottom]
-            cube.Levels.[4] <- back.HField.[offset]
-            cube.Levels.[5] <- back.HField.[right]
-            cube.Levels.[6] <- front.HField.[right]
-            cube.Levels.[7] <- front.HField.[offset]
+            cube.Values.[0] <- back.HField.[bottom]
+            cube.Values.[1] <- back.HField.[bottomRight]
+            cube.Values.[2] <- front.HField.[bottomRight]
+            cube.Values.[3] <- front.HField.[bottom]
+            cube.Values.[4] <- back.HField.[offset]
+            cube.Values.[5] <- back.HField.[right]
+            cube.Values.[6] <- front.HField.[right]
+            cube.Values.[7] <- front.HField.[offset]
 
 
         let mutable rowOffset = 0
