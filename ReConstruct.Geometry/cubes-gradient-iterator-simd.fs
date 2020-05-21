@@ -12,7 +12,7 @@ module CubesGradientIteratorSIMD =
     let iterate (front, back, next) isoValue addPoint = 
         let lastRow, lastColumn = front.Rows - 2, front.Columns - 2
 
-        let cube = Cube.create front back
+        let cube = Cube.create front back isoValue
 
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
@@ -38,7 +38,7 @@ module CubesGradientIteratorSIMD =
             cube.Values.[6] <- front.HField.[topRight]
             cube.Values.[7] <- front.HField.[topLeft]
 
-            let cubeIndex = cube.GetIndex isoValue
+            let cubeIndex = cube.GetIndex()
 
             if EdgeTable.[cubeIndex] <> 0 then
 

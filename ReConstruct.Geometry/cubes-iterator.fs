@@ -1,42 +1,19 @@
 ﻿namespace ReConstruct.Geometry
 
 open System
-open System.Numerics
 
 open ReConstruct.Data.Dicom
 
 module CubesIterator =
 
-    type Cube =
-        {
-            IsoValue: int16
-            Vertices: Vector3[]
-            Values: int16[]
-        }
-
     let iterate (front, back) isoValue polygonize = 
 
-        let zFront, zBack = float32 front.UpperLeft.[2], float32 back.UpperLeft.[2]
         let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
 
-        let top, left = float32 front.UpperLeft.[1], float32 front.UpperLeft.[0]
-        let bottom, right = top + stepY, left + stepX
+        let left = float32 front.UpperLeft.[0]
+        let right = left + stepX
 
-        let cube = 
-            {
-                IsoValue = isoValue
-                Vertices = [|
-                    Vector3(0.0f, bottom, zBack)
-                    Vector3(0.0f, bottom, zBack)
-                    Vector3(0.0f, bottom, zFront)
-                    Vector3(0.0f, bottom, zFront)
-                    Vector3(0.0f, top, zBack)
-                    Vector3(0.0f, top, zBack)
-                    Vector3(0.0f, top, zFront)
-                    Vector3(0.0f, top, zFront)
-                |]
-                Values = Array.zeroCreate<int16> 8
-             }
+        let cube = Cube.create front back isoValue
 
         let setValues offset =
             let right = offset + 1

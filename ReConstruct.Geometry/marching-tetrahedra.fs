@@ -6,7 +6,6 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
-open ReConstruct.Geometry.CubesIterator
 open ReConstruct.Geometry.MarchingTetrahedraTables
 
 module MarchingTetrahedra =

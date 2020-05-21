@@ -27,13 +27,7 @@ module MarchingCubesBasic =
 
     let private marchCube addPoint (cube: Cube) =
 
-        let mutable cubeIndex = 0uy
-
-        for i in 0..cube.Values.Length-1 do
-            if (cube.Values.[i] <= cube.IsoValue) then
-                cubeIndex <- cubeIndex ||| (1uy <<< i)
-
-        let cubeIndexAsInt = int cubeIndex
+        let cubeIndexAsInt = cube.GetIndex()
 
         if EdgeTable.[cubeIndexAsInt] <> 0 then
             let vertlist = Array.zeroCreate<Vector3> 12
