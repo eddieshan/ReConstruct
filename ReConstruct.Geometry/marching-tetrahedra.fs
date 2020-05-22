@@ -70,31 +70,11 @@ module MarchingTetrahedra =
         let queueJob = RenderAgent.renderQueue()
 
         let polygonizeSection (front, back) =
-            let mutable currentBuffer, index = BufferPool.borrow(), 0
-            let mutable bufferChain = List.empty
+            let bufferChain = BufferChain()
+            CubesIterator.iterate (front, back) isoLevel (marchCube bufferChain.Add)
+            bufferChain
 
-            let addPoint (p: System.Numerics.Vector3) = 
-                if index = BufferPool.Capacity then
-                    bufferChain <- currentBuffer :: bufferChain
-                    currentBuffer <- BufferPool.borrow()
-                    index <- 0
-
-                p.CopyTo(currentBuffer, index)
-                index <- index + 3
-
-            CubesIterator.iterate (front, back) isoLevel (marchCube addPoint)
-
-            bufferChain <- currentBuffer :: bufferChain
-
-            (index, BufferPool.Capacity, bufferChain)
-
-        let addPoints (index, capacity, bufferChain) =
-            let lastBufferIndex = List.length bufferChain - 1
-            let dumpBuffer i (buffer: float32[]) =
-                let size = if i = 0 then index else capacity
-                partialRender (size, buffer) (i = lastBufferIndex)
-                BufferPool.ret buffer
-            bufferChain |> List.iteri dumpBuffer
+        let addPoints (bufferChain: BufferChain) = bufferChain.Dump partialRender
 
         let polygonizeJob i = async { return polygonizeSection (slices.[i - 1], slices.[i]) }
 

@@ -2,11 +2,6 @@
 
 module internal MarchingTetrahedraTables =
 
-    //let private a2fVertexOffset = [|
-    //    [| 0; 0; 0 |]; [| 1; 0; 0 |]; [| 1; 1; 0 |]; [| 0; 1; 0 |]; 
-    //    [| 0; 0; 1 |]; [| 1; 0; 1 |]; [| 1; 1; 1 |]; [| 0; 1; 1 |]; 
-    //|]
-
     let EdgeTraversal = [|
         [| 0; 1 |];  [| 1; 2 |];  [| 2; 0 |];  [| 0; 3 |];  [| 1; 3 |];  [| 2; 3 |]
     |]
