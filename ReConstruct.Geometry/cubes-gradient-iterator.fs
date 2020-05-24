@@ -14,41 +14,39 @@ module CubesGradientIterator =
 
         let cube = Cube.create front back isoValue
 
-        let jumpRight = 1
-        let jumpBottom = front.Columns
-        let jumpBottomRight = jumpBottom + jumpRight
+        let jumpColumn = 1
+        let jumpRow = front.Columns
 
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
 
-        let processCube topLeft row column =
-            let tRight = topLeft + jumpRight
-            let bLeft = topLeft + jumpBottom
-            let bRight = topLeft + jumpBottomRight
+        let processCube tLeft row column =
+            let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
+            let bRight = bLeft + jumpColumn
 
             cube.Values.[0] <- back.HField.[bLeft]
             cube.Values.[1] <- back.HField.[bRight]
             cube.Values.[2] <- front.HField.[bRight]
             cube.Values.[3] <- front.HField.[bLeft]
-            cube.Values.[4] <- back.HField.[topLeft]
+            cube.Values.[4] <- back.HField.[tLeft]
             cube.Values.[5] <- back.HField.[tRight]
             cube.Values.[6] <- front.HField.[tRight]
-            cube.Values.[7] <- front.HField.[topLeft]
+            cube.Values.[7] <- front.HField.[tLeft]
 
             let cubeIndex = cube.GetIndex()
 
             if EdgeTable.[cubeIndex] <> 0 then
 
-                let jumpUnder = (1 - row/lastRow) * jumpBottom
+                let jumpUnder = (1 - row/lastRow) * jumpRow
                 let uBLeft, uBRight = bLeft + jumpUnder, bRight + jumpUnder
 
-                let jumpNextRight = (1 - column/lastColumn) * jumpRight
+                let jumpNextRight = (1 - column/lastColumn) * jumpColumn
                 let rBRight, rTRight = bRight + jumpNextRight, tRight + jumpNextRight
 
                 let backBLeft, backBRight = 2s*back.HField.[bLeft], 2s*back.HField.[bRight]
                 let frontBRight, frontBLeft = 2s*front.HField.[bRight], 2s*front.HField.[bLeft]
-                let backTLeft, backTRight = 2s*back.HField.[topLeft], 2s*back.HField.[tRight]
-                let frontTRight, frontTLeft = 2s*front.HField.[tRight], 2s*front.HField.[topLeft]
+                let backTLeft, backTRight = 2s*back.HField.[tLeft], 2s*back.HField.[tRight]
+                let frontTRight, frontTLeft = 2s*front.HField.[tRight], 2s*front.HField.[tLeft]
 
                 cube.Gradients.[0].X <- ((next.HField.[bRight] + back.HField.[bRight] - backBLeft) |> float32)*0.5f
                 cube.Gradients.[0].Y <- ((next.HField.[uBLeft] + back.HField.[uBLeft] - backBLeft) |> float32)*0.5f
@@ -68,7 +66,7 @@ module CubesGradientIterator =
 
                 cube.Gradients.[4].X <- ((next.HField.[tRight] + back.HField.[tRight] - backTLeft) |> float32)*0.5f
                 cube.Gradients.[4].Y <- ((next.HField.[bLeft] + back.HField.[bLeft] - backTLeft) |> float32)*0.5f
-                cube.Gradients.[4].Z <- (next.HField.[topLeft] - back.HField.[topLeft]) |> float32
+                cube.Gradients.[4].Z <- (next.HField.[tLeft] - back.HField.[tLeft]) |> float32
 
                 cube.Gradients.[5].X <- ((next.HField.[rTRight] + back.HField.[rTRight] - backTRight) |> float32)*0.5f
                 cube.Gradients.[5].Y <- ((next.HField.[bRight] + back.HField.[bRight] - backTRight) |> float32)*0.5f
@@ -80,7 +78,7 @@ module CubesGradientIterator =
 
                 cube.Gradients.[7].X <- ((back.HField.[tRight] + front.HField.[tRight] - frontTLeft) |> float32)*0.5f
                 cube.Gradients.[7].Y <- ((back.HField.[bLeft] + front.HField.[bLeft] - frontTLeft) |> float32)*0.5f
-                cube.Gradients.[7].Z <- (back.HField.[topLeft] - front.HField.[topLeft]) |> float32
+                cube.Gradients.[7].Z <- (back.HField.[tLeft] - front.HField.[tLeft]) |> float32
         
                 for i in 0..EdgeTraversal.Length-1 do
                     if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
