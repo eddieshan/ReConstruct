@@ -10,15 +10,15 @@ module MarchingCubesExtended =
 
     let polygonize isoValue (slices: ImageSlice[]) partialRender = 
 
-        let polygonizeSection (front, back, next) =
+        let polygonizeSection index =
             let bufferChain = BufferChain()
             //CubesGradientIteratorSIMD.iterate (front, back, next) isoValue addPoint
-            CubesGradientIterator.iterate (front, back, next) isoValue bufferChain.Add
+            CubesGradientIterator.iterate slices index isoValue bufferChain.Add
             bufferChain
 
         let addPoints (bufferChain: BufferChain) = bufferChain.Dump partialRender
 
         let queueJob = RenderAgent.renderQueue()
-        let polygonizeJob i = async { return polygonizeSection (slices.[i - 2], slices.[i - 1], slices.[i]) }
+        let polygonizeJob i = async { return polygonizeSection i }
     
-        seq { 2..slices.Length - 1 } |> Seq.iter(polygonizeJob >> (queueJob addPoints))
+        seq { 0..slices.Length - 3 } |> Seq.iter(polygonizeJob >> (queueJob addPoints))

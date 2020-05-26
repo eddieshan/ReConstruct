@@ -9,29 +9,30 @@ open ReConstruct.Geometry.MarchingCubesTables
 
 module CubesGradientIterator =
 
-    let iterate (front, back, next) isoValue addPoint = 
-        let lastRow, lastColumn = front.Rows - 2, front.Columns - 2
+    let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
+        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
 
-        let cube = Cube.create front back isoValue
+        let cube = Cube.create slices.[frontIndex] slices.[frontIndex + 1] isoValue
 
         let jumpColumn = 1
-        let jumpRow = front.Columns
+        let jumpRow = slices.[frontIndex].Columns
 
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
+        let front, back, next = slices.[frontIndex].HField, slices.[frontIndex + 1].HField, slices.[frontIndex + 2].HField
 
         let processCube tLeft row column =
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
 
-            cube.Values.[0] <- back.HField.[bLeft]
-            cube.Values.[1] <- back.HField.[bRight]
-            cube.Values.[2] <- front.HField.[bRight]
-            cube.Values.[3] <- front.HField.[bLeft]
-            cube.Values.[4] <- back.HField.[tLeft]
-            cube.Values.[5] <- back.HField.[tRight]
-            cube.Values.[6] <- front.HField.[tRight]
-            cube.Values.[7] <- front.HField.[tLeft]
+            cube.Values.[0] <- back.[bLeft]
+            cube.Values.[1] <- back.[bRight]
+            cube.Values.[2] <- front.[bRight]
+            cube.Values.[3] <- front.[bLeft]
+            cube.Values.[4] <- back.[tLeft]
+            cube.Values.[5] <- back.[tRight]
+            cube.Values.[6] <- front.[tRight]
+            cube.Values.[7] <- front.[tLeft]
 
             let cubeIndex = cube.GetIndex()
 
@@ -43,42 +44,42 @@ module CubesGradientIterator =
                 let jumpNextRight = (1 - column/lastColumn) * jumpColumn
                 let rBRight, rTRight = bRight + jumpNextRight, tRight + jumpNextRight
 
-                let backBLeft, backBRight = 2s*back.HField.[bLeft], 2s*back.HField.[bRight]
-                let frontBRight, frontBLeft = 2s*front.HField.[bRight], 2s*front.HField.[bLeft]
-                let backTLeft, backTRight = 2s*back.HField.[tLeft], 2s*back.HField.[tRight]
-                let frontTRight, frontTLeft = 2s*front.HField.[tRight], 2s*front.HField.[tLeft]
+                let backBLeft, backBRight = 2s*back.[bLeft], 2s*back.[bRight]
+                let frontBRight, frontBLeft = 2s*front.[bRight], 2s*front.[bLeft]
+                let backTLeft, backTRight = 2s*back.[tLeft], 2s*back.[tRight]
+                let frontTRight, frontTLeft = 2s*front.[tRight], 2s*front.[tLeft]
 
-                cube.Gradients.[0].X <- ((next.HField.[bRight] + back.HField.[bRight] - backBLeft) |> float32)*0.5f
-                cube.Gradients.[0].Y <- ((next.HField.[uBLeft] + back.HField.[uBLeft] - backBLeft) |> float32)*0.5f
-                cube.Gradients.[0].Z <- (next.HField.[bLeft] - back.HField.[bLeft]) |> float32
+                cube.Gradients.[0].X <- ((next.[bRight] + back.[bRight] - backBLeft) |> float32)*0.5f
+                cube.Gradients.[0].Y <- ((next.[uBLeft] + back.[uBLeft] - backBLeft) |> float32)*0.5f
+                cube.Gradients.[0].Z <- (next.[bLeft] - back.[bLeft]) |> float32
 
-                cube.Gradients.[1].X <- ((next.HField.[rBRight] + back.HField.[rBRight] - backBRight) |> float32)*0.5f
-                cube.Gradients.[1].Y <- ((next.HField.[uBRight] + back.HField.[uBRight] - backBRight) |> float32)*0.5f
-                cube.Gradients.[1].Z <- (next.HField.[bRight] - back.HField.[bRight]) |> float32
+                cube.Gradients.[1].X <- ((next.[rBRight] + back.[rBRight] - backBRight) |> float32)*0.5f
+                cube.Gradients.[1].Y <- ((next.[uBRight] + back.[uBRight] - backBRight) |> float32)*0.5f
+                cube.Gradients.[1].Z <- (next.[bRight] - back.[bRight]) |> float32
 
-                cube.Gradients.[2].X <- ((back.HField.[rBRight] + front.HField.[rBRight] - frontBRight) |> float32)*0.5f
-                cube.Gradients.[2].Y <- ((back.HField.[uBRight] + front.HField.[uBRight] - frontBRight) |> float32)*0.5f
-                cube.Gradients.[2].Z <- (back.HField.[bRight] - front.HField.[bRight]) |> float32
+                cube.Gradients.[2].X <- ((back.[rBRight] + front.[rBRight] - frontBRight) |> float32)*0.5f
+                cube.Gradients.[2].Y <- ((back.[uBRight] + front.[uBRight] - frontBRight) |> float32)*0.5f
+                cube.Gradients.[2].Z <- (back.[bRight] - front.[bRight]) |> float32
 
-                cube.Gradients.[3].X <- ((back.HField.[bRight] + front.HField.[bRight] - frontBLeft) |> float32)*0.5f
-                cube.Gradients.[3].Y <- ((back.HField.[uBLeft] + front.HField.[uBLeft] - frontBLeft) |> float32)*0.5f
-                cube.Gradients.[3].Z <- (back.HField.[bLeft] - front.HField.[bLeft]) |> float32
+                cube.Gradients.[3].X <- ((back.[bRight] + front.[bRight] - frontBLeft) |> float32)*0.5f
+                cube.Gradients.[3].Y <- ((back.[uBLeft] + front.[uBLeft] - frontBLeft) |> float32)*0.5f
+                cube.Gradients.[3].Z <- (back.[bLeft] - front.[bLeft]) |> float32
 
-                cube.Gradients.[4].X <- ((next.HField.[tRight] + back.HField.[tRight] - backTLeft) |> float32)*0.5f
-                cube.Gradients.[4].Y <- ((next.HField.[bLeft] + back.HField.[bLeft] - backTLeft) |> float32)*0.5f
-                cube.Gradients.[4].Z <- (next.HField.[tLeft] - back.HField.[tLeft]) |> float32
+                cube.Gradients.[4].X <- ((next.[tRight] + back.[tRight] - backTLeft) |> float32)*0.5f
+                cube.Gradients.[4].Y <- ((next.[bLeft] + back.[bLeft] - backTLeft) |> float32)*0.5f
+                cube.Gradients.[4].Z <- (next.[tLeft] - back.[tLeft]) |> float32
 
-                cube.Gradients.[5].X <- ((next.HField.[rTRight] + back.HField.[rTRight] - backTRight) |> float32)*0.5f
-                cube.Gradients.[5].Y <- ((next.HField.[bRight] + back.HField.[bRight] - backTRight) |> float32)*0.5f
-                cube.Gradients.[5].Z <- (next.HField.[tRight] - back.HField.[tRight]) |> float32
+                cube.Gradients.[5].X <- ((next.[rTRight] + back.[rTRight] - backTRight) |> float32)*0.5f
+                cube.Gradients.[5].Y <- ((next.[bRight] + back.[bRight] - backTRight) |> float32)*0.5f
+                cube.Gradients.[5].Z <- (next.[tRight] - back.[tRight]) |> float32
 
-                cube.Gradients.[6].X <- ((back.HField.[rTRight] + front.HField.[rTRight] - frontTRight) |> float32)*0.5f
-                cube.Gradients.[6].Y <- ((back.HField.[bRight] + front.HField.[bRight] - frontTRight) |> float32)*0.5f
-                cube.Gradients.[6].Z <- (back.HField.[tRight] - front.HField.[tRight]) |> float32
+                cube.Gradients.[6].X <- ((back.[rTRight] + front.[rTRight] - frontTRight) |> float32)*0.5f
+                cube.Gradients.[6].Y <- ((back.[bRight] + front.[bRight] - frontTRight) |> float32)*0.5f
+                cube.Gradients.[6].Z <- (back.[tRight] - front.[tRight]) |> float32
 
-                cube.Gradients.[7].X <- ((back.HField.[tRight] + front.HField.[tRight] - frontTLeft) |> float32)*0.5f
-                cube.Gradients.[7].Y <- ((back.HField.[bLeft] + front.HField.[bLeft] - frontTLeft) |> float32)*0.5f
-                cube.Gradients.[7].Z <- (back.HField.[tLeft] - front.HField.[tLeft]) |> float32
+                cube.Gradients.[7].X <- ((back.[tRight] + front.[tRight] - frontTLeft) |> float32)*0.5f
+                cube.Gradients.[7].Y <- ((back.[bLeft] + front.[bLeft] - frontTLeft) |> float32)*0.5f
+                cube.Gradients.[7].Z <- (back.[tLeft] - front.[tLeft]) |> float32
         
                 for i in 0..EdgeTraversal.Length-1 do
                     if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
@@ -108,8 +109,8 @@ module CubesGradientIterator =
 
 
         let mutable rowOffset = 0
-        let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
-        let left = float32 front.UpperLeft.[0]
+        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
+        let left = float32 slices.[frontIndex].UpperLeft.[0]
         let right = left + stepX
 
         for row in 0..lastRow do
@@ -132,4 +133,4 @@ module CubesGradientIterator =
             for n in 0..7 do
                 cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
 
-            rowOffset <- rowOffset + front.Columns
+            rowOffset <- rowOffset + jumpRow
