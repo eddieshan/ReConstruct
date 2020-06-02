@@ -24,7 +24,11 @@ module CubesGradientIterator =
         let backIndex = frontIndex + 1
         let gradient = Gradient(slices)
 
-        let processCube tLeft row column =
+        let inline addTriangle index = 
+            vertices.[index] |> addPoint
+            gradients.[index] |> addPoint
+
+        let processCube tLeft =
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
 
@@ -66,15 +70,9 @@ module CubesGradientIterator =
                 let triangles = TriTable2.[cubeIndex]
 
                 for triangle in triangles do
-                    vertices.[triangle.[0]] |> addPoint
-                    gradients.[triangle.[0]] |> addPoint
-                    
-                    vertices.[triangle.[1]] |> addPoint
-                    gradients.[triangle.[1]] |> addPoint
-
-                    vertices.[triangle.[2]] |> addPoint
-                    gradients.[triangle.[2]] |> addPoint
-
+                    triangle.[0] |> addTriangle
+                    triangle.[1] |> addTriangle
+                    triangle.[2] |> addTriangle
 
         let mutable rowOffset = 0
         let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
@@ -93,7 +91,7 @@ module CubesGradientIterator =
 
             for column in 0..lastColumn do
 
-                processCube (rowOffset + column) row column
+                processCube (rowOffset + column)
 
                 for n in 0..7 do
                     cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX

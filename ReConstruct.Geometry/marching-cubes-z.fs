@@ -181,7 +181,7 @@ module MarchingCubesZ =
                                 addVertex normals.[index.[h]]
                             n <- n + 3
 
-    let polygonize isoLevel (slices: ImageSlice[]) partialRender = 
+    let polygonize (isoLevel: int16) (slices: ImageSlice[]) partialRender = 
 
         let start = slices.[0]
         let columns, rows = start.Columns, start.Rows
@@ -219,7 +219,7 @@ module MarchingCubesZ =
             index <- index + 3
 
         MarchingCubes(columns - 1, rows - 1, slices.Length - 1, 
-                     sizeFactor, isoLevel, valueAt, addPoint,
+                     sizeFactor, (float32 isoLevel), valueAt, addPoint,
                      upperLeft,
                      step)
 
