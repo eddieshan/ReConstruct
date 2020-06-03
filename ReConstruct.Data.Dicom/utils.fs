@@ -50,8 +50,9 @@ module Utils =
                | _ -> reader.ReadBytes
 
            let readAndRewind length = 
+               let position = reader.BaseStream.Position
                let bytes = length |> reader.ReadBytes
-               reader.BaseStream.Position <- reader.BaseStream.Position - (int64 length)
+               reader.BaseStream.Position <- position
                bytes
 
            {
