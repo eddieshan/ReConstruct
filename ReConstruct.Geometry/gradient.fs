@@ -21,11 +21,16 @@ type Gradient(slices: ImageSlice[]) =
 
     member this.setValue (index, pos, g: byref<Vector3>) = 
         let numRows = slices.[index].Columns
-        let prev, current, next = slices.[index - 1].HField, slices.[index].HField, slices.[index + 1].HField
-        let right, left = pos + 1, pos - 1
-        let under, above = pos + numRows, pos - numRows
-        let aRight, aLeft = above + 1, above - 1
-        let uRight, uLeft = under + 1, under - 1
+
+        let prevIndex = Math.Max(0, index - 1)
+
+        let prev, current, next = slices.[prevIndex].HField, slices.[index].HField, slices.[index + 1].HField
+        let max = current.Length - 1
+
+        let right, left = Math.Min(max, pos + 1), Math.Max(0, pos - 1)
+        let under, above = Math.Min(max, pos + numRows), Math.Max(0, pos - numRows)
+        let aRight, aLeft =  Math.Min(max, above + 1), Math.Max(0, above - 1)
+        let uRight, uLeft = Math.Min(max, under + 1), Math.Max(0, under - 1)
 
         g.X <- 
             Gradient.avg(current.[right] - current.[left],
