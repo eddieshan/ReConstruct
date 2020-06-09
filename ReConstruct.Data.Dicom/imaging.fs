@@ -138,7 +138,7 @@ module Imaging =
             PixelSpacingX = spacingX;
             PixelSpacingY = spacingY;
             WindowCenter = Tags.WindowCenter |> findTagValueAsNumber root int |> Option.defaultValue 0;
-            WindowWidth =  Tags.WindowWidth |> findTagValueAsNumber root int |> Option.defaultValue 0;
+            WindowWidth =  Tags.WindowWidth |> findTagValueAsNumber root int |> Option.defaultValue 1;
         }
 
     let getValuesCount slice =  
