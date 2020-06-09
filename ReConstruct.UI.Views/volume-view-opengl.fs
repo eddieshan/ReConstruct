@@ -26,7 +26,7 @@ module VolumeViewOpenGL =
         let estimatedModelSize = Math.Abs(lastSlice.UpperLeft.[2] - firstSlice.UpperLeft.[2]) |> float32
 
         let calculateMesh partialRender =
-            MarchingCubesExtended.polygonize isoLevel slices partialRender
+            DualContouring.polygonize isoLevel slices partialRender
         
         let clock = Stopwatch.StartNew()
         let onUpdate numPoints =
