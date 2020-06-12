@@ -30,5 +30,5 @@ module VolumeViewOpenGL =
         
         let clock = Stopwatch.StartNew()
         let onUpdate numPoints =
-            sprintf "%.2fs | %i triangles" clock.Elapsed.TotalSeconds numPoints |> Events.Status.Trigger
+            sprintf "%.2fs | %i triangles" clock.Elapsed.TotalSeconds (numPoints/3) |> Events.Status.Trigger
         RenderView.buildScene (estimatedModelSize, calculateMesh, onUpdate)
