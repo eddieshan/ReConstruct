@@ -17,7 +17,7 @@ type Vertex =
 module DualContouringIterator =
 
     let private QuadsTable = [|
-        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|1; 1; 0; |]; |]
+        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |]
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |]
         [| [|0; 0; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 1; 1; |]; |]
     |]
@@ -25,15 +25,13 @@ module DualContouringIterator =
     let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
         let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
 
-        let cube = Cube.create slices.[frontIndex] slices.[frontIndex + 1] isoValue
+        let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
 
-        let jumpColumn = 1
-        let jumpRow = slices.[frontIndex].Columns
-
-        let backIndex = frontIndex + 1
+        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
         let gradient = Gradient(slices)
         
-        let findInnerVertex tLeft (front: int16[], back: int16[]) = 
+        let findInnerVertex tLeft cube (front: int16[], back: int16[]) = 
+            //let front, back = slices.[index].HField, slices.[index + 1].HField
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
 
@@ -68,8 +66,7 @@ module DualContouringIterator =
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     //let signA, signB = cubeIndex &&& (1 <<< indexA), cubeIndex &&& (1 <<< indexB)
                     //if signA <> signB then
-                    if (isoValue >= cube.Values.[indexA] && isoValue < cube.Values.[indexB]) || 
-                        (isoValue < cube.Values.[indexA] && isoValue >= cube.Values.[indexB]) then
+                    if ((cube.Values.[indexA] <= isoValue) <> (cube.Values.[indexB] <= isoValue)) || (cube.Values.[indexA] = isoValue) then
                         if cube.Values.[indexA] > cube.Values.[indexB] then
                             high <- indexA
                             low <- indexB
@@ -104,86 +101,87 @@ module DualContouringIterator =
                     //    contributingEdges <- contributingEdges + 1
                     //    bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
                     //    bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
-            
-            if contributingEdges > 0 then
-                {
-                    Index = cubeIndex
-                    Position = bestFitVertex/(float32 contributingEdges)
-                    Gradient = bestFitGradient/(float32 contributingEdges)
-                }
-            else
-                {
-                    Index = cubeIndex
-                    Position = bestFitVertex
-                    Gradient = bestFitGradient
-                }
 
-        let mutable rowOffset = 0
+            if contributingEdges > 0 then
+                bestFitVertex <-  bestFitVertex/(float32 contributingEdges) 
+
+            {
+                Index = cubeIndex
+                Position = bestFitVertex
+                Gradient = bestFitGradient
+            }
+        
         let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
         let left = float32 slices.[frontIndex].UpperLeft.[0]
         let right = left + stepX
-
-        let front, back, next = slices.[frontIndex].HField, slices.[frontIndex + 1].HField, slices.[frontIndex + 2].HField
 
         let innerVertices = [|
             Array.init (lastRow + 1) (fun _ -> Array.zeroCreate<Vertex> (lastColumn + 1))
             Array.init (lastRow + 1) (fun _ -> Array.zeroCreate<Vertex> (lastColumn + 1))
         |]
 
-        for row in 0..lastRow do
-            cube.Vertices.[0].X <- left
-            cube.Vertices.[1].X <- right
-            cube.Vertices.[2].X <- right
-            cube.Vertices.[3].X <- left
-            cube.Vertices.[4].X <- left
-            cube.Vertices.[5].X <- right
-            cube.Vertices.[6].X <- right
-            cube.Vertices.[7].X <- left
+        let sliceTraversal = [| [|frontIndex; backIndex;|]; [| backIndex; nextIndex;|] |] 
 
-            for column in 0..lastColumn do                    
-                let tLeft = rowOffset + column
-                innerVertices.[0].[row].[column] <- findInnerVertex tLeft (front, back)
-                innerVertices.[1].[row].[column] <- findInnerVertex tLeft (back, next)
+        for n in 0..sliceTraversal.Length-1 do
+            let front, back = slices.[sliceTraversal.[n].[0]], slices.[sliceTraversal.[n].[1]]
+            let cube = Cube.create front back isoValue
+            let mutable rowOffset = 0
+
+            for row in 0..lastRow do
+                cube.Vertices.[0].X <- left
+                cube.Vertices.[1].X <- right
+                cube.Vertices.[2].X <- right
+                cube.Vertices.[3].X <- left
+                cube.Vertices.[4].X <- left
+                cube.Vertices.[5].X <- right
+                cube.Vertices.[6].X <- right
+                cube.Vertices.[7].X <- left
+
+                for column in 0..lastColumn do
+                    let tLeft = rowOffset + column
+                    innerVertices.[n].[row].[column] <- findInnerVertex tLeft cube (front.HField, back.HField)
+
+                    for n in 0..7 do
+                        cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
 
                 for n in 0..7 do
-                    cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                    cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
 
-            for n in 0..7 do
-                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                rowOffset <- rowOffset + jumpRow        
 
-            rowOffset <- rowOffset + jumpRow
-
-        rowOffset <- 0
+        //let notZero (vertex: Vector3) = vertex.X <> 0.0f || vertex.Y <> 0.0f || vertex.Z <> 0.0f
 
         let addQuad quadIndex (row, column) =
-            let indices = QuadsTable.[quadIndex]
-            let isZero vertex = vertex.Position.X = 0.0f && vertex.Position.Y = 0.0f && vertex.Position.Z = 0.0f
-            let hasGaps = indices |> Array.exists(fun index -> innerVertices.[index.[0]].[row + index.[1]].[column + index.[2]] |> isZero)
+            let triangleVertices = QuadsTable.[quadIndex]            
 
-            if not hasGaps then
-                for i in 0..indices.Length-1 do
-                    let index = indices.[i]
-                    let innerVertex = innerVertices.[index.[0]].[row + index.[1]].[column + index.[2]]
+            for i in 0..triangleVertices.Length-1 do
+                let innerVertex = innerVertices.[triangleVertices.[i].[0]].[row + triangleVertices.[i].[1]].[column + triangleVertices.[i].[2]]
+                innerVertex.Position |> addPoint
+                innerVertex.Gradient |> addPoint
 
-                    innerVertex.Position |> addPoint
-                    innerVertex.Gradient |> addPoint
+        //if frontIndex = 10 || frontIndex = 11 then
+        //    for r in 0..lastRow do
+        //        for c in 0..lastColumn do
+        //            let v0 = innerVertices.[0].[r].[c]
+        //            let v1 = innerVertices.[1].[r].[c]
+                
+        //            if frontIndex = 10 && notZero v1 then
+        //                ()
+        //            if frontIndex = 11 && notZero v0  then
+        //                ()
+
+        let front, back = slices.[frontIndex].HField, slices.[frontIndex + 1].HField
+        let mutable rowOffset = 0
 
         for row in 0..lastRow do
-
             for column in 0..lastColumn do
                 let tLeft = rowOffset + column
                 let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
                 let bRight = bLeft + jumpColumn
 
-                let hasLeft = (isoValue >= back.[bLeft] && isoValue < back.[bRight]) || 
-                                (isoValue < back.[bLeft] && isoValue >= back.[bRight]) || 
-                                (isoValue = back.[bLeft])
-                let hasTop = (isoValue >= back.[bRight] && isoValue < back.[tRight]) || 
-                                (isoValue < back.[bRight] && isoValue >= back.[tRight]) ||
-                                (isoValue = back.[bRight])
-                let hasFront = (isoValue >= front.[bRight] && isoValue < back.[bRight]) || 
-                                (isoValue < front.[bRight] && isoValue >= back.[bRight]) ||
-                                (isoValue = front.[bRight])
+                let hasLeft = ((back.[bLeft] <= isoValue) <> (back.[bRight] <= isoValue)) || (back.[bLeft] = isoValue)
+                let hasTop = ((back.[bRight] <= isoValue) <> (back.[tRight] <= isoValue)) || (back.[bRight] = isoValue)
+                let hasFront = ((front.[bRight] <= isoValue) <> (back.[bRight] <= isoValue)) || (front.[bRight] = isoValue)
 
                 if hasLeft then
                     addQuad 0 (row, column)
