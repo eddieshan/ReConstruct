@@ -27,11 +27,13 @@ module DualContouringIterator =
 
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
 
-        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
+        let backIndex = frontIndex + 1
         let gradient = Gradient(slices)
         
-        let findInnerVertex tLeft cube (front: int16[], back: int16[]) = 
-            //let front, back = slices.[index].HField, slices.[index + 1].HField
+        let findInnerVertex tLeft cube offset = 
+            let indexFirst = frontIndex + offset
+            let indexSecond = indexFirst + 1
+            let front, back = slices.[indexFirst].HField, slices.[indexSecond].HField
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
 
@@ -95,11 +97,9 @@ module DualContouringIterator =
             Array.init (lastRow + 1) (fun _ -> Array.zeroCreate<Vertex> (lastColumn + 1))
         |]
 
-        let sliceTraversal = [| [|frontIndex; backIndex;|]; [| backIndex; nextIndex;|] |] 
-
-        for n in 0..sliceTraversal.Length-1 do
-            let front, back = slices.[sliceTraversal.[n].[0]], slices.[sliceTraversal.[n].[1]]
-            let cube = Cube.create front back isoValue
+        for n in 0..1 do
+            let indexFirst = frontIndex + n
+            let cube = Cube.create slices.[indexFirst] slices.[indexFirst + 1] isoValue
             let mutable rowOffset = 0
 
             for row in 0..lastRow do
@@ -114,7 +114,7 @@ module DualContouringIterator =
 
                 for column in 0..lastColumn do
                     let tLeft = rowOffset + column
-                    innerVertices.[n].[row].[column] <- findInnerVertex tLeft cube (front.HField, back.HField)
+                    innerVertices.[n].[row].[column] <- findInnerVertex tLeft cube n
 
                     for n in 0..7 do
                         cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
@@ -132,24 +132,24 @@ module DualContouringIterator =
                 innerVertex.Position |> addPoint
                 innerVertex.Gradient |> addPoint
 
-        let front, back = slices.[frontIndex].HField, slices.[frontIndex + 1].HField
         let mutable rowOffset = 0
+
+        let axisLookup = [|
+            [| backIndex; jumpRow; |]
+            [| backIndex; jumpColumn; |]
+            [| frontIndex; jumpRow + jumpColumn; |]
+        |]
 
         for row in 0..lastRow do
             for column in 0..lastColumn do
                 let tLeft = rowOffset + column
-                let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
-                let bRight = bLeft + jumpColumn
+                let bRight = tLeft + jumpRow + jumpColumn
 
-                let hasLeft = ((back.[bLeft] <= isoValue) <> (back.[bRight] <= isoValue)) || (back.[bLeft] = isoValue)
-                let hasTop = ((back.[bRight] <= isoValue) <> (back.[tRight] <= isoValue)) || (back.[bRight] = isoValue)
-                let hasFront = ((front.[bRight] <= isoValue) <> (back.[bRight] <= isoValue)) || (front.[bRight] = isoValue)
+                let bRightSign = slices.[backIndex].HField.[bRight] <= isoValue
 
-                if hasLeft then
-                    addQuad 0 (row, column)
-                if hasTop then
-                    addQuad 1 (row, column)
-                if hasFront then
-                    addQuad 2 (row, column)
+                for n in 0..axisLookup.Length-1 do
+                    let oppositeVertexValue = slices.[axisLookup.[n].[0]].HField.[tLeft + axisLookup.[n].[1]]
+                    if (bRightSign <> (oppositeVertexValue <= isoValue)) || (oppositeVertexValue = isoValue) then
+                        addQuad n (row, column)
 
             rowOffset <- rowOffset + jumpRow
