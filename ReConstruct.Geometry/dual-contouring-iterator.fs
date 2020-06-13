@@ -16,7 +16,7 @@ type Vertex =
 
 module DualContouringIterator =
 
-    let private QuadsTable = [|
+    let private QuadsTraversal = [|
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |]
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |]
         [| [|0; 0; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 1; 1; |]; |]
@@ -54,14 +54,14 @@ module DualContouringIterator =
 
             if cubeIndex <> 0 then
 
-                gradient.setValue (backIndex, bLeft, &cube.Gradients.[0])
-                gradient.setValue (backIndex, bRight, &cube.Gradients.[1])
-                gradient.setValue (frontIndex, bRight, &cube.Gradients.[2])
-                gradient.setValue (frontIndex, bLeft, &cube.Gradients.[3])
-                gradient.setValue (backIndex, tLeft, &cube.Gradients.[4])
-                gradient.setValue (backIndex, tRight, &cube.Gradients.[5])
-                gradient.setValue (frontIndex, tRight, &cube.Gradients.[6])
-                gradient.setValue (frontIndex, tLeft, &cube.Gradients.[7])
+                gradient.setValue (indexSecond, bLeft, &cube.Gradients.[0])
+                gradient.setValue (indexSecond, bRight, &cube.Gradients.[1])
+                gradient.setValue (indexFirst, bRight, &cube.Gradients.[2])
+                gradient.setValue (indexFirst, bLeft, &cube.Gradients.[3])
+                gradient.setValue (indexSecond, tLeft, &cube.Gradients.[4])
+                gradient.setValue (indexSecond, tRight, &cube.Gradients.[5])
+                gradient.setValue (indexFirst, tRight, &cube.Gradients.[6])
+                gradient.setValue (indexFirst, tLeft, &cube.Gradients.[7])
 
                 for i in 0..EdgeTraversal.Length-1 do
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
@@ -125,7 +125,7 @@ module DualContouringIterator =
                 rowOffset <- rowOffset + jumpRow        
 
         let addQuad quadIndex (row, column) =
-            let triangleVertices = QuadsTable.[quadIndex]            
+            let triangleVertices = QuadsTraversal.[quadIndex]            
 
             for i in 0..triangleVertices.Length-1 do
                 let innerVertex = innerVertices.[triangleVertices.[i].[0]].[row + triangleVertices.[i].[1]].[column + triangleVertices.[i].[2]]
