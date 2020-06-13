@@ -16,6 +16,8 @@ type Vertex =
 
 module DualContouringIterator =
 
+    let inline private vertexSign cubeIndex vertexIndex = (cubeIndex &&& (1 <<< vertexIndex)) >>> vertexIndex
+
     let private QuadsTable = [|
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |]
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |]
@@ -63,33 +65,18 @@ module DualContouringIterator =
 
                 let mutable high, low = 0, 0
                 for i in 0..EdgeTraversal.Length-1 do                        
-                    let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    //let signA, signB = cubeIndex &&& (1 <<< indexA), cubeIndex &&& (1 <<< indexB)
-                    //if signA <> signB then
-                    if ((cube.Values.[indexA] <= isoValue) <> (cube.Values.[indexB] <= isoValue)) || (cube.Values.[indexA] = isoValue) then
-                        if cube.Values.[indexA] > cube.Values.[indexB] then
-                            high <- indexA
-                            low <- indexB
-                        else
-                            high <- indexB
-                            low <- indexA
+                    //let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
+                    //let signA, signB = vertexSign cubeIndex indexA, vertexSign cubeIndex indexB
+                    //if (signA <> signB) || cube.Values.[indexA] = isoValue then
+                    ////if ((cube.Values.[indexA] <= isoValue) <> (cube.Values.[indexB] <= isoValue)) || (cube.Values.[indexA] = isoValue) then
+                    //    if cube.Values.[indexA] > cube.Values.[indexB] then
+                    //        high <- indexA
+                    //        low <- indexB
+                    //    else
+                    //        high <- indexB
+                    //        low <- indexA
                                     
-                        let v1, v2 = cube.Values.[low], cube.Values.[high]
-                        let delta = v2 - v1
-
-                        let mu =
-                            if delta = 0s then
-                                0.5f
-                            else
-                                float32(isoValue - v1) / (float32 delta)
-
-                        contributingEdges <- contributingEdges + 1
-                        bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[high], cube.Vertices.[low], mu)
-                        bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[high], cube.Gradients.[low], mu)
-
-                    //if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
-                    //    let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    //    let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
+                    //    let v1, v2 = cube.Values.[low], cube.Values.[high]
                     //    let delta = v2 - v1
 
                     //    let mu =
@@ -97,10 +84,25 @@ module DualContouringIterator =
                     //            0.5f
                     //        else
                     //            float32(isoValue - v1) / (float32 delta)
-                        
+
                     //    contributingEdges <- contributingEdges + 1
-                    //    bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
-                    //    bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
+                    //    bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[high], cube.Vertices.[low], mu)
+                    //    bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[high], cube.Gradients.[low], mu)
+
+                    let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
+                    if ((EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0) || (cube.Values.[indexA] = isoValue) then                        
+                        let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
+                        let delta = v2 - v1
+
+                        let mu =
+                            if delta = 0s then
+                                0.5f
+                            else
+                                float32(isoValue - v1) / (float32 delta)
+                        
+                        contributingEdges <- contributingEdges + 1
+                        bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
+                        bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
 
             if contributingEdges > 0 then
                 bestFitVertex <-  bestFitVertex/(float32 contributingEdges) 
