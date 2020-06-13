@@ -7,27 +7,31 @@ open ReConstruct.Data.Dicom
 
 open ReConstruct.Geometry.MarchingCubesTables
 
-type Vertex = 
+type DualCell = 
     {
-        Index: int
+        DualEdges: int
         Position: Vector3
         Gradient: Vector3
     }
 
 module DualContouringIterator =
 
+    let private XYZEdges = [| 
+        [| 0; 1 <<< 0; |]; //(0, 1) -> 0, x axis edge.
+        [| 9; 1 <<< 9; |]; //(1, 5) -> 9, y axis edge.
+        [| 1; 1 <<< 1; |]; //(1, 2) -> 1, z axis edge.
+    |]
+
     let private QuadsTraversal = [|
-        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |]
-        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |]
-        [| [|0; 0; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 1; 1; |]; |]
+        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |] // Left face
+        [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |] // Top face
+        [| [|0; 0; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 0; 1; |]; [|0; 1; 0; |]; [|0; 1; 1; |]; |] // Front face
     |]
 
     let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
         let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
 
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
-
-        let backIndex = frontIndex + 1
         let gradient = Gradient(slices)
         
         let findInnerVertex tLeft cube offset = 
@@ -51,6 +55,7 @@ module DualContouringIterator =
             let mutable contributingEdges = 0
 
             let cubeIndex = cube.GetIndex()
+            let mutable dualEdges = 0
 
             if cubeIndex <> 0 then
 
@@ -65,7 +70,8 @@ module DualContouringIterator =
 
                 for i in 0..EdgeTraversal.Length-1 do
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    if ((EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0) || (cube.Values.[indexA] = isoValue) then                        
+                    let edgeIndex = 1 <<< i
+                    if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) || (cube.Values.[indexA] = isoValue) then                        
                         let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
                         let delta = v2 - v1
 
@@ -74,6 +80,8 @@ module DualContouringIterator =
                                 0.5f
                             else
                                 float32(isoValue - v1) / (float32 delta)
+
+                        dualEdges <- dualEdges ||| edgeIndex
                         
                         contributingEdges <- contributingEdges + 1
                         bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
@@ -83,7 +91,7 @@ module DualContouringIterator =
                 bestFitVertex <-  bestFitVertex/(float32 contributingEdges) 
 
             {
-                Index = cubeIndex
+                DualEdges = dualEdges
                 Position = bestFitVertex
                 Gradient = bestFitGradient
             }
@@ -92,9 +100,11 @@ module DualContouringIterator =
         let left = float32 slices.[frontIndex].UpperLeft.[0]
         let right = left + stepX
 
+        let nRows, nColumns = lastRow + 1, lastColumn + 1
+
         let innerVertices = [|
-            Array.init (lastRow + 1) (fun _ -> Array.zeroCreate<Vertex> (lastColumn + 1))
-            Array.init (lastRow + 1) (fun _ -> Array.zeroCreate<Vertex> (lastColumn + 1))
+            Array.init nRows (fun _ -> Array.zeroCreate<DualCell> nColumns)
+            Array.init nRows (fun _ -> Array.zeroCreate<DualCell> nColumns)
         |]
 
         for n in 0..1 do
@@ -132,24 +142,9 @@ module DualContouringIterator =
                 innerVertex.Position |> addPoint
                 innerVertex.Gradient |> addPoint
 
-        let mutable rowOffset = 0
-
-        let axisLookup = [|
-            [| backIndex; jumpRow; |]
-            [| backIndex; jumpColumn; |]
-            [| frontIndex; jumpRow + jumpColumn; |]
-        |]
-
         for row in 0..lastRow do
             for column in 0..lastColumn do
-                let tLeft = rowOffset + column
-                let bRight = tLeft + jumpRow + jumpColumn
-
-                let bRightSign = slices.[backIndex].HField.[bRight] <= isoValue
-
-                for n in 0..axisLookup.Length-1 do
-                    let oppositeVertexValue = slices.[axisLookup.[n].[0]].HField.[tLeft + axisLookup.[n].[1]]
-                    if (bRightSign <> (oppositeVertexValue <= isoValue)) || (oppositeVertexValue = isoValue) then
-                        addQuad n (row, column)
-
-            rowOffset <- rowOffset + jumpRow
+                let edgeIndex = innerVertices.[0].[row].[column].DualEdges
+                for i in 0..XYZEdges.Length-1 do
+                    if edgeIndex &&& XYZEdges.[i].[1] > 0 then
+                        addQuad i (row, column)
