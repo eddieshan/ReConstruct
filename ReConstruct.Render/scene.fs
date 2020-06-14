@@ -6,8 +6,8 @@ module Scene =
     let mutable private _reflectivity = 0.8f
     let mutable private _color = Vector3(1.0f, 1.0f, 1.0f)
     let mutable private _ambient = Vector3(0.05f, 0.05f, 0.05f)
-    let mutable private _diffuse = Vector3(0.5f, 0.5f, 0.5f)
-    let mutable private _specular = Vector3(0.4f, 0.4f, 0.4f)
+    let mutable private _diffuse = Vector3(0.7f, 0.7f, 0.7f)
+    let mutable private _specular = Vector3(0.1f, 0.1f, 0.1f)
 
     let private updateScene f =
         f()
