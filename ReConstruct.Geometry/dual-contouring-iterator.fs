@@ -22,6 +22,21 @@ module DualContouringIterator =
         [| 1; 1 <<< 1; |]; //(1, 2) -> 1, z axis edge.
     |]
 
+    let private EdgeMasks = [|
+        1 <<< 0;
+        1 <<< 1;
+        1 <<< 2;
+        1 <<< 3;
+        1 <<< 4;
+        1 <<< 5;
+        1 <<< 6;
+        1 <<< 7;
+        1 <<< 8;
+        1 <<< 9;
+        1 <<< 10;
+        1 <<< 11;
+    |]
+
     let private QuadsTraversal = [|
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 1; 0; |]; [|0; 1; 0; |]; [|1; 0; 0; |]; [|1; 1; 0; |]; |] // Left face
         [| [|0; 0; 0; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 0; |]; [|0; 0; 1; |]; [|1; 0; 1; |]; |] // Top face
@@ -70,7 +85,7 @@ module DualContouringIterator =
 
                 for i in 0..EdgeTraversal.Length-1 do
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
-                    let edgeIndex = 1 <<< i
+                    let edgeIndex = EdgeMasks.[i]
                     if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) || (cube.Values.[indexA] = isoValue) then                        
                         let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
                         let delta = v2 - v1
