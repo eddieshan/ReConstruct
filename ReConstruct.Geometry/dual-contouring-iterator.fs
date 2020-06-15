@@ -17,9 +17,9 @@ type DualCell =
 module DualContouringIterator =
 
     let private XYZEdges = [| 
-        [| 0; 1 <<< 0; |]; //(0, 1) -> 0, x axis edge.
-        [| 9; 1 <<< 9; |]; //(1, 5) -> 9, y axis edge.
-        [| 1; 1 <<< 1; |]; //(1, 2) -> 1, z axis edge.
+        [| 1 <<< 0; 0; |]; //(0, 1) -> 0, x axis edge.
+        [| 1 <<< 9; 9; |]; //(1, 5) -> 9, y axis edge.
+        [| 1 <<< 1; 1; |]; //(1, 2) -> 1, z axis edge.
     |]
 
     let private EdgeMasks = [|
@@ -149,17 +149,14 @@ module DualContouringIterator =
 
                 rowOffset <- rowOffset + jumpRow        
 
-        let addQuad quadIndex (row, column) =
-            let triangleVertices = QuadsTraversal.[quadIndex]            
-
-            for i in 0..triangleVertices.Length-1 do
-                let innerVertex = innerVertices.[triangleVertices.[i].[0]].[row + triangleVertices.[i].[1]].[column + triangleVertices.[i].[2]]
-                innerVertex.Position |> addPoint
-                innerVertex.Gradient |> addPoint
-
         for row in 0..lastRow do
             for column in 0..lastColumn do
                 let edgeIndex = innerVertices.[0].[row].[column].DualEdges
-                for i in 0..XYZEdges.Length-1 do
-                    if edgeIndex &&& XYZEdges.[i].[1] > 0 then
-                        addQuad i (row, column)
+                for i in 0..XYZEdges.Length-1 do                
+                    let edgeSign = (edgeIndex &&& XYZEdges.[i].[0]) >>> XYZEdges.[i].[1]
+
+                    for j in 0..(edgeSign*QuadsTraversal.[i].Length)-1 do
+                        let triangle = QuadsTraversal.[i].[j]
+                        let innerVertex = innerVertices.[triangle.[0]].[row + triangle.[1]].[column + triangle.[2]]
+                        innerVertex.Position |> addPoint
+                        innerVertex.Gradient |> addPoint
