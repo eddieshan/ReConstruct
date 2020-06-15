@@ -7,6 +7,7 @@ open ReConstruct.Data.Dicom
 
 open ReConstruct.Geometry.MarchingCubesTables
 
+[<Struct>]
 type DualCell = 
     {
         DualEdges: int
