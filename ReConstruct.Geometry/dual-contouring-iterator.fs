@@ -48,8 +48,20 @@ module DualContouringIterator =
         let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
 
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
+        let jumpDiagonal = jumpColumn + jumpRow
         let gradient = Gradient(slices)
-        
+
+        let positions = [|
+            [| 1; jumpRow; |]
+            [| 1; jumpDiagonal; |]
+            [| 0; jumpDiagonal; |]
+            [| 0; jumpRow; |]
+            [| 1; 0; |]
+            [| 1; jumpColumn; |]
+            [| 0; jumpColumn; |]
+            [| 0; 0; |]
+        |]
+       
         let findInnerVertex tLeft cube offset = 
             let indexFirst = frontIndex + offset
             let indexSecond = indexFirst + 1
@@ -75,19 +87,10 @@ module DualContouringIterator =
 
             if cubeIndex <> 0 then
 
-                gradient.setValue (indexSecond, bLeft, &cube.Gradients.[0])
-                gradient.setValue (indexSecond, bRight, &cube.Gradients.[1])
-                gradient.setValue (indexFirst, bRight, &cube.Gradients.[2])
-                gradient.setValue (indexFirst, bLeft, &cube.Gradients.[3])
-                gradient.setValue (indexSecond, tLeft, &cube.Gradients.[4])
-                gradient.setValue (indexSecond, tRight, &cube.Gradients.[5])
-                gradient.setValue (indexFirst, tRight, &cube.Gradients.[6])
-                gradient.setValue (indexFirst, tLeft, &cube.Gradients.[7])
-
                 for i in 0..EdgeTraversal.Length-1 do
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     let edgeIndex = EdgeMasks.[i]
-                    if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) || (cube.Values.[indexA] = isoValue) then                        
+                    if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) || (cube.Values.[indexA] = isoValue) then
                         let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
                         let delta = v2 - v1
 
@@ -98,10 +101,13 @@ module DualContouringIterator =
                                 float32(isoValue - v1) / (float32 delta)
 
                         dualEdges <- dualEdges ||| edgeIndex
-                        
+
+                        gradient.setValue (indexFirst + positions.[indexA].[0], tLeft + positions.[indexA].[1], &cube.Gradients.[indexA])
+                        gradient.setValue (indexFirst + positions.[indexB].[0], tLeft + positions.[indexB].[1], &cube.Gradients.[indexB])
+
                         contributingEdges <- contributingEdges + 1
                         bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
-                        bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
+                        bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)                        
 
             if contributingEdges > 0 then
                 bestFitVertex <-  bestFitVertex/(float32 contributingEdges) 
