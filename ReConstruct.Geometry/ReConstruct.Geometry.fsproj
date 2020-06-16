@@ -56,6 +56,7 @@
     <Compile Include="cubes-gradient-iterator.fs" />
     <Compile Include="cubes-gradient-iterator-simd.fs" />
     <Compile Include="marching-cubes-extended.fs" />
+    <Compile Include="dual-contouring-tables.fs" />
     <Compile Include="dual-contouring-iterator.fs" />
     <Compile Include="dual-contouring.fs" />
   </ItemGroup>
