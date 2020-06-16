@@ -90,7 +90,7 @@ module DualContouringIterator =
                 for i in 0..EdgeTraversal.Length-1 do
                     let indexA, indexB = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
                     let edgeIndex = EdgeMasks.[i]
-                    if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) || (cube.Values.[indexA] = isoValue) then
+                    if ((EdgeTable.[cubeIndex] &&& edgeIndex) > 0) then
                         let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
                         let delta = v2 - v1
 
