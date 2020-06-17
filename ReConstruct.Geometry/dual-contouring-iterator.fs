@@ -56,7 +56,6 @@ module DualContouringIterator =
             let mutable bestFitGradient = Vector3.Zero
 
             let cubeIndex = cube.GetIndex()
-            let mutable dualEdges = 0
 
             let contributions = EdgeContributions.[cubeIndex]
 
@@ -71,8 +70,6 @@ module DualContouringIterator =
                     else
                         float32(isoValue - v1) / (float32 delta)
 
-                dualEdges <- dualEdges ||| (1 <<< n)
-
                 gradient.setValue (indexFirst + positions.[indexA].[0], tLeft + positions.[indexA].[1], &cube.Gradients.[indexA])
                 gradient.setValue (indexFirst + positions.[indexB].[0], tLeft + positions.[indexB].[1], &cube.Gradients.[indexB])
 
@@ -83,7 +80,7 @@ module DualContouringIterator =
                 bestFitVertex <-  bestFitVertex/(float32 contributions.Length) 
 
             {
-                DualEdges = dualEdges
+                DualEdges = cubeIndex
                 Position = bestFitVertex
                 Gradient = bestFitGradient
             }
@@ -124,16 +121,14 @@ module DualContouringIterator =
                 for n in 0..7 do
                     cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
 
-                rowOffset <- rowOffset + jumpRow        
+                rowOffset <- rowOffset + jumpRow
 
         for row in 0..lastRow do
             for column in 0..lastColumn do
                 let edgeIndex = innerVertices.[0].[row].[column].DualEdges
-                for i in 0..XYZEdges.Length-1 do                
-                    let edgeSign = (edgeIndex &&& XYZEdges.[i].[0]) >>> XYZEdges.[i].[1]
-
-                    for j in 0..(edgeSign*QuadsTraversal.[i].Length)-1 do
-                        let triangle = QuadsTraversal.[i].[j]
+                let contributingQuads = QuadContributions.[edgeIndex]
+                for n in contributingQuads do
+                    for triangle in QuadsTraversal.[n] do
                         let innerVertex = innerVertices.[triangle.[0]].[row + triangle.[1]].[column + triangle.[2]]
                         innerVertex.Position |> addPoint
                         innerVertex.Gradient |> addPoint
