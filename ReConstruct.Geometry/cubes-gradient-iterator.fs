@@ -5,6 +5,7 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
+open ReConstruct.Geometry.CommonIndices
 open ReConstruct.Geometry.MarchingCubesTables
 
 module CubesGradientIterator =
@@ -16,6 +17,18 @@ module CubesGradientIterator =
 
         let jumpColumn = 1
         let jumpRow = slices.[frontIndex].Columns
+        let jumpDiagonal = jumpColumn + jumpRow
+
+        let positions = [|
+            [| 1; jumpRow; |]
+            [| 1; jumpDiagonal; |]
+            [| 0; jumpDiagonal; |]
+            [| 0; jumpRow; |]
+            [| 1; 0; |]
+            [| 1; jumpColumn; |]
+            [| 0; jumpColumn; |]
+            [| 0; 0; |]
+        |]
 
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
@@ -43,19 +56,11 @@ module CubesGradientIterator =
 
             let cubeIndex = cube.GetIndex()
 
-            if EdgeTable.[cubeIndex] <> 0 then
-                gradient.setValue (backIndex, bLeft, &cube.Gradients.[0])
-                gradient.setValue (backIndex, bRight, &cube.Gradients.[1])
-                gradient.setValue (frontIndex, bRight, &cube.Gradients.[2])
-                gradient.setValue (frontIndex, bLeft, &cube.Gradients.[3])
-                gradient.setValue (backIndex, tLeft, &cube.Gradients.[4])
-                gradient.setValue (backIndex, tRight, &cube.Gradients.[5])
-                gradient.setValue (frontIndex, tRight, &cube.Gradients.[6])
-                gradient.setValue (frontIndex, tLeft, &cube.Gradients.[7])
-        
-                for i in 0..EdgeTraversal.Length-1 do
-                    if (EdgeTable.[cubeIndex] &&& (1 <<< i)) > 0 then
-                        let index1, index2 = int EdgeTraversal.[i].[0], int EdgeTraversal.[i].[1]
+            let contributions = EdgeContributions.[cubeIndex]
+
+            if EdgeTable.[cubeIndex] <> 0 then        
+                for n in contributions do
+                        let index1, index2 = int EdgeTraversal.[n].[0], int EdgeTraversal.[n].[1]
                         let v1, v2 = cube.Values.[index1], cube.Values.[index2]
                         let delta = v2 - v1
 
@@ -64,8 +69,12 @@ module CubesGradientIterator =
                                 0.5f
                             else
                                 float32(isoValue - v1) / (float32 delta)
-                        vertices.[i] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
-                        gradients.[i] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
+
+                        gradient.setValue (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1], &cube.Gradients.[index1])
+                        gradient.setValue (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1], &cube.Gradients.[index2])
+
+                        vertices.[n] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
+                        gradients.[n] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
 
                 let triangles = TriTable2.[cubeIndex]
 

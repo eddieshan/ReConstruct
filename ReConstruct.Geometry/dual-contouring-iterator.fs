@@ -5,6 +5,7 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
+open ReConstruct.Geometry.CommonIndices
 open ReConstruct.Geometry.MarchingCubesTables
 open ReConstruct.Geometry.DualContouringTables
 
