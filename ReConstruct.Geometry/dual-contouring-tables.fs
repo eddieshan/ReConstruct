@@ -137,6 +137,12 @@ module internal DualContouringTables =
         [|0; 2|]; [|2|]; [|2; 1|]; [|0; 2; 1|]; [|0|]; [||]; [|1|]; [|0; 1|];
         [|0; 2|]; [|2|]; [|2; 1|]; [|0; 2; 1|]; [|0|]; [||]|]
 
+    /// Do not remove the commented code below.
+    /// It contains ancillary functions and lookups to generate the edge and quad contribution indices.
+    /// The functions edgeContributions() and quadContributions() are run in the F# interpreter to generate
+    /// static array definitions of EdgeContributions and QuadContributions so they get primed in compile time.
+    /// TODO: consider if it would be better to initialize these indices during startup.
+
     //let EdgeMasks = [|
     //    1 <<< 0;
     //    1 <<< 1;

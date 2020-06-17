@@ -11,7 +11,7 @@ open ReConstruct.Geometry.DualContouringTables
 [<Struct>]
 type DualCell = 
     {
-        DualEdges: int
+        CubeIndex: int
         Position: Vector3
         Gradient: Vector3
     }
@@ -80,7 +80,7 @@ module DualContouringIterator =
                 bestFitVertex <-  bestFitVertex/(float32 contributions.Length) 
 
             {
-                DualEdges = cubeIndex
+                CubeIndex = cubeIndex
                 Position = bestFitVertex
                 Gradient = bestFitGradient
             }
@@ -125,7 +125,7 @@ module DualContouringIterator =
 
         for row in 0..lastRow do
             for column in 0..lastColumn do
-                let edgeIndex = innerVertices.[0].[row].[column].DualEdges
+                let edgeIndex = innerVertices.[0].[row].[column].CubeIndex
                 let contributingQuads = QuadContributions.[edgeIndex]
                 for n in contributingQuads do
                     for triangle in QuadsTraversal.[n] do
