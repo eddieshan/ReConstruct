@@ -12,8 +12,7 @@ module DualContouring =
 
         let polygonizeSection index =
             let bufferChain = BufferChain()
-            //CubesGradientIteratorSIMD.iterate (front, back, next) isoValue addPoint
-            DualContouringIterator.iterate slices index isoValue bufferChain.Add
+            DualContouringIteratorSimd.iterate slices index isoValue bufferChain.Add
             bufferChain
 
         let addPoints (bufferChain: BufferChain) = bufferChain.Dump partialRender
