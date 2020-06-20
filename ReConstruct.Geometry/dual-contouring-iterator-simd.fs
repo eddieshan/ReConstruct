@@ -29,10 +29,8 @@ module DualContouringIteratorSimd =
             [| 0; 0; |]
         |]
        
-        let findInnerVertex (corners: int[]) cube offset = 
-            let indexFirst = frontIndex + offset
-            let indexSecond = indexFirst + 1
-            let front, back = slices.[indexFirst].HField, slices.[indexSecond].HField
+        let findInnerVertex (corners: int[]) cube (section: int[]) = 
+            let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
 
             cube.Values.[0] <- back.[corners.[2]]
             cube.Values.[1] <- back.[corners.[3]]
@@ -61,8 +59,8 @@ module DualContouringIteratorSimd =
                     else
                         float32(isoValue - v1) / (float32 delta)
 
-                gradient.setValue (indexFirst + positions.[indexA].[0], corners.[positions.[indexA].[1]], &cube.Gradients.[indexA])
-                gradient.setValue (indexFirst + positions.[indexB].[0], corners.[positions.[indexB].[1]], &cube.Gradients.[indexB])
+                gradient.setValue (section.[positions.[indexA].[0]], corners.[positions.[indexA].[1]], &cube.Gradients.[indexA])
+                gradient.setValue (section.[positions.[indexB].[0]], corners.[positions.[indexB].[1]], &cube.Gradients.[indexB])
 
                 bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
                 bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
@@ -81,17 +79,18 @@ module DualContouringIteratorSimd =
         let right = left + stepX
 
         let nRows, nColumns = lastRow + 1, lastColumn + 1
-
-        let innerVertices = [|
-            Array.init nRows (fun _ -> Array.zeroCreate<DualCell> nColumns)
-            Array.init nRows (fun _ -> Array.zeroCreate<DualCell> nColumns)
-        |]
         
         let columnJump = Vector([| 1; 1; 1; 1; |])
 
-        for n in 0..1 do
-            let indexFirst = frontIndex + n
-            let cube = Cube.create slices.[indexFirst] slices.[indexFirst + 1] isoValue
+        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
+        let sections = [| [| frontIndex; backIndex; |]; [| backIndex; nextIndex; |]; |]
+
+        let createDualCellsRow _ = Array.zeroCreate<DualCell> nColumns
+        let innerVertices = Array.init sections.Length (fun _ -> Array.init nRows createDualCellsRow)
+
+        for n in 0..sections.Length-1 do
+            let section = sections.[n]
+            let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
             let corners = [| 0; jumpColumn; jumpRow; jumpDiagonal; |]
 
             for row in 0..lastRow do
@@ -105,7 +104,7 @@ module DualContouringIteratorSimd =
                 cube.Vertices.[7].X <- left
 
                 for column in 0..lastColumn do
-                    innerVertices.[n].[row].[column] <- findInnerVertex corners cube n
+                    innerVertices.[n].[row].[column] <- findInnerVertex corners cube section
 
                     (Vector(corners) + columnJump).CopyTo(corners)                    
                     for n in 0..7 do
