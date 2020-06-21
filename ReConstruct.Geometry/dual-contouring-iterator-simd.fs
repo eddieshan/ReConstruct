@@ -11,6 +11,17 @@ open ReConstruct.Geometry.DualContouringTables
 
 module DualContouringIteratorSimd =
 
+    let cubeMap = [|
+        [| 1; 2; |]
+        [| 1; 3; |]
+        [| 0; 3; |]
+        [| 0; 2; |]
+        [| 1; 0; |]
+        [| 1; 1; |]
+        [| 0; 1; |]
+        [| 0; 0; |]
+    |]
+
     let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
         let jumpDiagonal = jumpColumn + jumpRow
@@ -19,17 +30,6 @@ module DualContouringIteratorSimd =
         let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
         let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
         let stepZ = float32(slices.[backIndex].UpperLeft.[2] - slices.[frontIndex].UpperLeft.[2])
-
-        let positions = [|
-            [| 1; 2; |]
-            [| 1; 3; |]
-            [| 0; 3; |]
-            [| 0; 2; |]
-            [| 1; 0; |]
-            [| 1; 1; |]
-            [| 0; 1; |]
-            [| 0; 0; |]
-        |]
 
         let vertexOffset = [|
             Vector3(0.0f, stepY, stepZ)
@@ -61,8 +61,8 @@ module DualContouringIteratorSimd =
                     else
                         float32(isoValue - v1) / (float32 delta)
 
-                gradient.setValue (section.[positions.[indexA].[0]], corners.[positions.[indexA].[1]], &cube.Gradients.[indexA])
-                gradient.setValue (section.[positions.[indexB].[0]], corners.[positions.[indexB].[1]], &cube.Gradients.[indexB])
+                gradient.setValue (section.[cubeMap.[indexA].[0]], corners.[cubeMap.[indexA].[1]], &cube.Gradients.[indexA])
+                gradient.setValue (section.[cubeMap.[indexB].[0]], corners.[cubeMap.[indexB].[1]], &cube.Gradients.[indexB])
 
                 bestFitVertex <- bestFitVertex + Vector3.Lerp(vertexOffset.[indexA], vertexOffset.[indexB], mu)
                 bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
