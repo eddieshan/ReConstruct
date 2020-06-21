@@ -12,11 +12,13 @@ open ReConstruct.Geometry.DualContouringTables
 module DualContouringIteratorSimd =
 
     let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
-        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
-
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
         let jumpDiagonal = jumpColumn + jumpRow
         let gradient = Gradient(slices)
+
+        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
+        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
+        let stepZ = float32(slices.[backIndex].UpperLeft.[2] - slices.[frontIndex].UpperLeft.[2])
 
         let positions = [|
             [| 1; 2; |]
@@ -28,19 +30,19 @@ module DualContouringIteratorSimd =
             [| 0; 1; |]
             [| 0; 0; |]
         |]
+
+        let vertexOffset = [|
+            Vector3(0.0f, stepY, stepZ)
+            Vector3(stepX, stepY, stepZ)
+            Vector3(stepX, stepY, 0.0f)
+            Vector3(0.0f, stepY, 0.0f)
+            Vector3(0.0f, 0.0f, stepZ)
+            Vector3(stepX, 0.0f, stepZ)
+            Vector3(stepX, 0.0f, 0.0f)
+            Vector3(0.0f, 0.0f, 0.0f)
+        |]
        
-        let findInnerVertex (corners: int[]) cube (section: int[]) = 
-            let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
-
-            cube.Values.[0] <- back.[corners.[2]]
-            cube.Values.[1] <- back.[corners.[3]]
-            cube.Values.[2] <- front.[corners.[3]]
-            cube.Values.[3] <- front.[corners.[2]]
-            cube.Values.[4] <- back.[corners.[0]]
-            cube.Values.[5] <- back.[corners.[1]]
-            cube.Values.[6] <- front.[corners.[1]]
-            cube.Values.[7] <- front.[corners.[0]]
-
+        let findInnerVertex (frontTopLeft: Vector3) (corners: Vector<int>) (cube: Cube) (section: int[]) = 
             let mutable bestFitVertex = Vector3.Zero
             let mutable bestFitGradient = Vector3.Zero
 
@@ -62,58 +64,64 @@ module DualContouringIteratorSimd =
                 gradient.setValue (section.[positions.[indexA].[0]], corners.[positions.[indexA].[1]], &cube.Gradients.[indexA])
                 gradient.setValue (section.[positions.[indexB].[0]], corners.[positions.[indexB].[1]], &cube.Gradients.[indexB])
 
-                bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
+                bestFitVertex <- bestFitVertex + Vector3.Lerp(vertexOffset.[indexA], vertexOffset.[indexB], mu)
                 bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
 
             if contributions.Length > 0 then
-                bestFitVertex <-  bestFitVertex/(float32 contributions.Length) 
+                bestFitVertex <- frontTopLeft + (bestFitVertex /(float32 contributions.Length))
 
             {
                 CubeIndex = cubeIndex
                 Position = bestFitVertex
                 Gradient = bestFitGradient
-            }
+            }        
         
-        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
         let left = float32 slices.[frontIndex].UpperLeft.[0]
-        let right = left + stepX
 
+        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
         let nRows, nColumns = lastRow + 1, lastColumn + 1
         
         let columnJump = Vector([| 1; 1; 1; 1; |])
 
-        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
         let sections = [| [| frontIndex; backIndex; |]; [| backIndex; nextIndex; |]; |]
 
         let createDualCellsRow _ = Array.zeroCreate<DualCell> nColumns
         let innerVertices = Array.init sections.Length (fun _ -> Array.init nRows createDualCellsRow)
 
+        let mutable frontTopLeft = Vector3.Zero
+
         for n in 0..sections.Length-1 do
             let section = sections.[n]
             let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
-            let corners = [| 0; jumpColumn; jumpRow; jumpDiagonal; |]
+            let mutable corners = Vector([| 0; jumpColumn; jumpRow; jumpDiagonal; |])
+
+            frontTopLeft.Y <- float32 slices.[section.[0]].UpperLeft.[1]
+            frontTopLeft.Z <- float32 slices.[section.[0]].UpperLeft.[2]
 
             for row in 0..lastRow do
-                cube.Vertices.[0].X <- left
-                cube.Vertices.[1].X <- right
-                cube.Vertices.[2].X <- right
-                cube.Vertices.[3].X <- left
-                cube.Vertices.[4].X <- left
-                cube.Vertices.[5].X <- right
-                cube.Vertices.[6].X <- right
-                cube.Vertices.[7].X <- left
+                frontTopLeft.X <- left
 
                 for column in 0..lastColumn do
-                    innerVertices.[n].[row].[column] <- findInnerVertex corners cube section
 
-                    (Vector(corners) + columnJump).CopyTo(corners)                    
-                    for n in 0..7 do
-                        cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                    let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
+                    cube.Values.[0] <- back.[corners.[2]]
+                    cube.Values.[1] <- back.[corners.[3]]
+                    cube.Values.[2] <- front.[corners.[3]]
+                    cube.Values.[3] <- front.[corners.[2]]
+                    cube.Values.[4] <- back.[corners.[0]]
+                    cube.Values.[5] <- back.[corners.[1]]
+                    cube.Values.[6] <- front.[corners.[1]]
+                    cube.Values.[7] <- front.[corners.[0]]
 
-                for n in 0..7 do
-                    cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                    innerVertices.[n].[row].[column] <- findInnerVertex frontTopLeft corners cube section
 
-                (Vector(corners) + columnJump).CopyTo(corners)
+                    corners <- corners + columnJump
+
+                    frontTopLeft.X <- frontTopLeft.X + stepX
+
+                frontTopLeft.Y <- frontTopLeft.Y + stepY
+
+                corners <- corners + columnJump
 
         for row in 0..lastRow do
             for column in 0..lastColumn do
