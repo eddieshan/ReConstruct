@@ -21,6 +21,7 @@
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -30,6 +31,7 @@
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -58,35 +60,28 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.ValueTuple" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
       <Name>ReConstruct.Core</Name>
       <Project>{b0a2b3ae-2330-4dbd-875e-e5392a029344}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Data.Dicom\ReConstruct.Data.Dicom.fsproj">
       <Name>ReConstruct.Data.Dicom</Name>
       <Project>{4e7708ec-ad01-41f8-b544-845599f82458}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Services\ReConstruct.Services.fsproj">
       <Name>ReConstruct.Services</Name>
       <Project>{e15b045c-48db-456c-870d-b1cc2fbd134a}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Core\ReConstruct.UI.Core.fsproj">
       <Name>ReConstruct.UI.Core</Name>
       <Project>{6544c821-3f1f-47ef-895b-6e6ed3b7682a}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Views\ReConstruct.UI.Views.fsproj">
       <Name>ReConstruct.UI.Views</Name>
       <Project>{f5e1aac3-6fdf-4490-bf90-c0e2b63dc483}</Project>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

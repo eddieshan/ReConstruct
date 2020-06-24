@@ -20,19 +20,21 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\$(Configuration)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -64,26 +66,21 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.ValueTuple" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
       <Name>ReConstruct.Core</Name>
       <Project>{b0a2b3ae-2330-4dbd-875e-e5392a029344}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Assets\ReConstruct.UI.Assets.fsproj">
       <Name>ReConstruct.UI.Assets</Name>
       <Project>{a30e5e6e-b66f-4e41-ad72-aa0ffa0964c4}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Core\ReConstruct.UI.Core.fsproj">
       <Name>ReConstruct.UI.Core</Name>
       <Project>{6544c821-3f1f-47ef-895b-6e6ed3b7682a}</Project>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

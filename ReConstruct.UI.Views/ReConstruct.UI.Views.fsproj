@@ -21,6 +21,7 @@
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -30,6 +31,7 @@
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -64,42 +66,34 @@
     <ProjectReference Include="..\ReConstruct.Core\ReConstruct.Core.fsproj">
       <Name>ReConstruct.Core</Name>
       <Project>{b0a2b3ae-2330-4dbd-875e-e5392a029344}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Data.Dicom\ReConstruct.Data.Dicom.fsproj">
       <Name>ReConstruct.Data.Dicom</Name>
       <Project>{4e7708ec-ad01-41f8-b544-845599f82458}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Geometry\ReConstruct.Geometry.fsproj">
       <Name>ReConstruct.Geometry</Name>
       <Project>{f7af48ce-33e6-43d5-aea9-7ebb16624bab}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Render.OpenGL\ReConstruct.Render.OpenGL.fsproj">
       <Name>ReConstruct.Render.OpenGL</Name>
       <Project>{33d48291-c6ee-4749-a09a-3a15627d7e34}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.Render\ReConstruct.Render.fsproj">
       <Name>ReConstruct.Render</Name>
       <Project>{79a5daf8-e0fa-436b-b221-d4f84c0a3c03}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Assets\ReConstruct.UI.Assets.fsproj">
       <Name>ReConstruct.UI.Assets</Name>
       <Project>{a30e5e6e-b66f-4e41-ad72-aa0ffa0964c4}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Controls\ReConstruct.UI.Controls.fsproj">
       <Name>ReConstruct.UI.Controls</Name>
       <Project>{c824fb8e-b8bd-4bd4-a2be-60e87c0e5a6d}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\ReConstruct.UI.Core\ReConstruct.UI.Core.fsproj">
       <Name>ReConstruct.UI.Core</Name>
       <Project>{6544c821-3f1f-47ef-895b-6e6ed3b7682a}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <Reference Include="FSharp.Core">
       <HintPath>..\packages\FSharp.Core.4.7.0\lib\net45\FSharp.Core.dll</HintPath>
@@ -112,9 +106,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.ValueTuple" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

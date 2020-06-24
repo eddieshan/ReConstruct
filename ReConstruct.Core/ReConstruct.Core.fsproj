@@ -21,6 +21,7 @@
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -30,6 +31,7 @@
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
     <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
@@ -64,9 +66,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.ValueTuple">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.ValueTuple" />
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
