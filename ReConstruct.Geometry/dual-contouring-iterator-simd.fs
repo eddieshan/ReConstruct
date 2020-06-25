@@ -28,7 +28,7 @@ module DualContouringIteratorSimd =
         let gradient = Gradient(slices)
 
         let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
-        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
+        let stepX, stepY = slices.[frontIndex].PixelSpacing.X, slices.[frontIndex].PixelSpacing.Y
         let stepZ = float32(slices.[backIndex].UpperLeft.[2] - slices.[frontIndex].UpperLeft.[2])
 
         let vertexOffset = [|

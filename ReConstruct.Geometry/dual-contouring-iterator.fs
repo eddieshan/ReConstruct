@@ -84,9 +84,8 @@ module DualContouringIterator =
                 Gradient = bestFitGradient
             }
         
-        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
         let left = float32 slices.[frontIndex].UpperLeft.[0]
-        let right = left + stepX
+        let right = left + slices.[frontIndex].PixelSpacing.X
 
         let nRows, nColumns = lastRow + 1, lastColumn + 1
 
@@ -116,10 +115,10 @@ module DualContouringIterator =
                     innerVertices.[n].[row].[column] <- findInnerVertex tLeft cube section
 
                     for n in 0..7 do
-                        cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                        cube.Vertices.[n].X <- cube.Vertices.[n].X + slices.[frontIndex].PixelSpacing.X
 
                 for n in 0..7 do
-                    cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                    cube.Vertices.[n].Y <- cube.Vertices.[n].Y + slices.[frontIndex].PixelSpacing.Y
 
                 rowOffset <- rowOffset + jumpRow
 

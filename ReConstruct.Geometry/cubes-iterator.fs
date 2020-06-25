@@ -7,11 +7,8 @@ open ReConstruct.Data.Dicom
 module CubesIterator =
 
     let iterate (front, back) isoValue polygonize = 
-
-        let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
-
         let left = float32 front.UpperLeft.[0]
-        let right = left + stepX
+        let right = left + front.PixelSpacing.X
 
         let cube = Cube.create front back isoValue
 
@@ -47,9 +44,9 @@ module CubesIterator =
                 polygonize cube
 
                 for n in 0..7 do
-                    cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                    cube.Vertices.[n].X <- cube.Vertices.[n].X + front.PixelSpacing.X
 
             for n in 0..7 do
-                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + front.PixelSpacing.Y
 
             rowOffset <- rowOffset + front.Columns

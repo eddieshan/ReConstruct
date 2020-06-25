@@ -41,7 +41,7 @@ module Numeric =
         | Some v -> v 
         | None -> 0
     
-    let parseDouble s = Convert.ToDouble(s, CultureInfo.InvariantCulture) |> double
+    let parseDouble s = Convert.ToDouble(s, CultureInfo.InvariantCulture)
 
     let toUInt16 buffer = BitConverter.ToUInt16(buffer, 0)
     let toInt16 buffer = BitConverter.ToInt16(buffer, 0)

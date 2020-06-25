@@ -107,9 +107,8 @@ module CubesGradientIteratorSIMD =
                     gradients.[triangle.[2]] |> addPoint
 
 
-        let stepX, stepY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
         let left = float32 front.UpperLeft.[0]
-        let right = left + stepX
+        let right = left + front.PixelSpacing.X
 
         for row in 0..lastRow do
             cube.Vertices.[0].X <- left
@@ -127,10 +126,10 @@ module CubesGradientIteratorSIMD =
                 (Vector(corners) + Vector.One).CopyTo corners
 
                 for n in 0..7 do
-                    cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                    cube.Vertices.[n].X <- cube.Vertices.[n].X + front.PixelSpacing.X
             
             //corners <- Vector.Add(corners, Vector.One)
             (Vector(corners) + Vector.One).CopyTo corners
             
             for n in 0..7 do
-                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + front.PixelSpacing.Y

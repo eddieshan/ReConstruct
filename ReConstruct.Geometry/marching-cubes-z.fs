@@ -191,7 +191,7 @@ module MarchingCubesZ =
                            |> Seq.distinct
                            |> Seq.exactlyOne
         
-        let step = Vector3(float32 start.PixelSpacingX, float32 start.PixelSpacingY, float32 stepZ)
+        let step = Vector3(start.PixelSpacing.X, start.PixelSpacing.Y, float32 stepZ)
 
         let valueAt index =
             let k = index % slices.Length

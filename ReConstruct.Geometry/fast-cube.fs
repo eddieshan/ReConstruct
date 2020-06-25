@@ -8,7 +8,7 @@ open ReConstruct.Data.Dicom
 type FastCube(isoValue, front, back) =
 
     let zFront, zBack = float32 front.UpperLeft.[2], float32 back.UpperLeft.[2]
-    let jumpX, jumpY = float32 front.PixelSpacingX, float32 front.PixelSpacingY
+    let jumpX, jumpY = front.PixelSpacing.X, front.PixelSpacing.Y
     let top = float32 front.UpperLeft.[1]
     let bottom = top + jumpY
 

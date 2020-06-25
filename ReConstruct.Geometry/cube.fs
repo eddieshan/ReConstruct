@@ -22,10 +22,8 @@ type Cube =
 module Cube =
     let create front back isoValue =
         let zFront, zBack = float32 front.UpperLeft.[2], float32 back.UpperLeft.[2]
-        let stepY = float32 front.PixelSpacingY
-
         let top = float32 front.UpperLeft.[1]
-        let bottom = top + stepY
+        let bottom = top + front.PixelSpacing.Y
 
         {
             IsoValue = isoValue

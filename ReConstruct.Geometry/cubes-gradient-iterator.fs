@@ -84,9 +84,8 @@ module CubesGradientIterator =
                     triangle.[2] |> addTriangle
 
         let mutable rowOffset = 0
-        let stepX, stepY = float32 slices.[frontIndex].PixelSpacingX, float32 slices.[frontIndex].PixelSpacingY
         let left = float32 slices.[frontIndex].UpperLeft.[0]
-        let right = left + stepX
+        let right = left + slices.[frontIndex].PixelSpacing.X
 
         for row in 0..lastRow do
             cube.Vertices.[0].X <- left
@@ -103,9 +102,9 @@ module CubesGradientIterator =
                 processCube (rowOffset + column)
 
                 for n in 0..7 do
-                    cube.Vertices.[n].X <- cube.Vertices.[n].X + stepX
+                    cube.Vertices.[n].X <- cube.Vertices.[n].X + slices.[frontIndex].PixelSpacing.X
 
             for n in 0..7 do
-                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + stepY
+                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + slices.[frontIndex].PixelSpacing.Y
 
             rowOffset <- rowOffset + jumpRow

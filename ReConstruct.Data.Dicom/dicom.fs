@@ -1,6 +1,7 @@
 ﻿namespace ReConstruct.Data.Dicom
 
 open System
+open System.Numerics
 open System.Collections.Generic
 
 type TagMarker = 
@@ -25,8 +26,7 @@ type ImageSlice =
         Columns: int;
         Rows: int;
         UpperLeft: double[];
-        PixelSpacingX: double;
-        PixelSpacingY: double;
+        PixelSpacing: Vector2;
         WindowCenter: int;
         WindowWidth: int;
     }    

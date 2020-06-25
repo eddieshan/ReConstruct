@@ -1,6 +1,7 @@
 ﻿namespace ReConstruct.Data.Dicom
 
 open System
+open System.Numerics
 
 open ReConstruct.Core
 open ReConstruct.Core.Numeric
@@ -123,8 +124,8 @@ module Imaging =
         let pixelSpacing = Tags.PixelSpacing |> findValue root |> parseDoubles
         let spacingX, spacingY =
             match pixelSpacing.Length with
-            | 0 -> 0.0, 0.0
-            | _ -> pixelSpacing.[0], pixelSpacing.[1]
+            | 0 -> 0.0f, 0.0f
+            | _ -> float32 pixelSpacing.[0], float32 pixelSpacing.[1]
 
         let rows =  Tags.Rows|> findNumericValue root int |> Option.defaultValue 0
         let columns =  Tags.Columns|> findNumericValue root int |> Option.defaultValue 0
@@ -135,8 +136,7 @@ module Imaging =
             Rows = rows;
             Columns = columns;
             UpperLeft = imagePosition;
-            PixelSpacingX = spacingX;
-            PixelSpacingY = spacingY;
+            PixelSpacing = Vector2(spacingX, spacingY);
             WindowCenter = Tags.WindowCenter |> findNumericValue root int |> Option.defaultValue 0;
             WindowWidth =  Tags.WindowWidth |> findNumericValue root int |> Option.defaultValue 1;
         }
