@@ -5,7 +5,7 @@ open System
 open ReConstruct.Core
 open ReConstruct.Core.Numeric
 
-open ReConstruct.Data.Dicom.DicomTree
+open ReConstruct.Data.Dicom.DicomNode
 
 // Image parameters used to calculate a Hounsfield gradient.
 type private HounsfieldCoordinates =
@@ -27,14 +27,14 @@ module Imaging =
     let SKIN_ISOVALUE = 30s
 
     let private hounsfieldCoordinates root =
-        let pixelData = Tags.PixelData |> findNode root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
+        let pixelData = Tags.PixelData |> find root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
 
         {
-            RescaleIntercept = Tags.RescaleIntercept |> findTagValueAsNumber root int16 |> Option.defaultValue 0s;
-            RescaleSlope = Tags.RescaleSlope|> findTagValueAsNumber root int16 |> Option.defaultValue 0s;
-            PixelPadding = Tags.PixelPadding|> findTagValueAsNumber root int16;
-            PixelPaddingRangeLimit = Tags.PixelPaddingRangeLimit|> findTagValueAsNumber root uint16;
-            PixelRepresentation = Tags.PixelRepresentation |> findTagValueAsNumber root uint16;
+            RescaleIntercept = Tags.RescaleIntercept |> findNumericValue root int16 |> Option.defaultValue 0s;
+            RescaleSlope = Tags.RescaleSlope|> findNumericValue root int16 |> Option.defaultValue 0s;
+            PixelPadding = Tags.PixelPadding|> findNumericValue root int16;
+            PixelPaddingRangeLimit = Tags.PixelPaddingRangeLimit|> findNumericValue root uint16;
+            PixelRepresentation = Tags.PixelRepresentation |> findNumericValue root uint16;
             StreamPosition = pixelData
         }
 
@@ -119,15 +119,15 @@ module Imaging =
             | Some s -> s.Split('\\') |> Array.map parseDouble
             | None -> [||]
 
-        let imagePosition =  Tags.Position|> findTagValue root |> parseDoubles
-        let pixelSpacing = Tags.PixelSpacing |> findTagValue root |> parseDoubles
+        let imagePosition =  Tags.Position|> findValue root |> parseDoubles
+        let pixelSpacing = Tags.PixelSpacing |> findValue root |> parseDoubles
         let spacingX, spacingY =
             match pixelSpacing.Length with
             | 0 -> 0.0, 0.0
             | _ -> pixelSpacing.[0], pixelSpacing.[1]
 
-        let rows =  Tags.Rows|> findTagValueAsNumber root int |> Option.defaultValue 0
-        let columns =  Tags.Columns|> findTagValueAsNumber root int |> Option.defaultValue 0
+        let rows =  Tags.Rows|> findNumericValue root int |> Option.defaultValue 0
+        let columns =  Tags.Columns|> findNumericValue root int |> Option.defaultValue 0
         let hField = root |> hounsfieldCoordinates |> getHField buffer (rows, columns)
 
         {
@@ -137,8 +137,8 @@ module Imaging =
             UpperLeft = imagePosition;
             PixelSpacingX = spacingX;
             PixelSpacingY = spacingY;
-            WindowCenter = Tags.WindowCenter |> findTagValueAsNumber root int |> Option.defaultValue 0;
-            WindowWidth =  Tags.WindowWidth |> findTagValueAsNumber root int |> Option.defaultValue 1;
+            WindowCenter = Tags.WindowCenter |> findNumericValue root int |> Option.defaultValue 0;
+            WindowWidth =  Tags.WindowWidth |> findNumericValue root int |> Option.defaultValue 1;
         }
 
     let getValuesCount slice =  

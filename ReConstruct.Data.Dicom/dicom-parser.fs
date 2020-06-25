@@ -178,7 +178,7 @@ module DicomParser =
 
     let rec parseDataSet reader parent syntax limitPosition =
         let tag = getNextTag reader syntax
-        let newNode = DicomTree.newNode tag
+        let newNode = DicomNode.newNode tag
         parent.Children.[tag.Tag] <- newNode
 
         if reader.position() < limitPosition && tag.Tag <> Tags.SequenceDelimiter then
@@ -223,7 +223,7 @@ module DicomParser =
                     ValueLength = 0L;
                     StreamPosition = 0L;
                 };                
-            } |> DicomTree.newNode
+            } |> DicomNode.newNode
 
         parseDataSet reader root "???" (reader.length())
 

@@ -10,7 +10,7 @@ open ReConstruct.Core.IO
 open ReConstruct.Core.Patterns
 
 open ReConstruct.Data.Dicom
-open ReConstruct.Data.Dicom.DicomTree
+open ReConstruct.Data.Dicom.DicomNode
 
 module internal DatasetRepository =
 
@@ -28,14 +28,14 @@ module internal DatasetRepository =
     let private newSlice (filePathName, buffer) =
         let root = DicomParser.getDicomTree buffer
 
-        let sopClassUID =  Tags.SopClassUID |> findTagValue root
+        let sopClassUID =  Tags.SopClassUID |> findValue root
         let syntaxKey, syntaxData = 
-            match Tags.TransferSyntaxUID|> findNode root with
+            match Tags.TransferSyntaxUID|> find root with
             | Some t -> (Some t.Tag, Some t.ValueField)
             | None -> (None, None)
 
         let findSortOrder() = 
-            let positionTag, locationTag =  Tags.Position|> findTagValue root, Tags.Location |> findTagValue root
+            let positionTag, locationTag =  Tags.Position|> findValue root, Tags.Location |> findValue root
 
             let parsePosition (value: string) =
                 let split = value.Split [| '\\' |]
@@ -55,19 +55,19 @@ module internal DatasetRepository =
         //                | (Some SopClass.CAT_UID, Some _) -> syntaxData |> TransferSyntax.notCompressed
         //                | (_, _)                          -> false
 
-        let catSlice = match Tags.PixelData|> findTagValue root with
+        let catSlice = match Tags.PixelData|> findValue root with
                         | Some _ -> syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Imaging.slice(buffer, root))
                         | _      -> None
         {
             DicomTree = root;
             FileName = filePathName |> Path.GetFileNameWithoutExtension;
             TransferSyntaxUID = syntaxKey |> Option.map Tags.getTagName |> Option.defaultValue UNKNOWN_VALUE;
-            StudyInstanceUID =  Tags.StudyInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
-            SeriesInstanceUID = Tags.SeriesInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
-            SOPInstanceUID =  Tags.SopInstanceUID |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
+            StudyInstanceUID =  Tags.StudyInstanceUID |> findValue root |> Option.defaultValue UNKNOWN_VALUE;
+            SeriesInstanceUID = Tags.SeriesInstanceUID |> findValue root |> Option.defaultValue UNKNOWN_VALUE;
+            SOPInstanceUID =  Tags.SopInstanceUID |> findValue root |> Option.defaultValue UNKNOWN_VALUE;
             SOPClassUID = sopClassUID |> Option.defaultValue UNKNOWN_VALUE;
             SOPClassName = sopClassUID |> Option.bind SopClass.Dictionary.TryFind |> Option.defaultValue UNKNOWN_VALUE;
-            PatientName = Tags.PatientName |> findTagValue root |> Option.defaultValue UNKNOWN_VALUE;
+            PatientName = Tags.PatientName |> findValue root |> Option.defaultValue UNKNOWN_VALUE;
             SortOrder = findSortOrder();
             Slice = catSlice;
         }

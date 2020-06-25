@@ -22,7 +22,7 @@ module IodView =
             data |> truncate 100 |> textBlock "caption-text" >- row
             row |> addItemTo parent
 
-    let rec traverseTags f (node: DicomTree) =
+    let rec traverseTags f (node: DicomNode) =
         node.Tag |> f
         node.Children.Values |> Seq.iter(traverseTags f)
 

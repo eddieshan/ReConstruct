@@ -37,31 +37,27 @@ module ImageSlice =
         slice.UpperLeft.[1] <- slice.UpperLeft.[1] - cy
         slice.UpperLeft.[2] <- slice.UpperLeft.[2] - cz
 
-type DicomTree = 
+type DicomNode = 
     {
         Tag: DicomDataElement;
-        Children: IDictionary<uint16*uint16, DicomTree>;
+        Children: IDictionary<uint16*uint16, DicomNode>;
     }
 
-module DicomTree =    
-    let newNode tag = { Tag = tag; Children = new Dictionary<uint16*uint16, DicomTree>(); }
+module DicomNode =    
+    let newNode tag = { Tag = tag; Children = new Dictionary<uint16*uint16, DicomNode>(); }
 
-    let rec findNode (node: DicomTree) key =
-        if node.Tag.Tag = key then
-            node.Tag |> Some
-        else if node.Children.Values |> Seq.isEmpty then
-            None
-        else
-            match node.Children.TryGetValue key with
-            | true, childNode -> childNode.Tag |> Some
-            | false, _ -> node.Children.Values |> Seq.tryFind(fun v -> key |> findNode v |> Option.isSome) |> Option.map(fun n -> n.Tag)
+    let rec find (node: DicomNode) key =
+        match node.Tag.Tag, node.Children.TryGetValue key with
+        | v, (_, _) when v = key -> node.Tag |> Some
+        | _, (true, child) -> child.Tag |> Some
+        | _, (false, _) -> node.Children.Values |> Seq.tryFind(fun v -> key |> find v |> Option.isSome) |> Option.map(fun n -> n.Tag)
 
-    let findTagValue root key = key |> findNode root |> Option.map(fun v -> v.ValueField)
-    let findTagValueAsNumber root f key = key |> findNode root |> Option.map(fun v -> v.ValueField |> Utils.parseFloat |> f)
+    let findValue root key = key |> find root |> Option.map(fun v -> v.ValueField)
+    let findNumericValue root f key = key |> find root |> Option.map(fun v -> v.ValueField |> Utils.parseFloat |> f)
 
 type DicomInstance =
     {
-        DicomTree: DicomTree;
+        DicomTree: DicomNode;
         FileName: string;
         StudyInstanceUID: string;
         SeriesInstanceUID: string;
