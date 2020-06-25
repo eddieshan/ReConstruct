@@ -9,7 +9,6 @@ type TagMarker =
         StreamPosition: int64;
     }
 
-// Dicom data element. Contains parsed dicom tag data.
 type DicomDataElement = 
     {
         Tag: uint16*uint16;
@@ -30,11 +29,13 @@ type ImageSlice =
         PixelSpacingY: double;
         WindowCenter: int;
         WindowWidth: int;
-    } 
-    member x.AdjustToCenter (cx, cy, cz) =
-        x.UpperLeft.[0] <- x.UpperLeft.[0] - cx
-        x.UpperLeft.[1] <- x.UpperLeft.[1] - cy
-        x.UpperLeft.[2] <- x.UpperLeft.[2] - cz
+    }    
+
+module ImageSlice =
+    let inline adjustToCenter (cx, cy, cz) slice =
+        slice.UpperLeft.[0] <- slice.UpperLeft.[0] - cx
+        slice.UpperLeft.[1] <- slice.UpperLeft.[1] - cy
+        slice.UpperLeft.[2] <- slice.UpperLeft.[2] - cz
 
 type DicomTree = 
     {
@@ -58,10 +59,9 @@ module DicomTree =
     let findTagValue root key = key |> findNode root |> Option.map(fun v -> v.ValueField)
     let findTagValueAsNumber root f key = key |> findNode root |> Option.map(fun v -> v.ValueField |> Utils.parseFloat |> f)
 
-// A Dicom instance.
 type DicomInstance =
     {
-        DicomTree: DicomTree; // Tree of Dicom tags represented by an XML document.
+        DicomTree: DicomTree;
         FileName: string;
         StudyInstanceUID: string;
         SeriesInstanceUID: string;
@@ -71,10 +71,9 @@ type DicomInstance =
         PatientName: string;
         TransferSyntaxUID: string;
         SortOrder: double;
-        Slice: ImageSlice option; // CAT slice image, whenever there is one.
+        Slice: ImageSlice option;
     }
 
-// A dataset contains analysis metadata and an array of Iods.
 type DatasetEntry =
     {
         Id: int;

@@ -22,7 +22,7 @@ module VolumeViewOpenGL =
 
         // Volume center is the centroid of the paralelogram defined between the first and last slice.
         let centroid = getVolumeCenter firstSlice lastSlice
-        slices |> Array.iter(fun slice -> slice.AdjustToCenter centroid)
+        slices |> Array.iter(ImageSlice.adjustToCenter centroid)
         let estimatedModelSize = Math.Abs(lastSlice.UpperLeft.[2] - firstSlice.UpperLeft.[2]) |> float32
 
         let calculateMesh partialRender =
