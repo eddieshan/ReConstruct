@@ -29,7 +29,7 @@ module DualContouringIteratorSimd =
 
         let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
         let stepX, stepY = slices.[frontIndex].PixelSpacing.X, slices.[frontIndex].PixelSpacing.Y
-        let stepZ = float32(slices.[backIndex].UpperLeft.[2] - slices.[frontIndex].UpperLeft.[2])
+        let stepZ = float32(slices.[backIndex].TopLeft.[2] - slices.[frontIndex].TopLeft.[2])
 
         let vertexOffset = [|
             Vector3(0.0f, stepY, stepZ)
@@ -76,7 +76,7 @@ module DualContouringIteratorSimd =
                 Gradient = bestFitGradient
             }        
         
-        let left = float32 slices.[frontIndex].UpperLeft.[0]
+        let left = float32 slices.[frontIndex].TopLeft.[0]
 
         let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
         let nRows, nColumns = lastRow + 1, lastColumn + 1
@@ -95,8 +95,8 @@ module DualContouringIteratorSimd =
             let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
             let mutable corners = Vector([| 0; jumpColumn; jumpRow; jumpDiagonal; |])
 
-            frontTopLeft.Y <- float32 slices.[section.[0]].UpperLeft.[1]
-            frontTopLeft.Z <- float32 slices.[section.[0]].UpperLeft.[2]
+            frontTopLeft.Y <- float32 slices.[section.[0]].TopLeft.[1]
+            frontTopLeft.Z <- float32 slices.[section.[0]].TopLeft.[2]
 
             for row in 0..lastRow do
                 frontTopLeft.X <- left

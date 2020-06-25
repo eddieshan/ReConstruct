@@ -84,7 +84,7 @@ module CubesGradientIterator =
                     triangle.[2] |> addTriangle
 
         let mutable rowOffset = 0
-        let left = float32 slices.[frontIndex].UpperLeft.[0]
+        let left = float32 slices.[frontIndex].TopLeft.[0]
         let right = left + slices.[frontIndex].PixelSpacing.X
 
         for row in 0..lastRow do

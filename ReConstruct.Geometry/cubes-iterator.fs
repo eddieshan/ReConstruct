@@ -7,7 +7,7 @@ open ReConstruct.Data.Dicom
 module CubesIterator =
 
     let iterate (front, back) isoValue polygonize = 
-        let left = float32 front.UpperLeft.[0]
+        let left = float32 front.TopLeft.[0]
         let right = left + front.PixelSpacing.X
 
         let cube = Cube.create front back isoValue

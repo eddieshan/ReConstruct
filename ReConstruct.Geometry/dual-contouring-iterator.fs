@@ -84,7 +84,7 @@ module DualContouringIterator =
                 Gradient = bestFitGradient
             }
         
-        let left = float32 slices.[frontIndex].UpperLeft.[0]
+        let left = float32 slices.[frontIndex].TopLeft.[0]
         let right = left + slices.[frontIndex].PixelSpacing.X
 
         let nRows, nColumns = lastRow + 1, lastColumn + 1
