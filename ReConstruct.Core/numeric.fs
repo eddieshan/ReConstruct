@@ -19,16 +19,7 @@ module Numeric =
 
     [<Literal>] 
     let DOUBLE64_SIZE = 8
-
-    type System.Decimal with
-        member this.percentOf total = this * 100M / total
-
-    let areApproximates (a: decimal, b: decimal, errorMargin: decimal) =
-        Math.Abs (a - b) <= errorMargin
-
-    let areAlike a b =
-        String.Compare(a, b, CultureInfo.CurrentCulture, CompareOptions.IgnoreCase ||| CompareOptions.IgnoreNonSpace ||| CompareOptions.IgnoreSymbols) = 0
-    
+   
     let inline even v = ((v >>> 1) <<< 1) = v
 
     let inline cap max = 
