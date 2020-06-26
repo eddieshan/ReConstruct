@@ -4,7 +4,6 @@ open System
 open System.Numerics
 
 open ReConstruct.Core
-open ReConstruct.Core.Numeric
 
 open ReConstruct.Data.Dicom.DicomNode
 
@@ -16,7 +15,7 @@ type private HounsfieldCoordinates =
         PixelPadding: int16 option;
         PixelPaddingRangeLimit: uint16 option;
         PixelRepresentation: uint16 option;
-        StreamPosition: Int64;
+        StreamPosition: int64;
     }
 
 module Imaging =
@@ -115,28 +114,20 @@ module Imaging =
 
     let slice (buffer, root) =
 
-        let findDoubles = findValue root >> Option.map(Utils.parseDoubles) >> Option.defaultWith(fun() -> Array.empty)
+        let findDoubles f v = findValue root >> Option.map(Utils.parseDoubles >> f) >> Option.defaultValue v
+        let findInt v = findNumericValue root int >> Option.defaultValue v
 
-        let topLeft =  Tags.Position |> findDoubles
-        let pixelSpacing = Tags.PixelSpacing |> findDoubles
-
-        let pixelSpacing =
-            match pixelSpacing.Length with
-            | 0 -> Vector2.Zero
-            | _ -> Vector2(float32 pixelSpacing.[0], float32 pixelSpacing.[1])
-
-        let rows =  Tags.Rows|> findNumericValue root int |> Option.defaultValue 0
-        let columns =  Tags.Columns|> findNumericValue root int |> Option.defaultValue 0
+        let rows, columns =  Tags.Rows|> findInt 0, Tags.Columns|> findInt 0
         let hField = root |> hounsfieldCoordinates |> getHField buffer (rows, columns)
 
         {
             HField = hField;
             Rows = rows;
             Columns = columns;
-            TopLeft = Vector3(float32 topLeft.[0], float32 topLeft.[1], float32 topLeft.[2]);
-            PixelSpacing = pixelSpacing;
-            WindowCenter = Tags.WindowCenter |> findNumericValue root int |> Option.defaultValue 0;
-            WindowWidth =  Tags.WindowWidth |> findNumericValue root int |> Option.defaultValue 1;
+            TopLeft = Tags.Position |> findDoubles Vector3.fromDoubles Vector3.Zero;
+            PixelSpacing = Tags.PixelSpacing |> findDoubles Vector2.fromDoubles Vector2.Zero;
+            WindowCenter = Tags.WindowCenter |> findInt 0;
+            WindowWidth =  Tags.WindowWidth |> findInt 1;
         }
 
     let getValuesCount slice =  
