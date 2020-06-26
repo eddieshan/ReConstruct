@@ -50,7 +50,6 @@
     <Compile Include="numeric.fs" />
     <Compile Include="text.fs" />
     <Compile Include="async.fs" />
-    <Compile Include="collections.fs" />
     <Compile Include="patterns.fs" />
     <Compile Include="types.fs" />
     <Compile Include="io.fs" />

@@ -16,16 +16,6 @@ module Types =
 
     let arrayElementSize<'T>(v: 'T[]) = sizeof<'T>
 
-    type Id = Id of int with 
-        override this.ToString() = match this with | Id id -> id.ToString()
-        static member Parse = Int32.Parse >> Id
-
-    type IdValue<'M> =
-        {
-            Id: Id;
-            Value: 'M;
-        }
-
     // Useful type to enumerate unions and converting their cases to/from string.
     // Cases for each type are implicitly memoized thanks to static generics.
     // Only applicable to enum unions, throws exception otherwise.

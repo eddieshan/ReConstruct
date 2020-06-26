@@ -26,11 +26,6 @@ module Numeric =
         function 
         | v when v > max -> max
         | v -> v
-
-    let intOrZero value = 
-        match value with 
-        | Some v -> v 
-        | None -> 0
     
     let parseDouble s = Convert.ToDouble(s, CultureInfo.InvariantCulture)
 
