@@ -41,9 +41,8 @@ module internal DatasetRepository =
             | (None, Some location) -> location |> Utils.parseLastDouble
             | (_, _)                -> 0.0
 
-        let catSlice = match Tags.PixelData|> findValue root with
-                        | Some _ -> syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Imaging.slice(buffer, root))
-                        | _      -> None
+        let nonCompressedSlice() = syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Imaging.slice(buffer, root))
+
         {
             DicomTree = root;
             FileName = filePathName |> Path.GetFileNameWithoutExtension;
@@ -55,7 +54,7 @@ module internal DatasetRepository =
             SOPClassName = sopClassUID |> Option.bind SopClass.Dictionary.TryFind |> Option.defaultValue UNKNOWN_VALUE;
             PatientName = Tags.PatientName |> findValue root |> Option.defaultValue UNKNOWN_VALUE;
             SortOrder = findSortOrder();
-            Slice = catSlice;
+            Slice = Tags.PixelData |> findValue root |> Option.bind(fun _ -> nonCompressedSlice());
         }
 
     let private loadSlices id =
