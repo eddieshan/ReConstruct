@@ -37,13 +37,9 @@ module internal DatasetRepository =
         let findSortOrder() = 
             let positionTag, locationTag =  Tags.Position|> findValue root, Tags.Location |> findValue root
 
-            let parsePosition (value: string) =
-                let split = value.Split [| '\\' |]
-                Convert.ToDouble(split.[2], CultureInfo.InvariantCulture)
-
             match(positionTag, locationTag) with
-            | (Some position, _)    -> position |> parsePosition
-            | (None, Some location) -> location |> Utils.parseFloat |> double
+            | (Some position, _)    -> position |> Utils.splitNumbers |> Array.item 2 |> Numeric.parseDouble
+            | (None, Some location) -> location |> Utils.parseLastDouble
             | (_, _)                -> 0.0
 
         // The viewer can only process the pixel data, if:

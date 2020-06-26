@@ -3,14 +3,16 @@
 open System
 open System.IO
 open System.Text
-open System.Globalization
+
+open ReConstruct.Core
 
 module Utils =
-    let parseFloat (s: string) =
-        let items = s.Split([| '\\' |])
-        Convert.ToDouble(items.[items.Length - 1], CultureInfo.InvariantCulture)
 
+    let inline splitNumbers s = String.split '\\' s
 
+    let inline parseLastDouble s = s |> splitNumbers |> Array.last |> Numeric.parseDouble       
+
+    let inline parseDoubles (s: string) = s |> splitNumbers |> Array.map Numeric.parseDouble
 
     // Wrapper around a binary reader to read different types of values.
     // Supports little or big endian encoding.

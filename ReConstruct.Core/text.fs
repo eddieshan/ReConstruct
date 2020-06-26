@@ -5,6 +5,8 @@ open System
 module String =
     let inline toString o = o.ToString()
 
+    let inline split (t: char) (s: string) = s.Split t
+
     let inline padRight length (s: string) = s.PadRight(length)
 
     let inline truncate maxLength (s: string) = 

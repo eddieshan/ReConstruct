@@ -115,17 +115,15 @@ module Imaging =
 
     let slice (buffer, root) =
 
-        let parseDoubles (value: string option) = 
-            match value with 
-            | Some s -> s.Split('\\') |> Array.map (parseDouble >> float32)
-            | None -> [||]
+        let findDoubles = findValue root >> Option.map(Utils.parseDoubles) >> Option.defaultWith(fun() -> Array.empty)
 
-        let imagePosition =  Tags.Position|> findValue root |> parseDoubles
-        let pixelSpacing = Tags.PixelSpacing |> findValue root |> parseDoubles
-        let spacingX, spacingY =
+        let topLeft =  Tags.Position |> findDoubles
+        let pixelSpacing = Tags.PixelSpacing |> findDoubles
+
+        let pixelSpacing =
             match pixelSpacing.Length with
-            | 0 -> 0.0f, 0.0f
-            | _ -> float32 pixelSpacing.[0], float32 pixelSpacing.[1]
+            | 0 -> Vector2.Zero
+            | _ -> Vector2(float32 pixelSpacing.[0], float32 pixelSpacing.[1])
 
         let rows =  Tags.Rows|> findNumericValue root int |> Option.defaultValue 0
         let columns =  Tags.Columns|> findNumericValue root int |> Option.defaultValue 0
@@ -135,8 +133,8 @@ module Imaging =
             HField = hField;
             Rows = rows;
             Columns = columns;
-            TopLeft = Vector3(imagePosition.[0], imagePosition.[1], imagePosition.[2]);
-            PixelSpacing = Vector2(spacingX, spacingY);
+            TopLeft = Vector3(float32 topLeft.[0], float32 topLeft.[1], float32 topLeft.[2]);
+            PixelSpacing = pixelSpacing;
             WindowCenter = Tags.WindowCenter |> findNumericValue root int |> Option.defaultValue 0;
             WindowWidth =  Tags.WindowWidth |> findNumericValue root int |> Option.defaultValue 1;
         }

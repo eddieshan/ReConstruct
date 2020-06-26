@@ -50,7 +50,7 @@ module DicomNode =
         | _, (false, _) -> node.Children.Values |> Seq.tryFind(fun v -> key |> find v |> Option.isSome) |> Option.map(fun n -> n.Tag)
 
     let findValue root key = key |> find root |> Option.map(fun v -> v.ValueField)
-    let findNumericValue root f key = key |> find root |> Option.map(fun v -> v.ValueField |> Utils.parseFloat |> f)
+    let findNumericValue root f key = key |> find root |> Option.map(fun v -> v.ValueField |> Utils.parseLastDouble |> f)
 
 type DicomInstance =
     {
