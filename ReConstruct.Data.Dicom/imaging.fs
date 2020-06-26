@@ -39,11 +39,6 @@ module Imaging =
         }
 
     let private getHField (buffer: byte[]) (rows, columns) (coordinates: HounsfieldCoordinates) =
-        let rescale =
-            match coordinates.RescaleSlope with
-            | 0s -> id
-            | _ -> fun pixelValue -> pixelValue*coordinates.RescaleSlope + coordinates.RescaleIntercept
-
         let defaultHounsfieldValue = 
             match coordinates.RescaleSlope with
             | 0s -> Int16.MinValue
@@ -58,30 +53,34 @@ module Imaging =
                 else
                     testMinOverflow |> int16
 
-        let capValue max = 
-            fun pixelValue -> 
-                if pixelValue = max then 
-                    defaultHounsfieldValue
-                else
-                    pixelValue |> rescale 
+        let inline rescalePixel value = value*coordinates.RescaleSlope + coordinates.RescaleIntercept
 
-        let mapToLayout =
-            match coordinates.PixelPadding with
-            | Some pixelPadding -> pixelPadding |> capValue
-            | _ -> rescale
+        let rescale =
+            match coordinates.RescaleSlope with
+            | 0s -> id
+            | _ -> rescalePixel
 
-        let mutable index = coordinates.StreamPosition |> int
+        let inline mapPixel max value = 
+            if value = max then 
+                defaultHounsfieldValue
+            else
+                value |> rescale
+
+        let mapToLayout = coordinates.PixelPadding |> Option.map(mapPixel) |> Option.defaultValue rescale
+
+        let start = coordinates.StreamPosition |> int
         let limit = buffer.Length - 2
 
-        let getHounsfieldValue() = 
-            if (index < limit) then
-                let pixelValue = (int16 buffer.[index]) + ((int16 buffer.[index + 1]) <<< 8)
-                index <- index + 2
-                pixelValue |> mapToLayout
-            else
-                0s
+        let hField = Array.create (rows * columns) 0s
 
-        Array.init (rows * columns) (fun _ -> getHounsfieldValue())
+        let mutable n = 0
+
+        for i in start..2..limit do
+            let pixelValue = (int16 buffer.[i]) + ((int16 buffer.[i + 1]) <<< 8)
+            hField.[n] <- pixelValue |> mapToLayout
+            n <- n + 1
+
+        hField
 
     let intMinValue, intMaxValue = 0, 255
     let minValue, maxValue = 0uy, byte intMaxValue
