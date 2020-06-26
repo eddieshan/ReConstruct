@@ -44,13 +44,12 @@ module DicomNode =
     let newNode tag = { Tag = tag; Children = new Dictionary<uint16*uint16, DicomNode>(); }
 
     let rec find (node: DicomNode) key =
-        match node.Tag.Tag, node.Children.TryGetValue key with
-        | v, (_, _) when v = key -> node.Tag |> Some
-        | _, (true, child) -> child.Tag |> Some
-        | _, (false, _) -> node.Children.Values |> Seq.tryFind(fun v -> key |> find v |> Option.isSome) |> Option.map(fun n -> n.Tag)
+        match node.Tag.Tag with
+        | v when v = key -> node.Tag |> Some
+        | _ -> node.Children.Values |> Seq.tryFind(fun v -> key |> find v |> Option.isSome) |> Option.map(fun n -> n.Tag)
 
-    let findValue root key = key |> find root |> Option.map(fun v -> v.ValueField)
-    let findNumericValue root f key = key |> find root |> Option.map(fun v -> v.ValueField |> Utils.parseLastDouble |> f)
+    let findValue root = find root >> Option.map(fun v -> v.ValueField)
+    let findNumericValue root f = find root >> Option.map(fun v -> v.ValueField |> Utils.parseLastDouble |> f)
 
 type DicomInstance =
     {
