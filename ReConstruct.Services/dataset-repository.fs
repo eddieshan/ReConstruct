@@ -1,7 +1,6 @@
 ﻿namespace ReConstruct.Services
 
 open System
-open System.Globalization
 open System.IO
 open System.Threading.Tasks
 
@@ -41,15 +40,6 @@ module internal DatasetRepository =
             | (Some position, _)    -> position |> Utils.splitNumbers |> Array.item 2 |> Numeric.parseDouble
             | (None, Some location) -> location |> Utils.parseLastDouble
             | (_, _)                -> 0.0
-
-        // The viewer can only process the pixel data, if:
-        // - the IOD contains pixel data.
-        // - the image is not compressed.
-        //let pixelData =  Tags.PixelData|> findTagValue
-
-        //let hasPixels = match (sopClassUID, pixelData) with
-        //                | (Some SopClass.CAT_UID, Some _) -> syntaxData |> TransferSyntax.notCompressed
-        //                | (_, _)                          -> false
 
         let catSlice = match Tags.PixelData|> findValue root with
                         | Some _ -> syntaxData |> TransferSyntax.notCompressed |> Option.fromTrue(fun _ -> Imaging.slice(buffer, root))
