@@ -49,7 +49,6 @@
     <Compile Include="utils.fs" />
     <Compile Include="gradient.fs" />
     <Compile Include="cube.fs" />
-    <Compile Include="fast-cube.fs" />
     <Compile Include="cubes-iterator.fs" />
     <Compile Include="common-indices.fs" />
     <Compile Include="marching-cubes-tables.fs" />

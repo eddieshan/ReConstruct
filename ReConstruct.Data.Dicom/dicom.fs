@@ -25,17 +25,14 @@ type ImageSlice =
         HField: int16[];
         Columns: int;
         Rows: int;
-        TopLeft: double[];
+        TopLeft: Vector3;
         PixelSpacing: Vector2;
         WindowCenter: int;
         WindowWidth: int;
     }    
 
 module ImageSlice =
-    let inline adjustToCenter (cx, cy, cz) slice =
-        slice.TopLeft.[0] <- slice.TopLeft.[0] - cx
-        slice.TopLeft.[1] <- slice.TopLeft.[1] - cy
-        slice.TopLeft.[2] <- slice.TopLeft.[2] - cz
+    let inline adjustToCenter center slice = { slice with TopLeft = slice.TopLeft - center }
 
 type DicomNode = 
     {

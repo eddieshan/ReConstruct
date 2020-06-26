@@ -107,7 +107,7 @@ module CubesGradientIteratorSIMD =
                     gradients.[triangle.[2]] |> addPoint
 
 
-        let left = float32 front.TopLeft.[0]
+        let left = front.TopLeft.X
         let right = left + front.PixelSpacing.X
 
         for row in 0..lastRow do

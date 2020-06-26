@@ -59,7 +59,7 @@ module MarchingCubesZ =
 
     let MarchingCubes(cubesX: int, cubesY: int, cubesZ: int, 
                       sizeFactor: Vector3, isoValue: float32, valueAt, addVertex,
-                      TopLeft: Vector3, step: Vector3) =
+                      topLeft: Vector3, step: Vector3) =
 
         let factor = Vector3(1.0f/(2.0f*sizeFactor.X), 1.0f/(2.0f*sizeFactor.Y), 1.0f/(2.0f*sizeFactor.Z))
 
@@ -109,7 +109,7 @@ module MarchingCubesZ =
             if test then normalAt edgeIndex
             else Vector4(1.0f, 1.0f, 1.0f, 1.0f)
 
-        let mutable left, right = TopLeft.X, TopLeft.X + step.X
+        let mutable left, right = topLeft.X, topLeft.X + step.X
         let mutable offsetX, offsetY = 0, 0
         let mutable cubeIndex, edgeIndex, normalIndex = 0, 0, 0
 
@@ -120,7 +120,7 @@ module MarchingCubesZ =
             left <- left + step.X
             right <- right + step.X
 
-            let mutable top, bottom = TopLeft.Y, TopLeft.Y + step.Y
+            let mutable top, bottom = topLeft.Y, topLeft.Y + step.Y
             
             offsetY <- 0
             for j in 0..lastY do
@@ -128,7 +128,7 @@ module MarchingCubesZ =
                 top <- top + step.Y
                 bottom <- top + step.Y
 
-                let mutable front, back = TopLeft.Z, TopLeft.Z + step.Z
+                let mutable front, back = topLeft.Z, topLeft.Z + step.Z
 
                 let offsetXY = offsetX + offsetY
 
@@ -187,7 +187,7 @@ module MarchingCubesZ =
         let columns, rows = start.Columns, start.Rows
 
         let stepZ = slices |> Seq.pairwise 
-                           |> Seq.map(fun (f, b) -> Math.Abs(f.TopLeft.[2] - b.TopLeft.[2])) 
+                           |> Seq.map(fun (f, b) -> Math.Abs(f.TopLeft.Z - b.TopLeft.Z)) 
                            |> Seq.distinct
                            |> Seq.exactlyOne
         
@@ -204,9 +204,8 @@ module MarchingCubesZ =
             else
                 0.0f
         
-        let sizeZ = Math.Abs(slices.[slices.Length - 1].TopLeft.[2] - slices.[0].TopLeft.[2]) |> float32
+        let sizeZ = Math.Abs(slices.[slices.Length - 1].TopLeft.Z - slices.[0].TopLeft.Z) |> float32
         let sizeFactor = Vector3((float32 columns)*step.X, (float32 rows)*step.Y, sizeZ)
-        let TopLeft = Vector3(float32 start.TopLeft.[0], float32 start.TopLeft.[1], float32 start.TopLeft.[2])
 
         let mutable currentBuffer, index = BufferPool.borrow(), 0
 
@@ -220,7 +219,7 @@ module MarchingCubesZ =
 
         MarchingCubes(columns - 1, rows - 1, slices.Length - 1, 
                      sizeFactor, (float32 isoLevel), valueAt, addPoint,
-                     TopLeft,
+                     start.TopLeft,
                      step)
 
         partialRender (index, currentBuffer) true

@@ -117,7 +117,7 @@ module Imaging =
 
         let parseDoubles (value: string option) = 
             match value with 
-            | Some s -> s.Split('\\') |> Array.map parseDouble
+            | Some s -> s.Split('\\') |> Array.map (parseDouble >> float32)
             | None -> [||]
 
         let imagePosition =  Tags.Position|> findValue root |> parseDoubles
@@ -135,7 +135,7 @@ module Imaging =
             HField = hField;
             Rows = rows;
             Columns = columns;
-            TopLeft = imagePosition;
+            TopLeft = Vector3(imagePosition.[0], imagePosition.[1], imagePosition.[2]);
             PixelSpacing = Vector2(spacingX, spacingY);
             WindowCenter = Tags.WindowCenter |> findNumericValue root int |> Option.defaultValue 0;
             WindowWidth =  Tags.WindowWidth |> findNumericValue root int |> Option.defaultValue 1;
