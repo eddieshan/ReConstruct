@@ -27,11 +27,11 @@ module Numeric =
         | v when v > max -> max
         | v -> v
     
-    let parseDouble s = Convert.ToDouble(s, CultureInfo.InvariantCulture)
+    let inline parseDouble s = Convert.ToDouble(s, CultureInfo.InvariantCulture)
 
-    let toUInt16 buffer = BitConverter.ToUInt16(buffer, 0)
-    let toInt16 buffer = BitConverter.ToInt16(buffer, 0)
-    let toUInt32 buffer = BitConverter.ToUInt32(buffer, 0)
-    let toInt32 buffer = BitConverter.ToInt32(buffer, 0)
-    let toFloat buffer = BitConverter.ToSingle(buffer, 0)
-    let toDouble buffer = BitConverter.ToDouble(buffer, 0)
+    let inline toUInt16 buffer = BitConverter.ToUInt16(buffer, 0)
+    let inline toInt16 buffer = BitConverter.ToInt16(buffer, 0)
+    let inline toUInt32 buffer = BitConverter.ToUInt32(buffer, 0)
+    let inline toInt32 buffer = BitConverter.ToInt32(buffer, 0)
+    let inline toFloat buffer = BitConverter.ToSingle(buffer, 0)
+    let inline toDouble buffer = BitConverter.ToDouble(buffer, 0)

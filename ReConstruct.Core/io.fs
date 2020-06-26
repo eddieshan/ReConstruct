@@ -4,9 +4,9 @@ open System
 open System.IO
 
 module IO =
-    let directoryFiles ext options path = 
+    let inline directoryFiles ext options path = 
         Directory.GetFiles(path, ext, options) 
 
-    let memoryStream (buffer: byte[]) = MemoryStream(buffer)
+    let inline memoryStream (buffer: byte[]) = MemoryStream(buffer)
 
-    let binaryReader stream = BinaryReader(stream)
+    let inline binaryReader stream = BinaryReader(stream)

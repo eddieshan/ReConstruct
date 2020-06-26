@@ -3,17 +3,17 @@
 open System
 
 module String =
-    let toString o = o.ToString()
+    let inline toString o = o.ToString()
 
-    let padRight length (s: string) = s.PadRight(length)
+    let inline padRight length (s: string) = s.PadRight(length)
 
-    let truncate maxLength (s: string) = 
+    let inline truncate maxLength (s: string) = 
         if s.Length > maxLength then
             s.Substring(0, maxLength) + "..."
         else
             s
 
-    let toShortDate (date: DateTime) = date.ToShortDateString()
-    let format f o = String.Format(f, o)
+    let inline toShortDate (date: DateTime) = date.ToShortDateString()
+    let inline format f o = String.Format(f, o)
 
-    let trim (s: string) = s.Trim()
+    let inline trim (s: string) = s.Trim()
