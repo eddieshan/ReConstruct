@@ -18,6 +18,16 @@ type private HounsfieldCoordinates =
         StreamPosition: int64;
     }
 
+module private RGB =
+    let private MinAsInt, MaxAsInt = 0, 255
+    let private Min, Max = 0uy, 255uy
+
+    let inline clamp v =
+        match v with
+        | underMinimum when underMinimum <= MinAsInt -> Min
+        | overMaximum when overMaximum >= MaxAsInt   -> Max
+        | _                                          -> v |> Convert.ToByte
+
 module Imaging =
     
     [<Literal>]
@@ -27,13 +37,13 @@ module Imaging =
     let SKIN_ISOVALUE = 30s
 
     let private hounsfieldCoordinates root =
-        let pixelData = Tags.PixelData |> find root |> Option.map(fun t -> t.Marker.StreamPosition |> Convert.ToInt64) |> Option.defaultValue -1L
+        let pixelData = Tags.PixelData |> find root |> Option.map(fun t -> t.Marker.StreamPosition) |> Option.defaultValue -1L
 
         {
             RescaleIntercept = Tags.RescaleIntercept |> findNumericValue root int16 |> Option.defaultValue 0s;
-            RescaleSlope = Tags.RescaleSlope|> findNumericValue root int16 |> Option.defaultValue 0s;
-            PixelPadding = Tags.PixelPadding|> findNumericValue root int16;
-            PixelPaddingRangeLimit = Tags.PixelPaddingRangeLimit|> findNumericValue root uint16;
+            RescaleSlope = Tags.RescaleSlope |> findNumericValue root int16 |> Option.defaultValue 0s;
+            PixelPadding = Tags.PixelPadding |> findNumericValue root int16;
+            PixelPaddingRangeLimit = Tags.PixelPaddingRangeLimit |> findNumericValue root uint16;
             PixelRepresentation = Tags.PixelRepresentation |> findNumericValue root uint16;
             StreamPosition = pixelData
         }
@@ -82,23 +92,16 @@ module Imaging =
 
         hField
 
-    let intMinValue, intMaxValue = 0, 255
-    let minValue, maxValue = 0uy, byte intMaxValue
-
     let pixelMapper sliceLayout =
         let windowLeftBorder = sliceLayout.WindowCenter - (sliceLayout.WindowWidth / 2)
 
         fun pixelValue ->
-            let normalizedValue = (intMaxValue * (pixelValue - windowLeftBorder))/sliceLayout.WindowWidth
-            match normalizedValue with
-            | underMinimum when underMinimum <= intMinValue -> minValue
-            | overMaximum when overMaximum >= intMaxValue   -> maxValue
-            | _                                             -> Convert.ToByte(normalizedValue)
+            ((RGB.MaxAsInt * (pixelValue - windowLeftBorder))/sliceLayout.WindowWidth) |> RGB.clamp
         
     let getBitmap slice =
         let normalizePixelValue = pixelMapper slice
         let numPixels = slice.Rows*slice.Columns
-        let imageBuffer = Array.create (numPixels*4) (byte 0)
+        let imageBuffer = Array.create (numPixels*4) 0uy
 
         let mutable position = 0
         slice.HField |> Array.iter(fun v -> 
@@ -106,7 +109,7 @@ module Imaging =
                                     imageBuffer.[position] <- grayValue
                                     imageBuffer.[position + 1] <- grayValue
                                     imageBuffer.[position + 2] <- grayValue
-                                    imageBuffer.[position + 3] <- maxValue
+                                    imageBuffer.[position + 3] <- RGB.Max
                                     position <- position + 4)
 
         (slice.Columns, slice.Rows, imageBuffer)
