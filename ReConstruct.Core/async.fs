@@ -1,13 +1,16 @@
 ﻿namespace ReConstruct.Core
 
 open System
-open System.Threading
 open System.Threading.Tasks
 
 module Async =
 
+    let GreedyThrottle = Environment.ProcessorCount - 1
+
     let task<'T> f =
         Task<'T>(f)
+
+    let parallelThrottledByProcessor tasks = Async.Parallel(tasks, GreedyThrottle)
 
     // Run operation, typically on a new thread and then its continuation on the current thread.
     let doBusyAsync continueWith operation =
