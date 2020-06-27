@@ -73,13 +73,13 @@ module internal DatasetRepository =
                 return content |> newSlice
             }
 
-        let tasks = datasetsEntries 
-                    |> Map.find id 
-                    |> directoryFiles "*.*" SearchOption.AllDirectories
-                    |> Array.map (bufferizeFile >> asAsyncImageProcess >> Async.StartAsTask)
-
-        // Processed images are available when all async tasks have finished.
-        Task.WhenAll(tasks).Result |> Array.sortBy(fun iod -> iod.SortOrder)
+        datasetsEntries 
+        |> Map.find id 
+        |> directoryFiles "*.*" SearchOption.AllDirectories
+        |> Array.map (bufferizeFile >> asAsyncImageProcess)
+        |> Async.parallelThrottledByProcessor 
+        |> Async.RunSynchronously 
+        |> Array.sortBy(fun iod -> iod.SortOrder)
 
     let private loadDataset id =
         let iods = loadSlicesParallel id
