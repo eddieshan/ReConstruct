@@ -35,3 +35,8 @@ module Numeric =
     let inline toInt32 buffer = BitConverter.ToInt32(buffer, 0)
     let inline toFloat buffer = BitConverter.ToSingle(buffer, 0)
     let inline toDouble buffer = BitConverter.ToDouble(buffer, 0)
+
+module Byte =
+    let MinAsInt, MaxAsInt = 0, 255
+    let Min, Max = 0uy, 255uy
+    let inline clamp v = Math.Min(MaxAsInt, Math.Max(v, MinAsInt)) |> Convert.ToByte

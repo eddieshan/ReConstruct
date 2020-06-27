@@ -18,16 +18,6 @@ type private HounsfieldCoordinates =
         StreamPosition: int64;
     }
 
-module private RGB =
-    let private MinAsInt, MaxAsInt = 0, 255
-    let private Min, Max = 0uy, 255uy
-
-    let inline clamp v =
-        match v with
-        | underMinimum when underMinimum <= MinAsInt -> Min
-        | overMaximum when overMaximum >= MaxAsInt   -> Max
-        | _                                          -> v |> Convert.ToByte
-
 module Imaging =
     
     [<Literal>]
@@ -96,7 +86,7 @@ module Imaging =
         let windowLeftBorder = sliceLayout.WindowCenter - (sliceLayout.WindowWidth / 2)
 
         fun pixelValue ->
-            ((RGB.MaxAsInt * (pixelValue - windowLeftBorder))/sliceLayout.WindowWidth) |> RGB.clamp
+            ((Byte.MaxAsInt * (pixelValue - windowLeftBorder))/sliceLayout.WindowWidth) |> Byte.clamp
         
     let getBitmap slice =
         let normalizePixelValue = pixelMapper slice
@@ -109,7 +99,7 @@ module Imaging =
                                     imageBuffer.[position] <- grayValue
                                     imageBuffer.[position + 1] <- grayValue
                                     imageBuffer.[position + 2] <- grayValue
-                                    imageBuffer.[position + 3] <- RGB.Max
+                                    imageBuffer.[position + 3] <- Byte.Max
                                     position <- position + 4)
 
         (slice.Columns, slice.Rows, imageBuffer)
