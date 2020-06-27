@@ -26,12 +26,12 @@ module DicomParser =
         | _, _, false, true             -> LONG_STRING
         | _, _, false, false            -> UNKNOWN
 
-    let asU16 = (INT16_SIZE, toUInt16)
-    let asU32 = (INT32_SIZE, toUInt32)
-    let asI16 = (INT16_SIZE, toInt16)
-    let asI32 = (INT32_SIZE, toInt32)
-    let asF32 = (FLOAT32_SIZE, toFloat)
-    let asD64 = (DOUBLE64_SIZE, toDouble)
+    let asU16 = (sizeof<uint16>, toUInt16)
+    let asU32 = (sizeof<uint32>, toUInt32)
+    let asI16 = (sizeof<int16>, toInt16)
+    let asI32 = (sizeof<int32>, toInt32)
+    let asF32 = (sizeof<float32>, toFloat)
+    let asD64 = (sizeof<float>, toDouble)
 
     let readNumber (size, convert) reader = size |> reader |> convert
 

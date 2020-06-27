@@ -4,21 +4,6 @@ open System
 open System.Globalization
 
 module Numeric =
-
-    [<Literal>]
-    let INT16_SIZE = 2
-
-    [<Literal>] 
-    let INT32_SIZE = 4
-
-    [<Literal>] 
-    let INT64_SIZE = 8
-
-    [<Literal>] 
-    let FLOAT32_SIZE = 4
-
-    [<Literal>] 
-    let DOUBLE64_SIZE = 8
    
     let inline even v = ((v >>> 1) <<< 1) = v
 
