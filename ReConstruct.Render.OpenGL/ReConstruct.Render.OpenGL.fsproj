@@ -21,21 +21,21 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
-    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
+    <OutputPath>..\Build\bin\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\obj\$(Configuration)\$(Platform)\</IntermediateOutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>..\Build\bin\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <Tailcalls>true</Tailcalls>
-    <OutputPath>..\Build\$(Configuration)\$(Platform)\</OutputPath>
-    <IntermediateOutputPath>..\Build\$(Configuration)\$(Platform)\obj\</IntermediateOutputPath>
+    <OutputPath>..\Build\bin\$(Configuration)\$(Platform)\</OutputPath>
+    <IntermediateOutputPath>..\Build\obj\$(Configuration)\$(Platform)\</IntermediateOutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>..\Build\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
+    <DocumentationFile>..\Build\bin\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
