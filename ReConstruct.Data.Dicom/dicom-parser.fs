@@ -12,7 +12,7 @@ module DicomParser =
     [<Literal>]
     let STANDARD_PREAMBLE = "DICM"
 
-    let readExplicitVR reader = 
+    let readExplicitVR (reader: DicomReader) = 
         Tags.VR_FIELD_SIZE |> reader.readBytes |> VRTypes.Dictionary.TryFind |> Option.defaultValue UNKNOWN
 
     let getVRType reader (group, element, vrEncoding) =
@@ -50,7 +50,7 @@ module DicomParser =
         | TransferSyntax.ImplicitLE -> { VREncoding = VREncoding.Implicit; EndianEncoding = EndianEncoding.LittleEndian; }
         | _                         -> { VREncoding = VREncoding.Explicit; EndianEncoding = EndianEncoding.LittleEndian; }
     
-    let getNextTag reader syntax =
+    let getNextTag (reader: DicomReader) syntax =
 
         // First pass to get get transfer syntax based on lookup of group number.
         // Then rewind and start reading this time using the specified encoding.
@@ -176,7 +176,7 @@ module DicomParser =
 
         | DELIMITER -> readEndian |> readI32 |> ignoreTag // (FFFE,E000) Item | (FFFE,E00D) Item Delimitation Item | (FFFE,E0DD) Sequence Delimitation Item
 
-    let rec parseDataSet reader parent syntax limitPosition =
+    let rec parseDataSet (reader: DicomReader) parent syntax limitPosition =
         let tag = getNextTag reader syntax
         let newNode = DicomNode.newNode tag
         parent.Children.[tag.Tag] <- newNode
@@ -204,7 +204,7 @@ module DicomParser =
         //   FileMetaAttribute structure: (0002,xxxx), encoded with ExplicitVRLittleEndian Transfer Syntax.
         let preambleLength, dicmMarkLength = 128L, 4
 
-        use reader =  buffer |> memoryStream |> binaryReader |> Utils.DicomReader.New
+        use reader =  buffer |> memoryStream |> binaryReader |> Utils.DicomReader
 
         reader.goTo preambleLength
     
