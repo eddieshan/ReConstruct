@@ -6,8 +6,6 @@ open ReConstruct.Core
 open ReConstruct.Core.Numeric
 open ReConstruct.Core.IO
 
-open ReConstruct.Data.Dicom.Utils
-
 module DicomParser =
     [<Literal>]
     let STANDARD_PREAMBLE = "DICM"
@@ -204,7 +202,7 @@ module DicomParser =
         //   FileMetaAttribute structure: (0002,xxxx), encoded with ExplicitVRLittleEndian Transfer Syntax.
         let preambleLength, dicmMarkLength = 128L, 4
 
-        use reader =  buffer |> memoryStream |> binaryReader |> Utils.DicomReader
+        use reader =  buffer |> memoryStream |> binaryReader |> DicomReader
 
         reader.goTo preambleLength
     

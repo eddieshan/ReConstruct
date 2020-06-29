@@ -56,7 +56,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\bin\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
-  </PropertyGroup>  
+  </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -75,6 +75,7 @@
     <Compile Include="data-elements.fs" />
     <Compile Include="transfer-syntax.fs" />
     <Compile Include="sop-class.fs" />
+    <Compile Include="dicom-reader.fs" />
     <Compile Include="dicom-parser.fs" />
   </ItemGroup>
   <ItemGroup>
