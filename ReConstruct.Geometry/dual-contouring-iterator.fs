@@ -21,6 +21,10 @@ module DualContouringIterator =
 
     let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
         let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
+        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
+
+        let stepX, stepY = slices.[frontIndex].PixelSpacing.X, slices.[frontIndex].PixelSpacing.Y
+        let stepZ = slices.[backIndex].TopLeft.Z - slices.[frontIndex].TopLeft.Z
 
         let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
         let jumpDiagonal = jumpColumn + jumpRow
@@ -36,8 +40,19 @@ module DualContouringIterator =
             [| 0; jumpColumn; |]
             [| 0; 0; |]
         |]
+
+        let vertexOffset = [|
+            Vector3(0.0f, stepY, stepZ)
+            Vector3(stepX, stepY, stepZ)
+            Vector3(stepX, stepY, 0.0f)
+            Vector3(0.0f, stepY, 0.0f)
+            Vector3(0.0f, 0.0f, stepZ)
+            Vector3(stepX, 0.0f, stepZ)
+            Vector3(stepX, 0.0f, 0.0f)
+            Vector3(0.0f, 0.0f, 0.0f)
+        |]
        
-        let findInnerVertex tLeft cube (section: int[]) = 
+        let findInnerVertex (frontTopLeft: Vector3) tLeft cube (section: int[]) = 
             let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
@@ -72,11 +87,11 @@ module DualContouringIterator =
                 let gradientA = gradient.get (section.[cubeMap.[indexA].[0]], tLeft + cubeMap.[indexA].[1])
                 let gradientB = gradient.get (section.[cubeMap.[indexB].[0]], tLeft + cubeMap.[indexB].[1])
 
-                bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
+                bestFitVertex <- bestFitVertex + Vector3.Lerp(vertexOffset.[indexA], vertexOffset.[indexB], mu)
                 bestFitGradient <- bestFitGradient + Vector3.Lerp(gradientA, gradientB, mu)
 
             if contributions.Length > 0 then
-                bestFitVertex <-  bestFitVertex/(float32 contributions.Length) 
+                bestFitVertex <- frontTopLeft + (bestFitVertex /(float32 contributions.Length))
 
             {
                 CubeIndex = cubeIndex
@@ -89,37 +104,32 @@ module DualContouringIterator =
 
         let nRows, nColumns = lastRow + 1, lastColumn + 1
 
-        let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
         let sections = [| [| frontIndex; backIndex; |]; [| backIndex; nextIndex; |]; |]
 
         let createDualCellsRow _ = Array.zeroCreate<DualCell> nColumns
         let innerVertices = Array.init sections.Length (fun _ -> Array.init nRows createDualCellsRow)
+
+        let mutable frontTopLeft = Vector3.Zero
 
         for n in 0..sections.Length-1 do
             let section = sections.[n]
             let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
             let mutable rowOffset = 0
 
+            frontTopLeft.Y <- slices.[section.[0]].TopLeft.Y
+            frontTopLeft.Z <- slices.[section.[0]].TopLeft.Z
+
             for row in 0..lastRow do
-                cube.Vertices.[0].X <- left
-                cube.Vertices.[1].X <- right
-                cube.Vertices.[2].X <- right
-                cube.Vertices.[3].X <- left
-                cube.Vertices.[4].X <- left
-                cube.Vertices.[5].X <- right
-                cube.Vertices.[6].X <- right
-                cube.Vertices.[7].X <- left
+
+                frontTopLeft.X <- left
 
                 for column in 0..lastColumn do
                     let tLeft = rowOffset + column
-                    innerVertices.[n].[row].[column] <- findInnerVertex tLeft cube section
+                    innerVertices.[n].[row].[column] <- findInnerVertex frontTopLeft tLeft cube section
 
-                    for n in 0..7 do
-                        cube.Vertices.[n].X <- cube.Vertices.[n].X + slices.[frontIndex].PixelSpacing.X
+                    frontTopLeft.X <- frontTopLeft.X + stepX
 
-                for n in 0..7 do
-                    cube.Vertices.[n].Y <- cube.Vertices.[n].Y + slices.[frontIndex].PixelSpacing.Y
-
+                frontTopLeft.Y <- frontTopLeft.Y + stepY
                 rowOffset <- rowOffset + jumpRow
 
         for row in 0..lastRow do
