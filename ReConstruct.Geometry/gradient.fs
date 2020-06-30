@@ -5,7 +5,7 @@ open System.Numerics
 
 open ReConstruct.Data.Dicom
 
-module private Gradient =
+module private DistanceSmoothKernel =
 
     let d1 = 2.0 |> Math.Sqrt |> float32
     let d2 = 3.0 |> Math.Sqrt |> float32
@@ -33,7 +33,7 @@ type Gradient(slices: ImageSlice[]) =
         let uRight, uLeft = Math.Min(max, under + 1), Math.Max(0, under - 1)
 
         let x = 
-            Gradient.avg(current.[right] - current.[left],
+            DistanceSmoothKernel.avg(current.[right] - current.[left],
                 current.[aRight] - current.[aLeft] + 
                 current.[uRight] - current.[uLeft] + 
                 prev.[right] - prev.[left] +
@@ -43,7 +43,7 @@ type Gradient(slices: ImageSlice[]) =
                 next.[aRight] - next.[aLeft] + 
                 next.[uRight] - next.[uLeft])
         let y =
-            Gradient.avg(current.[under] - current.[above],
+            DistanceSmoothKernel.avg(current.[under] - current.[above],
                 current.[uRight] - current.[aRight] +
                 current.[uLeft] - current.[aLeft] +
                 prev.[under] - prev.[above] +
@@ -53,7 +53,7 @@ type Gradient(slices: ImageSlice[]) =
                 next.[uRight] - next.[aRight] +
                 next.[uLeft] - next.[aLeft])
         let z =
-            Gradient.avg(next.[pos] - prev.[pos],
+            DistanceSmoothKernel.avg(next.[pos] - prev.[pos],
                 next.[right] - prev.[right] +
                 next.[left] - prev.[left] +
                 next.[under] - prev.[under] +
