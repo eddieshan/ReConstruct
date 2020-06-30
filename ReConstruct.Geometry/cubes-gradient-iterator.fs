@@ -60,21 +60,21 @@ module CubesGradientIterator =
 
             if EdgeTable.[cubeIndex] <> 0 then        
                 for n in contributions do
-                        let index1, index2 = int EdgeTraversal.[n].[0], int EdgeTraversal.[n].[1]
-                        let v1, v2 = cube.Values.[index1], cube.Values.[index2]
-                        let delta = v2 - v1
+                    let index1, index2 = int EdgeTraversal.[n].[0], int EdgeTraversal.[n].[1]
+                    let v1, v2 = cube.Values.[index1], cube.Values.[index2]
+                    let delta = v2 - v1
 
-                        let mu =
-                            if delta = 0s then
-                                0.5f
-                            else
-                                float32(isoValue - v1) / (float32 delta)
+                    let mu =
+                        if delta = 0s then
+                            0.5f
+                        else
+                            float32(isoValue - v1) / (float32 delta)
 
-                        let gradientA = gradient.get (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1])
-                        let gradientB = gradient.get (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1])
+                    let gradientA = gradient.get (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1])
+                    let gradientB = gradient.get (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1])
 
-                        vertices.[n] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
-                        gradients.[n] <- Vector3.Lerp(gradientA, gradientB, mu)
+                    vertices.[n] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
+                    gradients.[n] <- Vector3.Lerp(gradientA, gradientB, mu)
 
                 let triangles = TriTable2.[cubeIndex]
 

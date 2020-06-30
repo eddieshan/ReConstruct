@@ -2,8 +2,6 @@
 
 open System
 
-open ReConstruct.Core
-
 open ReConstruct.Data.Dicom
 
 module DualContouring =
