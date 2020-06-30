@@ -56,7 +56,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>..\Build\bin\$(Configuration)\$(Platform)\$(AssemblyName).XML</DocumentationFile>
-  </PropertyGroup>  
+  </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
@@ -69,6 +69,7 @@
     <Content Include="packages.config" />
     <Compile Include="utils.fs" />
     <Compile Include="gradient.fs" />
+    <Compile Include="gradient-simd.fs" />
     <Compile Include="cube.fs" />
     <Compile Include="cubes-iterator.fs" />
     <Compile Include="common-indices.fs" />
