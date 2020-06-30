@@ -69,11 +69,11 @@ module DualContouringIterator =
                     else
                         float32(isoValue - v1) / (float32 delta)
 
-                gradient.setValue (section.[cubeMap.[indexA].[0]], tLeft + cubeMap.[indexA].[1], &cube.Gradients.[indexA])
-                gradient.setValue (section.[cubeMap.[indexB].[0]], tLeft + cubeMap.[indexB].[1], &cube.Gradients.[indexB])
+                let gradientA = gradient.get (section.[cubeMap.[indexA].[0]], tLeft + cubeMap.[indexA].[1])
+                let gradientB = gradient.get (section.[cubeMap.[indexB].[0]], tLeft + cubeMap.[indexB].[1])
 
                 bestFitVertex <- bestFitVertex + Vector3.Lerp(cube.Vertices.[indexA], cube.Vertices.[indexB], mu)
-                bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
+                bestFitGradient <- bestFitGradient + Vector3.Lerp(gradientA, gradientB, mu)
 
             if contributions.Length > 0 then
                 bestFitVertex <-  bestFitVertex/(float32 contributions.Length) 

@@ -19,7 +19,7 @@ module private Gradient =
 // Sqrt(3) -> Neighbour on the opposite side of a non coplanar diagonal.
 type Gradient(slices: ImageSlice[]) =
 
-    member this.setValue (index, pos, g: byref<Vector3>) = 
+    member this.get (index, pos) = 
         let numRows = slices.[index].Columns
 
         let prevIndex = Math.Max(0, index - 1)
@@ -32,7 +32,7 @@ type Gradient(slices: ImageSlice[]) =
         let aRight, aLeft =  Math.Min(max, above + 1), Math.Max(0, above - 1)
         let uRight, uLeft = Math.Min(max, under + 1), Math.Max(0, under - 1)
 
-        g.X <- 
+        let x = 
             Gradient.avg(current.[right] - current.[left],
                 current.[aRight] - current.[aLeft] + 
                 current.[uRight] - current.[uLeft] + 
@@ -42,7 +42,7 @@ type Gradient(slices: ImageSlice[]) =
                 prev.[uRight] - prev.[uLeft] + 
                 next.[aRight] - next.[aLeft] + 
                 next.[uRight] - next.[uLeft])
-        g.Y <- 
+        let y =
             Gradient.avg(current.[under] - current.[above],
                 current.[uRight] - current.[aRight] +
                 current.[uLeft] - current.[aLeft] +
@@ -52,7 +52,7 @@ type Gradient(slices: ImageSlice[]) =
                 prev.[uLeft] - prev.[aLeft] +
                 next.[uRight] - next.[aRight] +
                 next.[uLeft] - next.[aLeft])
-        g.Z <- 
+        let z =
             Gradient.avg(next.[pos] - prev.[pos],
                 next.[right] - prev.[right] +
                 next.[left] - prev.[left] +
@@ -63,3 +63,4 @@ type Gradient(slices: ImageSlice[]) =
                 next.[aRight] - prev.[aRight] +
                 next.[uRight] - prev.[uRight])
 
+        Vector3(x, y, z)

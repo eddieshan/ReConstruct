@@ -70,11 +70,11 @@ module CubesGradientIterator =
                             else
                                 float32(isoValue - v1) / (float32 delta)
 
-                        gradient.setValue (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1], &cube.Gradients.[index1])
-                        gradient.setValue (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1], &cube.Gradients.[index2])
+                        let gradientA = gradient.get (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1])
+                        let gradientB = gradient.get (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1])
 
                         vertices.[n] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
-                        gradients.[n] <- Vector3.Lerp(cube.Gradients.[index1], cube.Gradients.[index2], mu)
+                        gradients.[n] <- Vector3.Lerp(gradientA, gradientB, mu)
 
                 let triangles = TriTable2.[cubeIndex]
 
