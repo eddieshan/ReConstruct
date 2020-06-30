@@ -8,9 +8,11 @@ module DualContouring =
 
     let polygonize isoValue (slices: ImageSlice[]) partialRender = 
 
+        let volume = UniformVolume.create slices isoValue
+
         let polygonizeSection index =
             let bufferChain = BufferChain()
-            DualContouringIteratorSimd.iterate slices index isoValue bufferChain.Add
+            DualContouringIterator.iterate volume index bufferChain.Add
             bufferChain
 
         let addPoints (bufferChain: BufferChain) = bufferChain.Dump partialRender

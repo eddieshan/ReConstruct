@@ -19,41 +19,15 @@ type DualCell =
 
 module DualContouringIterator =
 
-    let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
-        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
+    let iterate (volume: UniformVolume) frontIndex addPoint = 
+        let lastRow, lastColumn = volume.Slices.[frontIndex].Rows - 2, volume.Slices.[frontIndex].Columns - 2
         let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
 
-        let stepX, stepY = slices.[frontIndex].PixelSpacing.X, slices.[frontIndex].PixelSpacing.Y
-        let stepZ = slices.[backIndex].TopLeft.Z - slices.[frontIndex].TopLeft.Z
-
-        let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
-        let jumpDiagonal = jumpColumn + jumpRow
-        let gradient = Gradient(slices)
-
-        let cubeMap = [|
-            [| 1; jumpRow; |]
-            [| 1; jumpDiagonal; |]
-            [| 0; jumpDiagonal; |]
-            [| 0; jumpRow; |]
-            [| 1; 0; |]
-            [| 1; jumpColumn; |]
-            [| 0; jumpColumn; |]
-            [| 0; 0; |]
-        |]
-
-        let vertexOffset = [|
-            Vector3(0.0f, stepY, stepZ)
-            Vector3(stepX, stepY, stepZ)
-            Vector3(stepX, stepY, 0.0f)
-            Vector3(0.0f, stepY, 0.0f)
-            Vector3(0.0f, 0.0f, stepZ)
-            Vector3(stepX, 0.0f, stepZ)
-            Vector3(stepX, 0.0f, 0.0f)
-            Vector3(0.0f, 0.0f, 0.0f)
-        |]
+        let jumpColumn, jumpRow = 1, volume.Slices.[frontIndex].Columns
+        let gradient = Gradient(volume.Slices)
        
         let findInnerVertex (frontTopLeft: Vector3) tLeft cube (section: int[]) = 
-            let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
+            let front, back = volume.Slices.[section.[0]].HField, volume.Slices.[section.[1]].HField
             let tRight, bLeft = tLeft + jumpColumn, tLeft + jumpRow
             let bRight = bLeft + jumpColumn
 
@@ -82,12 +56,12 @@ module DualContouringIterator =
                     if delta = 0s then
                         0.5f
                     else
-                        float32(isoValue - v1) / (float32 delta)
+                        float32(volume.IsoValue - v1) / (float32 delta)
 
-                let gradientA = gradient.get (section.[cubeMap.[indexA].[0]], tLeft + cubeMap.[indexA].[1])
-                let gradientB = gradient.get (section.[cubeMap.[indexB].[0]], tLeft + cubeMap.[indexB].[1])
+                let gradientA = gradient.get (section.[volume.CubeMap.[indexA].[0]], tLeft + volume.CubeMap.[indexA].[1])
+                let gradientB = gradient.get (section.[volume.CubeMap.[indexB].[0]], tLeft + volume.CubeMap.[indexB].[1])
 
-                bestFitVertex <- bestFitVertex + Vector3.Lerp(vertexOffset.[indexA], vertexOffset.[indexB], mu)
+                bestFitVertex <- bestFitVertex + Vector3.Lerp(volume.VertexOffsets.[indexA], volume.VertexOffsets.[indexB], mu)
                 bestFitGradient <- bestFitGradient + Vector3.Lerp(gradientA, gradientB, mu)
 
             if contributions.Length > 0 then
@@ -99,8 +73,7 @@ module DualContouringIterator =
                 Gradient = bestFitGradient
             }
         
-        let left = slices.[frontIndex].TopLeft.X
-        let right = left + slices.[frontIndex].PixelSpacing.X
+        let left = volume.Slices.[frontIndex].TopLeft.X
 
         let nRows, nColumns = lastRow + 1, lastColumn + 1
 
@@ -113,11 +86,11 @@ module DualContouringIterator =
 
         for n in 0..sections.Length-1 do
             let section = sections.[n]
-            let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
+            let cube = Cube.create volume.Slices.[section.[0]] volume.Slices.[section.[1]] volume.IsoValue
             let mutable rowOffset = 0
 
-            frontTopLeft.Y <- slices.[section.[0]].TopLeft.Y
-            frontTopLeft.Z <- slices.[section.[0]].TopLeft.Z
+            frontTopLeft.Y <- volume.Slices.[section.[0]].TopLeft.Y
+            frontTopLeft.Z <- volume.Slices.[section.[0]].TopLeft.Z
 
             for row in 0..lastRow do
 
@@ -127,9 +100,9 @@ module DualContouringIterator =
                     let tLeft = rowOffset + column
                     innerVertices.[n].[row].[column] <- findInnerVertex frontTopLeft tLeft cube section
 
-                    frontTopLeft.X <- frontTopLeft.X + stepX
+                    frontTopLeft.X <- frontTopLeft.X + volume.Step.X
 
-                frontTopLeft.Y <- frontTopLeft.Y + stepY
+                frontTopLeft.Y <- frontTopLeft.Y + volume.Step.Y
                 rowOffset <- rowOffset + jumpRow
 
         for row in 0..lastRow do
