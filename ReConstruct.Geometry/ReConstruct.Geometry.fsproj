@@ -71,6 +71,7 @@
     <Compile Include="gradient.fs" />
     <Compile Include="gradient-simd.fs" />
     <Compile Include="cube.fs" />
+    <Compile Include="uniform-volume.fs" />
     <Compile Include="cubes-iterator.fs" />
     <Compile Include="common-indices.fs" />
     <Compile Include="marching-cubes-tables.fs" />
