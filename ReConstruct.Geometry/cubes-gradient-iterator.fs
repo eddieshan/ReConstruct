@@ -10,32 +10,19 @@ open ReConstruct.Geometry.MarchingCubesTables
 
 module CubesGradientIterator =
 
-    let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
-        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
+    let iterate (volume: UniformVolume) frontIndex addPoint = 
+        let lastRow, lastColumn = volume.Slices.[frontIndex].Rows - 2, volume.Slices.[frontIndex].Columns - 2
 
-        let cube = Cube.create slices.[frontIndex] slices.[frontIndex + 1] isoValue
+        let cube = Cube.create volume.Slices.[frontIndex] volume.Slices.[frontIndex + 1] volume.IsoValue
 
         let jumpColumn = 1
-        let jumpRow = slices.[frontIndex].Columns
-        let jumpDiagonal = jumpColumn + jumpRow
-
-        let positions = [|
-            [| 1; jumpRow; |]
-            [| 1; jumpDiagonal; |]
-            [| 0; jumpDiagonal; |]
-            [| 0; jumpRow; |]
-            [| 1; 0; |]
-            [| 1; jumpColumn; |]
-            [| 0; jumpColumn; |]
-            [| 0; 0; |]
-        |]
+        let jumpRow = volume.Slices.[frontIndex].Columns
 
         let vertices = Array.zeroCreate<Vector3> 12
         let gradients = Array.zeroCreate<Vector3> 12
-        let front, back = slices.[frontIndex].HField, slices.[frontIndex + 1].HField
+        let front, back = volume.Slices.[frontIndex].HField, volume.Slices.[frontIndex + 1].HField
 
-        let backIndex = frontIndex + 1
-        let gradient = Gradient(slices)
+        let gradient = Gradient(volume.Slices)
 
         let inline addTriangle index = 
             vertices.[index] |> addPoint
@@ -68,10 +55,10 @@ module CubesGradientIterator =
                         if delta = 0s then
                             0.5f
                         else
-                            float32(isoValue - v1) / (float32 delta)
+                            float32(volume.IsoValue - v1) / (float32 delta)
 
-                    let gradientA = gradient.get (frontIndex + positions.[index1].[0], tLeft + positions.[index1].[1])
-                    let gradientB = gradient.get (frontIndex + positions.[index2].[0], tLeft + positions.[index2].[1])
+                    let gradientA = gradient.get (frontIndex + volume.CubeMap.[index1].[0], tLeft + volume.CubeMap.[index1].[1])
+                    let gradientB = gradient.get (frontIndex + volume.CubeMap.[index2].[0], tLeft + volume.CubeMap.[index2].[1])
 
                     vertices.[n] <- Vector3.Lerp(cube.Vertices.[index1], cube.Vertices.[index2], mu)
                     gradients.[n] <- Vector3.Lerp(gradientA, gradientB, mu)
@@ -84,8 +71,8 @@ module CubesGradientIterator =
                     triangle.[2] |> addTriangle
 
         let mutable rowOffset = 0
-        let left = slices.[frontIndex].TopLeft.X
-        let right = left + slices.[frontIndex].PixelSpacing.X
+        let left = volume.Slices.[frontIndex].TopLeft.X
+        let right = left + volume.Slices.[frontIndex].PixelSpacing.X
 
         for row in 0..lastRow do
             cube.Vertices.[0].X <- left
@@ -102,9 +89,9 @@ module CubesGradientIterator =
                 processCube (rowOffset + column)
 
                 for n in 0..7 do
-                    cube.Vertices.[n].X <- cube.Vertices.[n].X + slices.[frontIndex].PixelSpacing.X
+                    cube.Vertices.[n].X <- cube.Vertices.[n].X + volume.Step.X
 
             for n in 0..7 do
-                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + slices.[frontIndex].PixelSpacing.Y
+                cube.Vertices.[n].Y <- cube.Vertices.[n].Y + volume.Step.Y
 
             rowOffset <- rowOffset + jumpRow

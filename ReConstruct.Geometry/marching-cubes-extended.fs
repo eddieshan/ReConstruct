@@ -10,10 +10,12 @@ module MarchingCubesExtended =
 
     let polygonize isoValue (slices: ImageSlice[]) partialRender = 
 
+        let volume = UniformVolume.create slices isoValue
+
         let polygonizeSection index =
             let bufferChain = BufferChain()
             //CubesGradientIteratorSIMD.iterate (front, back, next) isoValue addPoint
-            CubesGradientIterator.iterate slices index isoValue bufferChain.Add
+            CubesGradientIterator.iterate volume index bufferChain.Add
             bufferChain
 
         let addPoints (bufferChain: BufferChain) = bufferChain.Dump partialRender
