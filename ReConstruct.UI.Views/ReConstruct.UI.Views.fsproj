@@ -74,7 +74,7 @@
     <Compile Include="dataset-main-view.fs" />
     <Compile Include="slices-view.fs" />
     <Compile Include="render-updater.fs" />
-    <Compile Include="volume-view-opengl.fs" />
+    <Compile Include="volume-view.fs" />
     <Compile Include="iod-view.fs" />
     <Compile Include="tags-view.fs" />
     <Compile Include="container-view.fs" />
