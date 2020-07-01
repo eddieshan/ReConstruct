@@ -22,50 +22,50 @@ module DualContouringIteratorSimd =
         [| 0; 0; |]
     |]
 
-    let iterate (slices: ImageSlice[]) frontIndex isoValue addPoint = 
-        let jumpColumn, jumpRow = 1, slices.[frontIndex].Columns
+    let iterate (volume: UniformVolume) frontIndex addPoint = 
+        let jumpColumn, jumpRow = 1, volume.Slices.[frontIndex].Columns
         let jumpDiagonal = jumpColumn + jumpRow
-        let gradient = Gradient(slices)
+        let gradient = GradientSimd(volume.Slices)
 
         let backIndex, nextIndex = frontIndex + 1, frontIndex + 2
-        let stepX, stepY = slices.[frontIndex].PixelSpacing.X, slices.[frontIndex].PixelSpacing.Y
-        let stepZ = slices.[backIndex].TopLeft.Z - slices.[frontIndex].TopLeft.Z
 
-        let vertexOffset = [|
-            Vector3(0.0f, stepY, stepZ)
-            Vector3(stepX, stepY, stepZ)
-            Vector3(stepX, stepY, 0.0f)
-            Vector3(0.0f, stepY, 0.0f)
-            Vector3(0.0f, 0.0f, stepZ)
-            Vector3(stepX, 0.0f, stepZ)
-            Vector3(stepX, 0.0f, 0.0f)
-            Vector3(0.0f, 0.0f, 0.0f)
-        |]
+        let isoValues = Vector(volume.IsoValue)
+
+        let inline getIndex (values: int16[]) =
+            let mutable cubeIndex = 0s
+            
+            // This will yield 1 for greather or equal and 0 otherwise, all 8 cubes values are checked in one instruction.
+            let gtOrEq = -Vector.GreaterThanOrEqual(isoValues, Vector(values))
+
+            // Bit masks can be applied sequentially with no branching, the comparison is stored numerically in gtOrEq.
+            for i in 0..7 do
+                cubeIndex <- cubeIndex ||| (gtOrEq.[i] <<< i)
+            cubeIndex |> int
        
-        let findInnerVertex (frontTopLeft: Vector3) (corners: Vector<int>) (cube: Cube) (section: int[]) = 
+        let findInnerVertex (frontTopLeft: Vector3) (corners: Vector<int>) (values: int16[]) (section: int[]) = 
             let mutable bestFitVertex = Vector3.Zero
             let mutable bestFitGradient = Vector3.Zero
 
-            let cubeIndex = cube.GetIndex()
+            let cubeIndex = getIndex values
 
             let contributions = EdgeContributions.[cubeIndex]
 
             for n in contributions do
                 let indexA, indexB = int EdgeTraversal.[n].[0], int EdgeTraversal.[n].[1]
-                let v1, v2 = cube.Values.[indexA], cube.Values.[indexB]
+                let v1, v2 = values.[indexA], values.[indexB]
                 let delta = v2 - v1
 
                 let mu =
                     if delta = 0s then
                         0.5f
                     else
-                        float32(isoValue - v1) / (float32 delta)
+                        float32(volume.IsoValue - v1) / (float32 delta)
 
-                gradient.setValue (section.[cubeMap.[indexA].[0]], corners.[cubeMap.[indexA].[1]], &cube.Gradients.[indexA])
-                gradient.setValue (section.[cubeMap.[indexB].[0]], corners.[cubeMap.[indexB].[1]], &cube.Gradients.[indexB])
+                let gradientA = gradient.get (section.[cubeMap.[indexA].[0]], corners.[cubeMap.[indexA].[1]])
+                let gradientB = gradient.get (section.[cubeMap.[indexB].[0]], corners.[cubeMap.[indexB].[1]])
 
-                bestFitVertex <- bestFitVertex + Vector3.Lerp(vertexOffset.[indexA], vertexOffset.[indexB], mu)
-                bestFitGradient <- bestFitGradient + Vector3.Lerp(cube.Gradients.[indexA], cube.Gradients.[indexB], mu)
+                bestFitVertex <- bestFitVertex + Vector3.Lerp(volume.VertexOffsets.[indexA], volume.VertexOffsets.[indexB], mu)
+                bestFitGradient <- bestFitGradient + Vector3.Lerp(gradientA, gradientB, mu)
 
             if contributions.Length > 0 then
                 bestFitVertex <- frontTopLeft + (bestFitVertex /(float32 contributions.Length))
@@ -74,14 +74,14 @@ module DualContouringIteratorSimd =
                 CubeIndex = cubeIndex
                 Position = bestFitVertex
                 Gradient = bestFitGradient
-            }        
+            }
         
-        let left = slices.[frontIndex].TopLeft.X
+        let left = volume.Slices.[frontIndex].TopLeft.X
 
-        let lastRow, lastColumn = slices.[frontIndex].Rows - 2, slices.[frontIndex].Columns - 2
+        let lastRow, lastColumn = volume.Slices.[frontIndex].Rows - 2, volume.Slices.[frontIndex].Columns - 2
         let nRows, nColumns = lastRow + 1, lastColumn + 1
         
-        let columnJump = Vector([| 1; 1; 1; 1; |])
+        let columnJump = Vector<int>.One
 
         let sections = [| [| frontIndex; backIndex; |]; [| backIndex; nextIndex; |]; |]
 
@@ -90,36 +90,39 @@ module DualContouringIteratorSimd =
 
         let mutable frontTopLeft = Vector3.Zero
 
+        let values = Array.zeroCreate<int16> 16
+
+        let baseCorners = [| 0; jumpColumn; jumpRow; jumpDiagonal; 0; 0; 0; 0; |]
+
         for n in 0..sections.Length-1 do
             let section = sections.[n]
-            let cube = Cube.create slices.[section.[0]] slices.[section.[1]] isoValue
-            let mutable corners = Vector([| 0; jumpColumn; jumpRow; jumpDiagonal; |])
+            let mutable corners = Vector(baseCorners)
 
-            frontTopLeft.Y <- slices.[section.[0]].TopLeft.Y
-            frontTopLeft.Z <- slices.[section.[0]].TopLeft.Z
+            frontTopLeft.Y <- volume.Slices.[section.[0]].TopLeft.Y
+            frontTopLeft.Z <- volume.Slices.[section.[0]].TopLeft.Z
 
             for row in 0..lastRow do
                 frontTopLeft.X <- left
 
                 for column in 0..lastColumn do
 
-                    let front, back = slices.[section.[0]].HField, slices.[section.[1]].HField
-                    cube.Values.[0] <- back.[corners.[2]]
-                    cube.Values.[1] <- back.[corners.[3]]
-                    cube.Values.[2] <- front.[corners.[3]]
-                    cube.Values.[3] <- front.[corners.[2]]
-                    cube.Values.[4] <- back.[corners.[0]]
-                    cube.Values.[5] <- back.[corners.[1]]
-                    cube.Values.[6] <- front.[corners.[1]]
-                    cube.Values.[7] <- front.[corners.[0]]
+                    let front, back = volume.Slices.[section.[0]].HField, volume.Slices.[section.[1]].HField
+                    values.[0] <- back.[corners.[2]]
+                    values.[1] <- back.[corners.[3]]
+                    values.[2] <- front.[corners.[3]]
+                    values.[3] <- front.[corners.[2]]
+                    values.[4] <- back.[corners.[0]]
+                    values.[5] <- back.[corners.[1]]
+                    values.[6] <- front.[corners.[1]]
+                    values.[7] <- front.[corners.[0]]
 
-                    innerVertices.[n].[row].[column] <- findInnerVertex frontTopLeft corners cube section
+                    innerVertices.[n].[row].[column] <- findInnerVertex frontTopLeft corners values section
 
                     corners <- corners + columnJump
 
-                    frontTopLeft.X <- frontTopLeft.X + stepX
+                    frontTopLeft.X <- frontTopLeft.X + volume.Step.X
 
-                frontTopLeft.Y <- frontTopLeft.Y + stepY
+                frontTopLeft.Y <- frontTopLeft.Y + volume.Step.Y
 
                 corners <- corners + columnJump
 
