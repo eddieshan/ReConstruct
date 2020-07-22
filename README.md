@@ -1,11 +1,10 @@
 # Introduction
 
 ReConstruct is an WPF / F# application that renders 3D reconstructions from Radiology scans.
-Radiology scans contain series of 2D images (slices) that are essentially scalar fields.
-A scalar field is a space formed by points where each point has a scalar value.
-Any set of points sharing the same value define an iso surface.
-Hence, an iso surface representing tissue can be extracted from a set of slices.
-Different iso values can be used to filter different types of tissue.
+Radiology scans contain series of 2D images (slices) that are essentially clouds or points or scalar fields.
+Iso surfaces representing tissue can be extracted from a set of slices and different iso values can be used to filter different types of tissue.
+This is an oversimplification of course, the actual process is much more nuanced.
+Medical 3D volume reconstruction in general has inherent difficulties derived from interpreting datasets correctly and removing noise up to an acceptable threshold. 
 
 ![Arm](Screenshot_Arm_Bone.png)
 
@@ -18,18 +17,21 @@ Scalar field analysis is widely used in many areas of Science and Engineering.
 
 # Iso surface calculation
 
-Iso surfaces are surfaces that contains points that have a value, typically within a threshold, in the scalar field.
-They are approximated by calculating a triangle mesh, the challenges here are,
+An Iso Surfaces is the geometrical place of points with a specific value in a scalar field.
+It can be approximated by extracting an analytical function that represents it or by calculating a discrete mesh.
+The discrete mesh approach is the most common, some of its challenges are, 
 
 - generating a mesh that is topologically correct,
-- iso surface extraction algorithms tend to generate a high number of triangles and does not avoid coplanar redundant triangles.
-  Optimizing memory usage and improving the algorithm to generate the minimum amount of triangles is essential.
+- achieving both acceptable performance and quality of the mesh.
 
-Polygonization is parallelized with a render agent though this creates coupling between geometry calculation and rendering.
-Ideally it would be better to separate geometry calculation from render but for now doing both together seems more efficient.
-Each pair of slices can be processed with a parallel task but a scan with a good level of detail typically contains from hundreds to thousands of slices.
-This means that parallel tasks are throttled to avoid exhausting the thread pool.
-That is, if there are n CPU cores and 1 is already used to run the UI thread, the render agent only has n - 1 jobs at any time.
+The reconstruction algorithms in this project are based conceptually in well known 3D reconstruction techniques.
+The main implementations are optimized for performance using parallel processing, SIMD, mem tweaks, etc. 
+Memory management needs an overhaul, the plan is moving to .NET Core and to leverage all the memory goodness it offers.
+
+# Rendering
+
+The graphics pipeline is decoupled, its main blocks are imaging dataset processing, geometry calculation and rendering.
+The render backend is OpenGL at the moment with a small wrapper so it can be swapped, in particular I would like to integrate it with at least one more backed. Vulkan would be ideal, if I can get the bindings working. Failing this I will go DirectX, a less interesting choice.
 
 # UI Design
 
