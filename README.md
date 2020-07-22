@@ -17,7 +17,7 @@ Scalar field analysis is widely used in many areas of Science and Engineering.
 
 # Iso surface calculation
 
-An Iso Surfaces is the geometrical place of points with a specific value in a scalar field.
+An Iso Surface is the geometrical place of points with a specific value in a scalar field.
 It can be approximated by extracting an analytical function that represents it or by calculating a discrete mesh.
 The discrete mesh approach is the most common, some of its challenges are, 
 
@@ -31,7 +31,9 @@ Memory management needs an overhaul, the plan is moving to .NET Core and to leve
 # Rendering
 
 The graphics pipeline is decoupled, its main blocks are imaging dataset processing, geometry calculation and rendering.
-The render backend is OpenGL at the moment with a small wrapper so it can be swapped, in particular I would like to integrate it with at least one more backed. Vulkan would be ideal, if I can get the bindings working. Failing this I will go DirectX, a less interesting choice.
+The render backend is OpenGL at the moment, with a small wrapper so it can be swapped.
+In particular I would like to integrate it with at least another backend. Vulkan would be ideal, if I can get the bindings working. 
+Failing this, DirectX will do though it is a less interesting choice.
 
 # UI Design
 
