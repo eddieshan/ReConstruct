@@ -5,9 +5,12 @@ Radiology scans contain a stack of 2D images (slices) that are essentially point
 Iso surfaces representing tissue can be extracted from a set of slices and different iso values can be used  
 to filter different types of tissue. This is an oversimplification of course, the actual process is more nuanced.  
 
-Medical 3D volume reconstruction in general has inherent difficulties. Input scalar fields may have noise,  
-geometry reconstructions algorithms sometimes generate artifacts (shapes that do not exist), high resolution  
-level are typically memory demanding (depending on the algorith), etc. 
+Medical 3D volume reconstruction in general has inherent difficulties. To name a few,
+
+- input scalar fields may have noise,  
+- geometry reconstructions algorithms sometimes generate artifacts (shapes that do not exist), 
+- geometry reconstruction by itself does not always yield precise tissue differentiation,  
+- etc.
 
 ![Arm](Screenshot_Arm_Bone.png)
 
@@ -19,14 +22,22 @@ level are typically memory demanding (depending on the algorith), etc.
 
 An Iso Surface is the geometrical place of points with a specific value in a scalar field.  
 It can be approximated by extracting an analytical function that represents it or by calculating a discrete mesh.  
+
 The discrete mesh approach is the most common, some of its challenges are, 
 
 - generating a mesh that is topologically correct,
 - achieving both acceptable performance and quality of the mesh.
 
-The reconstruction algorithms in this project are based conceptually in well known 3D reconstruction techniques.  
-The main implementations are optimized for performance using parallel processing, SIMD, mem tweaks, etc.   
-Memory management needs an overhaul, the plan is moving to .NET Core and to leverage all the memory goodness it offers.  
+The 3D reconstruction algorithms in this project are based in well known 3D discrete reconstruction techniques,
+
+- Marching cubes, the standard implementation plus a couple experimental variations.
+- Marching tetrahedra.
+- Dual contouring.
+
+Standard marching cubes and dual contouring proved to be the most effective in terms of speed and mesh quality.  
+Dual contouring yields a better mesh quality but is slower.  
+
+Both are optimized using parallel processing, SIMD, mem tweaks, etc.
 
 # Design
 
